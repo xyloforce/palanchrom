@@ -9,6 +9,29 @@ inline bool exists (const std::string& name) {
   return (stat (name.c_str(), &buffer) == 0); 
 }
 
+class header {
+public:
+    int getStart() {return m_start;}
+    std::string getChrom() {return m_chrom;}
+    header(int start, std::string chrom) {
+        m_start = start;
+        m_chrom = chrom;
+    }
+    header(){};
+private:
+    int m_start;
+    std::string m_chrom;
+    
+};
+
+void vcf_writer(std::ofstream& output, std::string chrom, int pos, char ref, char alt, bool toInit) {
+    if(toInit) {
+        output<<"##fileformat=VCFv4.2\n";
+        output<<"#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n";
+    }
+    output<<chrom<<'\t'<<pos<<'\t'<<'.'<<'\t'<<ref<<'\t'<<alt<<'\t'<<".\t.\t.\n";
+}
+
 int main(int argc, char* argv[])
 {
     // first open files
@@ -30,166 +53,84 @@ int main(int argc, char* argv[])
     }
     std::cout<<"Finished."<<std::endl;
     // open output file
-    if(!exists(argv[argc - 1])) {
-        std::ofstream outputFile(argv[argc - 1]);
-        bool not_finished = true;
-        
-        while(not_finished) {
-            char character[argc-2];
-            for(int file(0); file < argc-2; file++) { // for each file
-                char tchar;
-                files[file].get(tchar);
-                
-                if(tchar == '>') {
-                    std::string header = "";
-                    header += tchar;
-                    
-                    do { // not at the end of the line
-                        files[file].get(tchar);
-                        header += tchar;
-                    } while(tchar != '\n');
-                    currentLine ++;
-                    if(file == 1) {
-                        outputFile<<header;
-                    }
-                    files[file].get(tchar); // get beyond \n
-                }
-                character[file] = tchar;
-            } // we now have an array of chars
+    
+    std::ofstream outputFile(argv[argc - 1]);
+    bool not_finished = true;
+    int start = 0;
+    header headers[argc-2];
+    bool firstLine = true;
+    char character[argc-2];
+    int countChars = 0;
+    
+    while(not_finished) { // not at the end of the file
+        for(int file(0); file < argc-2; file++) { // for each file
+            char tchar;
+            files[file].get(tchar);
             
-            if(character[0] != '\n' && !files[0].eof()) {
-                // ok
-                char ref1 = toupper(character[0]);
-                char ref2 = toupper(character[1]);
-                char ancestralBase = 'X';
-                
-                bool equalRef1 = true;
-                bool equalRef2 = true;
-                
-                for(int charX(2); charX < argc -2; charX++) {
-                    char currentChar = toupper(character[charX]);
-                    if(ref2 != currentChar) {
-                        equalRef2 = false;
-                    }
-                    if(ref1 != currentChar) {
-                        equalRef1 = false;
+            if(tchar == '>') {
+                // header is >chrom:start-stop
+                // we want chrom & start
+                int info = 0;
+                std::string chrom = "";
+                std::string startS = "";
+                while(tchar != '\n') {
+                    files[file].get(tchar);
+                    if(tchar == ':' || tchar == '-') {
+                        info ++;
+                    } else if(info == 0){
+                        chrom += tchar;
+                    } else if(info == 1){
+                        startS += tchar;
                     }
                 }
-                if(equalRef2) {
-                    ancestralBase = ref2;
-                } else if(equalRef1) {
-                    switch(ref1) {
-                        case 'A':
-                            switch(ref2) {
-                                case 'C':
-                                    ancestralBase = 'B';
-                                    break;
-                                case 'G':
-                                    ancestralBase = 'D';
-                                    break;
-                                case 'T':
-                                    ancestralBase = 'E';
-                                    break;
-                                case 'N':
-                                    ancestralBase = 'F';
-                                    break;
-                                default:
-                                    std::cout<<std::endl;
-                                    std::cout<<ref1<<"    "<<ref2<<std::endl;
-                                    throw std::domain_error("base value unexpected");
-                                    break;
-                            }
-                            break;
-                                case 'C':
-                                    switch(ref2) {
-                                        case 'A':
-                                            ancestralBase = 'H';
-                                            break;
-                                        case 'G':
-                                            ancestralBase = 'I';
-                                            break;
-                                        case 'T':
-                                            ancestralBase = 'J';
-                                            break;
-                                        case 'N':
-                                            ancestralBase = 'K';
-                                            break;
-                                        default:
-                                            std::cout<<std::endl;
-                                            std::cout<<ref1<<"    "<<ref2<<std::endl;
-                                            throw std::domain_error("base value unexpected");
-                                            break;
-                                    }
-                                    break;
-                                        case 'G':
-                                            switch(ref2) {
-                                                case 'A':
-                                                    ancestralBase = 'L';
-                                                    break;
-                                                case 'C':
-                                                    ancestralBase = 'M';
-                                                    break;
-                                                case 'T':
-                                                    ancestralBase = 'O';
-                                                    break;
-                                                case 'N':
-                                                    ancestralBase = 'P';
-                                                    break;
-                                                default:
-                                                    std::cout<<std::endl;
-                                                    std::cout<<ref1<<"    "<<ref2<<std::endl;
-                                                    throw std::domain_error("base value unexpected");
-                                                    break;
-                                            }
-                                            break;
-                                                case 'T':
-                                                    switch(ref2) {
-                                                        case 'A':
-                                                            ancestralBase = 'Q';
-                                                            break;
-                                                        case 'C':
-                                                            ancestralBase = 'R';
-                                                            break;
-                                                        case 'G':
-                                                            ancestralBase = 'S';
-                                                            break;
-                                                        case 'N':
-                                                            ancestralBase = 'V';
-                                                            break;
-                                                        default:
-                                                            std::cout<<std::endl;
-                                                            std::cout<<ref1<<"    "<<ref2<<std::endl;
-                                                            throw std::domain_error("base value unexpected");
-                                                            break;
-                                                    }
-                                                    break;
-                                                        case 'N':
-                                                            ancestralBase = '*';
-                                                            break;
-                                                        default:
-                                                            std::cout<<std::endl;
-                                                            std::cout<<ref1<<"    "<<ref2<<std::endl;
-                                                            throw std::domain_error("base value unexpected");
-                                                            break;
-                    }
-                } else {
-                    ancestralBase = '*';
-                }
-                outputFile << ancestralBase;
+                start = stoi(startS);
+                headers[file] = header(start, chrom);
+                files[file].get(tchar); // get beyond \n
+                countChars = 0;
             }
-            else if(files[0].eof()) {
-                not_finished = false;
-            } else {
-                if((currentLine/maxLine *100) % 10 == 0) {
-                    std::cout<<"Progress = "<<currentLine/maxLine *100<<"                \r";
+            
+            character[file] = tchar;
+        } // we now have an array of chars
+        
+        if(character[0] != '\n' && !files[0].eof()) {
+            // ok
+            countChars ++;
+            char ref = toupper(character[0]);
+            // char ref2 = toupper(character[1]);
+            char outgroup1 = toupper(character[1]);
+            
+            bool ancestralDefined = true;
+            bool equalRef = true;
+            // bool equalRef2 = true;
+            char tchar;
+            
+            for(int charX(1); charX <argc-2; charX++) {
+                tchar = toupper(character[charX]);
+                if(tchar != ref) {equalRef = false;}
+                // if(tchar != ref2) {equalRef2 = false;}
+                if(outgroup1 != tchar) {ancestralDefined = false;}
+            }
+            
+            if(ancestralDefined) {
+                if(!equalRef) { // diff ref1 
+                    vcf_writer(outputFile, headers[0].getChrom(), headers[0].getStart()+countChars, ref, outgroup1, firstLine);
+                    firstLine = false;
                 }
-                outputFile << '\n';
-                currentLine ++;
+            } else {
+                vcf_writer(outputFile, headers[0].getChrom(), headers[0].getStart()+countChars, ref, 'N', firstLine);
+                firstLine = false;
             }
         }
-    } else {
-        throw std::invalid_argument("output file exists ; no overwriting allowed");
+        else if(files[0].eof()) {
+            not_finished = false;
+        } else {
+            if((currentLine/maxLine *100)+1 % 10 == 0) {
+                std::cout<<"Progress = "<<currentLine/maxLine *100<<"                \r";
+            }
+            currentLine ++;
+        }
     }
+    
     std::cout<<std::endl;
     return 0;
 }
