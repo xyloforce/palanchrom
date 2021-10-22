@@ -1,0 +1,11 @@
+speciesA: hg38
+speciesB: panTro5
+outgroups:
+- ponAbe2
+- gorGor4
+liftover:
+    panTro5: /home/fabien/Documents/Projets/Reprise_Sara/Data/20200616_hg38_to_panTro5/
+    ponAbe2: /home/fabien/Documents/Projets/Reprise_Sara/Data/20200724_hg38_to_ponAbe2/
+    gorGor4: /home/fabien/Documents/Projets/Reprise_Sara/Data/20200724_hg38_to_gorGor4/
+
+barriers: /home/fabien/Documents/Projets/Reprise_Sara/Data/20200228_interSmallNFR.dat
