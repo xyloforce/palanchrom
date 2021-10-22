@@ -3,8 +3,7 @@ ruleorder: getSeqsRef > getSeqsFromInt
 
 rule all:
     input:
-        "data/countBasesCPG.tsv",
-        "data/countBasesNCPG.tsv"
+        "data/ancestralBases.vcf"
 
 def getSpeciesFolder(wildcards):
     return config["liftover"][wildcards.species]
@@ -104,35 +103,35 @@ rule getAncestralState:
         ref = rules.getSeqsRef.output,
         check = ".checkCompleted"
     output:
-        "data/ancestralBases.fmna"
+        "data/ancestralBases.vcf"
     shell:
         "./bin/getAncestralBase.bin {input.ref} {input.fasta} {output}"
 
-rule getSortCPG:
-    input:
-        "data/ancestralBases.fmna"
-    output:
-        cpg = "data/ancestralBasesCPG.diff",
-        ncpg = "data/ancestralBasesNCPG.diff"
-    shell:
-        "./bin/sortCPG.bin {input} {output.cpg} {output.ncpg}"
+#rule getSortCPG:
+    #input:
+        #"data/ancestralBases.fmna"
+    #output:
+        #cpg = "data/ancestralBasesCPG.diff",
+        #ncpg = "data/ancestralBasesNCPG.diff"
+    #shell:
+        #"./bin/sortCPG.bin {input} {output.cpg} {output.ncpg}"
 
-rule filterBarriers:
-    input:
-        config["barriers"]
-    output:
-        "data/barriersAOE.tsv"
-    shell:
-        "Rscript scripts/filterInterNIEBs.R {input} {output}"
+#rule filterBarriers:
+    #input:
+        #config["barriers"]
+    #output:
+        #"data/barriersAOE.tsv"
+    #shell:
+        #"Rscript scripts/filterInterNIEBs.R {input} {output}"
         
-rule countMuts:
-    input:
-        "data/barriersAOE.tsv",
-        "data/ancestralBases{type}.diff"
-    output:
-        "data/countBases{type}.tsv"
-    shell:
-        "./bin/countMuts.bin {input} {output}"
+#rule countMuts:
+    #input:
+        #"data/barriersAOE.tsv",
+        #"data/ancestralBases{type}.diff"
+    #output:
+        #"data/countBases{type}.tsv"
+    #shell:
+        #"./bin/countMuts.bin {input} {output}"
 
 #rule intersectChimpBarriers:
     #input:
