@@ -52,4 +52,4 @@ for intervalR in commonHandler.readlines(): # intervalR is line in intersected f
             else:
                 windowBegin = int((windowEnd + windowBegin)/2)
 
-    outputHandler.writelines(intervalO[2] + "\t" + str(start) + "\t" + str(end) + "\t" + intervalO[5] + "\n")
+    outputHandler.writelines(intervalO[2] + "\t" + str(start) + "\t" + str(end) + "\t.\t.\t" + intervalO[5] + "\n")
