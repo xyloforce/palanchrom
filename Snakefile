@@ -3,7 +3,7 @@ ruleorder: getSeqsRef > getSeqsFromInt
 
 rule all:
     input:
-        "data/{ref}ancestralBases.vcf"
+        "data/hg38ancestralBases.vcf"
 
 def getSpeciesFolder(wildcards):
     return config["liftover"][wildcards.species]
