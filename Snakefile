@@ -3,7 +3,7 @@ ruleorder: getSeqsRef > getSeqsFromInt
 
 rule all:
     input:
-        "data/ancestralBases.vcf"
+        "data/{ref}ancestralBases.vcf"
 
 def getSpeciesFolder(wildcards):
     return config["liftover"][wildcards.species]
@@ -72,7 +72,7 @@ rule getSeqsRef:
         "data/commonSeqs_" + config["speciesA"] + ".fa"
     shell:
         """
-        bedtools getfasta -fi {input.fa} -bed {input.bed} > {output}
+        bedtools getfasta -s -fi {input.fa} -bed {input.bed} > {output}
         """
 
 rule getSeqsFromInt:
@@ -85,7 +85,7 @@ rule getSeqsFromInt:
         #species="^[8]"
     shell:
         """
-        bedtools getfasta -fi {input.fa} -bed {input.bed} > {output.fasta}
+        bedtools getfasta -s -fi {input.fa} -bed {input.bed} > {output.fasta}
         """
         
 rule checkLength:
