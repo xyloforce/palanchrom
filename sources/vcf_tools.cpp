@@ -133,6 +133,8 @@ vcf::vcf(std::string filename, bool read) {
     }
 }
 
+// TODO make sure that ref is base
+
 char vcf::isMuted ( std::string chrom, int pos, char base )
 {
     if (m_content.find(chrom) != m_content.end()) {

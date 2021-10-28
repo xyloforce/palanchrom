@@ -33,7 +33,7 @@ int bed_entry::isInside(int pos, int size = 0) const
         return 1;
     } else if(m_start <= pos && m_stop > pos + size) {
         return 2;
-    } else if(m_start <= pos && m_stop < pos + size) {
+    } else if(m_start <= pos && m_stop > pos && m_stop < pos + size) {
         return 3;
     } else if(m_stop <= pos) {
         return 4;

@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
                     count = 10;
                 } else if(start < temp.getStart()) {
                     ancestralFasta << 'N';
-                    count = temp.getStart() - start;
+                    count = temp.getStart() - (start + 1);
                 } else {
                     // in all other cases i'm for now at last in the current int
                     char base = mutations.isMuted(header, start, tchar);
