@@ -1,6 +1,8 @@
 #include "vcf_tools.h"
 #include <fstream>
 #include <regex>
+#include <string>
+#include <iostream>
 
 vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual, std::string filter, std::string info)
 {
@@ -14,34 +16,113 @@ vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref
     m_info = info;
 }
 
-std::string vcf_entry::get_ancestralBase() const
+vcf_entry::vcf_entry()
 {
-    return m_ref;
+    m_chrom = ".";
+    m_pos = 0;
+    m_id = ".";
+    m_ref = ".";
+    m_alt = '.';
+    m_qual = 0;
+    m_filter = ".";
+    m_info = ".";
+}
+
+
+char vcf_entry::get_ancestralBase() const
+{
+    return m_alt;
+}
+
+std::string vcf_entry::getAttributeString() const
+{
+    std::string result;
+    result = m_chrom + std::to_string(m_pos) + m_id + m_ref + m_alt + std::to_string(m_qual) + m_filter + m_info;
+    
+    return result;
 }
 
 void vcf::vcf_read(std::string filename)
 {
     std::ifstream vcfFile(filename);
     std::string line;
+    char tchar;
+    int col = 1;
     
-    while(getline(vcfFile, line)) {
-        std::regex pattern ("(\\w+)\\t(\\d+)\\t(.+)\\t(\\w+)\\t(\\w)\\t(.+)\\t(\\w+)\\t(\\w+)");
-        std::smatch results;
-        if(std::regex_search(line, results, pattern)) {
-            vcf_entry entry;
-            // cmatch is now chrom pos id ref alt qual filter info
-            if(results[6].str() == ".") {
-                vcf_entry entry(results[1].str(), stoi(results[2].str()), results[3].str(), results[4].str(), results[5].str()[0], stoi(results[6].str()), results[7].str(), results[8].str());
-            } else {
-                vcf_entry entry(results[1].str(), stoi(results[2].str()), results[3].str(), results[4].str(), results[5].str()[0], 0, results[7].str(), results[8].str());
+    std::string chrom = "";
+    std::string tpos = "";
+    int pos = 0;
+    std::string id = "";
+    std::string ref = "";
+    char alt;
+    std::string tqual = "";
+    int qual = 0;
+    std::string filter = "";
+    std::string info = "";
+    
+    while(!vcfFile.eof()) {
+        // file is chrom pos id ref alt qual filter info
+        vcfFile.get(tchar);
+        
+        if(tchar != '\n' && tchar != '\t' && tchar != '#') {
+            switch(col) {
+                case 1:
+                    chrom += tchar;
+                    break;
+                case 2:
+                    tpos += tchar;
+                    break;
+                case 3:
+                    id += tchar;
+                    break;
+                case 4:
+                    ref += tchar;
+                    break;
+                case 5:
+                    alt = tchar;
+                    break;
+                case 6:
+                    tqual += tchar;
+                    break;
+                case 7:
+                    filter += tchar;
+                    break;
+                case 8:
+                    info += tchar;
+                    break;
+                default:
+                    std::cout << tchar << std::endl;
+                    throw std::domain_error("incorrect number of cols");
+                    break;
             }
-            m_content[results[1].str()][stoi(results[2].str())] = entry;
+        } else if(tchar == '\t') {
+            col ++;
+        } else if(tchar == '\n') {
+            col = 1;
+            pos = stoi(tpos);
+            if(tqual != ".") {
+                qual = stoi(tqual);
+            } else {
+                qual = 0;
+            }
+            vcf_entry entry(chrom, pos, id, ref, alt, qual, filter, info);
+            m_content[chrom][pos] = entry;
+        
+            chrom = "";
+            tpos = "";
+            id = "";
+            ref = "";
+            tqual = "";
+            filter = "";
+            info = "";
+        } else if(tchar == '#') {
+            while(tchar != '\n') {
+                vcfFile.get(tchar);
+            }
         }
     }
     // init m_content
 }
-
-
 
 vcf::vcf(std::string filename, bool read) {
     if(read) {
@@ -49,21 +130,20 @@ vcf::vcf(std::string filename, bool read) {
     }
 }
 
-std::string vcf::isMuted(std::string chrom, int pos, char base)
+char vcf::isMuted ( std::string chrom, int pos, char base )
 {
     if (m_content.find(chrom) != m_content.end()) {
         if (m_content[chrom].find(pos) != m_content[chrom].end()) {
             return m_content[chrom][pos].get_ancestralBase();
         } else {
-            std::string tstring = "";
-            tstring += base;
-            return tstring;
+            return base;
         }
     } else {
-        std::string tstring = "";
-        tstring += base;
-        return tstring;
+        return base;
     }
 }
 
-
+void vcf_writeline(std::string filename, vcf_entry entry_vcf) {
+    std::ofstream outputFile(filename, std::ofstream::app);
+    outputFile << entry_vcf.getAttributeString();
+}
