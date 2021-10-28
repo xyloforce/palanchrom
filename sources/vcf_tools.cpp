@@ -97,7 +97,7 @@ void vcf::vcf_read(std::string filename)
             }
         } else if(tchar == '\t') {
             col ++;
-        } else if(tchar == '\n') {
+        } else if(tchar == '\n' && col == 8) {
             col = 1;
             pos = stoi(tpos);
             if(tqual != ".") {
@@ -119,6 +119,7 @@ void vcf::vcf_read(std::string filename)
             while(tchar != '\n') {
                 vcfFile.get(tchar);
             }
+        } else {
         }
     }
     // init m_content
