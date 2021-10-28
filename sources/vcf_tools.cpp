@@ -120,6 +120,8 @@ void vcf::vcf_read(std::string filename)
                 vcfFile.get(tchar);
             }
         } else {
+            std::cout << "Skipped line" << std::endl;
+            std::cout << "If it happens more than once, that's a bad sign, sry :/" << std::endl;
         }
     }
     // init m_content

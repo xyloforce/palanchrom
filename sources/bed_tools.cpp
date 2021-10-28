@@ -89,7 +89,7 @@ void bed::readBed ( std::string filename )
         // file is chrom start stop name strand
         bedFile.get(tchar);
         
-        if(tchar != '\n' && tchar != '\t' && tchar != '#') {
+        if(tchar != '\n' && tchar != '\t') {
             switch(col) {
                 case 1:
                     chrom += tchar;
@@ -115,7 +115,7 @@ void bed::readBed ( std::string filename )
             }
         } else if(tchar == '\t') {
             col ++;
-        } else if(tchar == '\n') {
+        } else if(tchar == '\n' && col == 6) {
             col = 1;
             start = stoi(tstart);
             stop = stoi(tstop);
@@ -132,6 +132,17 @@ void bed::readBed ( std::string filename )
             tstop = "";
             name = "";
             tscore = "";
+        } else if(tchar == '\n' && col == 3) {
+            col = 1;
+            start = stoi(tstart);
+            stop = stoi(tstop);
+            
+            bed_entry entry(chrom, start, stop);
+            m_content[chrom][start] = entry;
+            
+            chrom = "";
+            tstart = "";
+            tstop = "";
         }
     }
 }
