@@ -42,6 +42,7 @@ int bed_entry::isInside(int pos, int size = 0) const
         // testInt overlaps stop
         return 4;
     } else {
+        std::cout << "Int is " << m_start << ":" << m_stop << " and pos is " << pos << ":" << pos + size << std::endl;
         throw std::logic_error("Impossible combination of values");
     }
 }
