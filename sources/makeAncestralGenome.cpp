@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
             // no : write N
             // overlapping : write N until you reach the border
             if(count == 0) {
-                temp = intervals.inInt(header, start, start + 10);
+                temp = intervals.inInt(header, start, 10);
                 if(temp == bed_entry()) {
                     ancestralFasta << 'N';
                     count = 10;
