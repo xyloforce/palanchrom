@@ -27,20 +27,18 @@ bed_entry::bed_entry()
 
 int bed_entry::isInside(int pos, int size = 0) const
 {
-    if(m_start <= pos && m_stop >= (pos + size)) {
+    if(m_start >= pos + size) {
         return 0;
-    } else if(m_start >= (pos + size)) {
-        // startInt > stopTest
+    } else if(m_start > pos && m_stop > pos + size) {
         return 1;
-    } else if(m_stop < pos) {
-        // stopInt < startTest
+    } else if(m_start <= pos && m_stop > pos + size) {
         return 2;
-    } else if(m_start > pos && m_start < (pos + size)) {
-        // testInt is overlapping start
+    } else if(m_start <= pos && m_stop < pos + size) {
         return 3;
-    } else if(m_stop >= pos && m_stop < (pos + size)) {
-        // testInt overlaps stop
+    } else if(m_stop <= pos) {
         return 4;
+    } else if(m_start > pos && m_stop < pos + size) {
+        return 5;
     } else {
         std::cout << "Int is " << m_start << ":" << m_stop << " and pos is " << pos << ":" << pos + size << std::endl;
         throw std::logic_error("Impossible combination of values");
@@ -163,17 +161,17 @@ bed_entry bed::inInt ( std::string chrom, int pos, int size = 0 )
     for (const auto &key_value : m_content[chrom]) { // loop through all non-overlapping int in the map
         current = key_value.second.isInside(pos, size);
         
-        if(current == 1) { // pos + size is smaller than start of int in a sorted array : pos is out of range
+        if(current == 0) { // pos + size is smaller than start of int in a sorted array : pos is out of range
             break;
-        } else if(current == 0) { // pos in the right int
+        } else if(current == 2) { // pos in the right int
             inInt = key_value.second;
             break;
-        } else if(current == 3) {
+        } else if(current == 1 || current == 5) {
             // overlap start = need to adjust start to correct size => set start to start int
             bed_entry overlapCorrected(chrom, key_value.second.getStart(), pos + size);
             inInt = overlapCorrected;
             break;
-        } else if(current == 4) {
+        } else if(current == 3) {
             // same but for stop
             bed_entry overlapCorrected(chrom, pos, key_value.second.getStop(), ".", 0, key_value.second.getStrand());
             inInt = overlapCorrected;

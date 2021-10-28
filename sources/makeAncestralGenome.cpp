@@ -29,6 +29,7 @@ int main(int argc, char* argv[]) {
     vcf mutations(argv[1], true);
     std::cout << "Loading bed... " << std::endl; 
     bed intervals(argv[2], true);
+    std::cout << "Started analysis" << std::endl;
     
     std::ifstream fasta(argv[3]);
     std::ofstream ancestralFasta(argv[4]);
@@ -62,6 +63,7 @@ int main(int argc, char* argv[]) {
                     ancestralFasta << 'N';
                     count = 10;
                 } else if(start < temp.getStart()) {
+                    ancestralFasta << 'N';
                     count = temp.getStart() - start;
                 } else {
                     // in all other cases i'm for now at last in the current int
