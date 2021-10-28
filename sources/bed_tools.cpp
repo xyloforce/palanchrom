@@ -95,10 +95,10 @@ void bed::readBed ( std::string filename )
                     chrom += tchar;
                     break;
                 case 2:
-                    start += tchar;
+                    tstart += tchar;
                     break;
                 case 3:
-                    stop += tchar;
+                    tstop += tchar;
                     break;
                 case 4:
                     name += tchar;
