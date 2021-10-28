@@ -137,7 +137,7 @@ void bed::readBed ( std::string filename )
             start = stoi(tstart);
             stop = stoi(tstop);
             
-            bed_entry entry(chrom, start, stop);
+            bed_entry entry(chrom, start, stop, ".", 0, '+');
             m_content[chrom][start] = entry;
             
             chrom = "";
