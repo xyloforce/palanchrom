@@ -4,7 +4,7 @@ ruleorder: getSeqsFromInt > getSeqsRef
 rule all:
     input:
         "data/hg38_ancestralGenome.fasta",
-        "data/panTro_ancestralGenome.fasta"
+        "data/panTro5_ancestralGenome.fasta"
 
 def getSpeciesFolder(wildcards):
     return config["liftover"][wildcards.species]

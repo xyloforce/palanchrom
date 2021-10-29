@@ -104,21 +104,23 @@ int main(int argc, char* argv[])
             // bool equalRef2 = true;
             char tchar;
             
-            for(int charX(1); charX <argc-2; charX++) {
-                tchar = toupper(character[charX]);
-                if(tchar != ref) {equalRef = false;}
-                // if(tchar != ref2) {equalRef2 = false;}
-                if(outgroup1 != tchar) {ancestralDefined = false;}
-            }
-            
-            if(ancestralDefined) {
-                if(!equalRef) { // diff ref1 
-                    vcf_writer(outputFile, headers[0].getChrom(), headers[0].getStart()+countChars, ref, outgroup1, firstLine);
+            if(ref != 'N') {
+                for(int charX(1); charX <argc-2; charX++) {
+                    tchar = toupper(character[charX]);
+                    if(tchar != ref) {equalRef = false;}
+                    // if(tchar != ref2) {equalRef2 = false;}
+                    if(outgroup1 != tchar) {ancestralDefined = false;}
+                }
+                
+                if(ancestralDefined) {
+                    if(!equalRef) { // diff ref1 
+                        vcf_writer(outputFile, headers[0].getChrom(), headers[0].getStart()+countChars, ref, outgroup1, firstLine);
+                        firstLine = false;
+                    }
+                } else {
+                    vcf_writer(outputFile, headers[0].getChrom(), headers[0].getStart()+countChars, ref, 'N', firstLine);
                     firstLine = false;
                 }
-            } else {
-                vcf_writer(outputFile, headers[0].getChrom(), headers[0].getStart()+countChars, ref, 'N', firstLine);
-                firstLine = false;
             }
         }
         else if(files[0].eof()) {
