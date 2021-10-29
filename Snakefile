@@ -1,5 +1,5 @@
 configfile: "config.yaml"
-ruleorder: getSeqsRef > getSeqsFromInt
+ruleorder: getSeqsFromInt > getSeqsRef
 
 rule all:
     input:
