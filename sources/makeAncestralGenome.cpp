@@ -38,6 +38,8 @@ int main(int argc, char* argv[]) {
     char tchar;
     int start;
     
+    const int size = 1000; // size of int to check for overlap with bed
+    
     int count = 0;
     bed_entry temp;
     
@@ -59,10 +61,10 @@ int main(int argc, char* argv[]) {
             // no : write N
             // overlapping : write N until you reach the border
             if(count == 0) {
-                temp = intervals.inInt(header, start, 10);
+                temp = intervals.inInt(header, start, size);
                 if(temp == bed_entry()) {
                     ancestralFasta << 'N';
-                    count = 10;
+                    count = size;
                 } else if(start < temp.getStart()) {
                     ancestralFasta << 'N';
                     count = temp.getStart() - (start + 1);
