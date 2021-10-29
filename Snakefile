@@ -111,7 +111,7 @@ rule getAncestralState:
 rule getAncestralGenome:
     input:
         vcf = "data/{ref}_ancestralBases.vcf",
-        bed = "data/common" + config["speciesA"] + "Lift{species}.bed",
+        bed = "data/common" + config["speciesA"] + "Lift{ref}.bed",
         fa = "data/{ref}.fa"
     output:
         "data/{ref}_ancestralGenome.fasta"
