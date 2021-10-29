@@ -29,10 +29,16 @@ vcf_entry::vcf_entry()
 }
 
 
-char vcf_entry::get_ancestralBase() const
+char vcf_entry::get_alternate() const
 {
     return m_alt;
 }
+
+std::string vcf_entry::get_ref() const
+{
+    return m_ref;
+}
+
 
 std::string vcf_entry::getAttributeString() const
 {
@@ -135,16 +141,22 @@ vcf::vcf(std::string filename, bool read) {
 
 // TODO make sure that ref is base
 
-char vcf::isMuted ( std::string chrom, int pos, char base )
+std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
 {
     if (m_content.find(chrom) != m_content.end()) {
         if (m_content[chrom].find(pos) != m_content[chrom].end()) {
-            return m_content[chrom][pos].get_ancestralBase();
+            if(m_content[chrom][pos].get_ref() == ref_bases) {
+                std::string tstring = "";
+                tstring += m_content[chrom][pos].get_alternate();
+                return tstring;
+            } else {
+                throw std::logic_error("ref doesnt match current base");
+            }
         } else {
-            return base;
+            return ref_bases;
         }
     } else {
-        return base;
+        return ref_bases;
     }
 }
 

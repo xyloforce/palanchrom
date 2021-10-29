@@ -8,7 +8,8 @@ class vcf_entry {
 public:
     vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual = 0, std::string filter = ".", std::string info = ".");
     vcf_entry();
-    char get_ancestralBase() const;
+    char get_alternate() const;
+    std::string get_ref() const;
     std::string getAttributeString() const;
 private:
     std::string m_chrom;
@@ -27,7 +28,7 @@ public:
     void vcf_writeline(std::string filename);
 //     void vcf_writelines(std::string filename);
     void vcf_read(std::string filename);
-    char isMuted(std::string chrom, int pos, char base);
+    std::string isMuted(std::string chrom, int pos, std::string ref_bases);
 private:
     std::map <std::string, std::map<int, vcf_entry>> m_content;
     bool m_isInit;

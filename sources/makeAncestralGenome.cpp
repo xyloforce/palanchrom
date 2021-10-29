@@ -66,11 +66,16 @@ int main(int argc, char* argv[]) {
                     ancestralFasta << 'N';
                     count = temp.getStart() - (start + 1);
                 } else {
+                    std::string tstring = "";
                     // in all other cases i'm for now at last in the current int
-                    char base = mutations.isMuted(header, start, tchar);
                     if(temp.getStrand() == '+') {
+                        tstring += tchar;
+                        char base = mutations.isMuted(header, start, tstring)[0];
                         ancestralFasta << base;
                     } else if(temp.getStrand() == '-') {
+                        tchar = reverseComp(tchar);
+                        tstring += tchar;
+                        char base = mutations.isMuted(header, start, tstring)[0];
                         ancestralFasta << reverseComp(base);
                     } else {
                         std::cout << temp.getStrand() << std::endl;
