@@ -176,7 +176,7 @@ bed_entry bed::inInt ( std::string chrom, int pos, int size = 0 )
             inInt = overlapCorrected;
             break;
         } else if(current == 4) {
-            m_content[chrom].erase(it); // since we're only incrementing no need to keep past int
+            it = m_content[chrom].erase(it); // since we're only incrementing no need to keep past int
         }
     }
     
