@@ -158,28 +158,25 @@ bed_entry bed::inInt ( std::string chrom, int pos, int size = 0 )
     int current = 5;
     bed_entry inInt;
     
-    std::map <int, bed_entry> chromEntry = m_content[chrom];
-    
-    for (const auto &key_value : chromEntry) { // loop through all non-overlapping int in the map
-        current = key_value.second.isInside(pos, size);
-        
+    for(auto it = m_content[chrom].cbegin(); it != m_content[chrom].cend();) {
+        current = it -> second.isInside(pos, size);
         if(current == 0) { // pos + size is smaller than start of int in a sorted array : pos is out of range
             break;
         } else if(current == 2) { // pos in the right int
-            inInt = key_value.second;
+            inInt = it -> second;
             break;
         } else if(current == 1 || current == 5) {
             // overlap start = need to adjust start to correct size => set start to start int
-            bed_entry overlapCorrected(chrom, key_value.second.getStart(), pos + size);
+            bed_entry overlapCorrected(chrom, it -> second.getStart(), pos + size);
             inInt = overlapCorrected;
             break;
         } else if(current == 3) {
             // same but for stop
-            bed_entry overlapCorrected(chrom, pos, key_value.second.getStop(), ".", 0, key_value.second.getStrand());
+            bed_entry overlapCorrected(chrom, pos, it -> second.getStop(), ".", 0, it -> second.getStrand());
             inInt = overlapCorrected;
             break;
         } else if(current == 4) {
-            m_content[chrom].erase(key_value.second.getStart()); // since we're only incrementing no need to keep past int
+            m_content[chrom].erase(it); // since we're only incrementing no need to keep past int
         }
     }
     
