@@ -3,7 +3,8 @@ ruleorder: getSeqsRef > getSeqsFromInt
 
 rule all:
     input:
-        "data/hg38ancestralBases.vcf"
+        "data/hg38_ancestralGenome.fasta",
+        "data/panTro_ancestralGenome.fasta"
 
 def getSpeciesFolder(wildcards):
     return config["liftover"][wildcards.species]
@@ -81,8 +82,8 @@ rule getSeqsFromInt:
         bed = "data/common" + config["speciesA"] + "Lift{species}.bed"
     output:
         fasta = "data/commonSeqs_{species}.fa"
-    #wildcard_constraints:
-        #species="^[8]"
+    wildcard_constraints:
+        species= config["speciesA"]
     shell:
         """
         bedtools getfasta -s -fi {input.fa} -bed {input.bed} > {output.fasta}
@@ -103,9 +104,19 @@ rule getAncestralState:
         ref = "data/commonSeqs_{ref}.fa",
         check = ".checkCompleted"
     output:
-        "data/{ref}ancestralBases.vcf"
+        "data/{ref}_ancestralBases.vcf"
     shell:
         "./bin/getAncestralBase.bin {input.ref} {input.fasta} {output}"
+
+rule getAncestralGenome:
+    input:
+        vcf = "data/{ref}_ancestralBases.vcf",
+        bed = "data/common" + config["speciesA"] + "Lift{species}.bed",
+        fa = "data/{species}.fa"
+    output:
+        "data/{ref}_ancestralGenome.fasta"
+    shell:
+        "./bin/makeAncestralGenome.bin {input} {output}"
 
 #rule getSortCPG:
     #input:
