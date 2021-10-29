@@ -4,6 +4,7 @@
 #include <iostream>
 
 char reverseComp(char base) {
+    base = toupper(base);
     switch(base) {
         case 'A':
             return 'T';

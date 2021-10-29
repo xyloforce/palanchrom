@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+std::string toUpper(std::string lower);
+
 class vcf_entry {
 public:
     vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual = 0, std::string filter = ".", std::string info = ".");

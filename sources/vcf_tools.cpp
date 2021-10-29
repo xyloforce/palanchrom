@@ -4,6 +4,14 @@
 #include <string>
 #include <iostream>
 
+std::string toUpper(std::string lower) {
+    std::string result = "";
+    for(int i(0); i<lower.size(); i++) {
+        result += toupper(lower[i]);
+    }
+    return result;
+}
+
 vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual, std::string filter, std::string info)
 {
     m_chrom = chrom;
@@ -145,7 +153,7 @@ std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
 {
     if (m_content.find(chrom) != m_content.end()) {
         if (m_content[chrom].find(pos) != m_content[chrom].end()) {
-            if(m_content[chrom][pos].get_ref() == ref_bases) {
+            if(m_content[chrom][pos].get_ref() == toUpper(ref_bases)) {
                 std::string tstring = "";
                 tstring += m_content[chrom][pos].get_alternate();
                 return tstring;
