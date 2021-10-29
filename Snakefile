@@ -121,7 +121,7 @@ rule getAncestralGenome:
 rule getAncestralGenomeRef:
     input:
         vcf = "data/" + config["speciesA"] + "_ancestralBases.vcf",
-        bed = "intersected.bed",
+        bed = "data/intersected.bed",
         fa = "data/" + config["speciesA"] + ".fa"
     output:
         "data/" + config["speciesA"] + "_ancestralGenome.fasta"
