@@ -158,6 +158,7 @@ std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
                 tstring += m_content[chrom][pos].get_alternate();
                 return tstring;
             } else {
+                std::cout<<"Pos : "<<pos<< " base is "<< ref_bases << " and expected is " << m_content[chrom][pos].get_ref() << std::endl;
                 throw std::logic_error("ref doesnt match current base");
             }
         } else {
