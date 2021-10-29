@@ -118,6 +118,16 @@ rule getAncestralGenome:
     shell:
         "./bin/makeAncestralGenome.bin {input} {output}"
 
+rule getAncestralGenomeRef:
+    input:
+        vcf = "data/{ref}_ancestralBases.vcf",
+        bed = "intersected.bed",
+        fa = "data/{ref}.fa"
+    output:
+        "data/" + config["speciesA"] + "_ancestralGenome.fasta"
+    shell:
+        "./bin/makeAncestralGenome.bin {input} {output}"
+
 #rule getSortCPG:
     #input:
         #"data/ancestralBases.fmna"
