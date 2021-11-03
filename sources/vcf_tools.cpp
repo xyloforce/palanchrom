@@ -4,14 +4,6 @@
 #include <string>
 #include <iostream>
 
-std::string toUpper(std::string lower) {
-    std::string result = "";
-    for(int i(0); i<lower.size(); i++) {
-        result += toupper(lower[i]);
-    }
-    return result;
-}
-
 vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual, std::string filter, std::string info)
 {
     m_chrom = chrom;
@@ -119,8 +111,7 @@ void vcf::vcf_read(std::string filename)
             } else {
                 qual = 0;
             }
-            vcf_entry entry(chrom, pos, id, ref, alt, qual, filter, info);
-            m_content[chrom][pos] = entry;
+            m_content[chrom][pos] = vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
         
             chrom = "";
             tpos = "";
@@ -147,8 +138,6 @@ vcf::vcf(std::string filename, bool read) {
     }
 }
 
-// TODO make sure that ref is base
-
 std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
 {
     if (m_content.find(chrom) != m_content.end()) {
@@ -158,7 +147,7 @@ std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
                 tstring += m_content[chrom][pos].get_alternate();
                 return tstring;
             } else {
-                std::cout<<"Pos : "<<pos<< " base is "<< ref_bases << " and expected is " << m_content[chrom][pos].get_ref() << std::endl;
+                std::cout<<"Pos : "<< pos << " base is "<< ref_bases << " and expected is " << m_content[chrom][pos].get_ref() << std::endl;
                 throw std::logic_error("ref doesnt match current base");
             }
         } else {

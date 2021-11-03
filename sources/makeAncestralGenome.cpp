@@ -1,31 +1,8 @@
 #include "vcf_tools.h"
 #include "bed_tools.h"
+#include "bio_tools.h"
 #include <fstream>
 #include <iostream>
-
-char reverseComp(char base) {
-    base = toupper(base);
-    switch(base) {
-        case 'A':
-            return 'T';
-            break;
-        case 'C':
-            return 'G';
-            break;
-        case 'T':
-            return 'A';
-            break;
-        case 'G':
-            return 'C';
-            break;
-        case 'N':
-            return 'N';
-        default:
-            std::cout << std::endl;
-            std::cout << base << std::endl;
-            throw std::domain_error("unexpected base value");
-    }
-}
 
 int main(int argc, char* argv[]) {
     std::cout << "Loading vcf... " << std::endl;

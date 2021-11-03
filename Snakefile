@@ -44,7 +44,7 @@ rule intersect:
         sort -k1,1 -k2,2n $tempFile > {output}
         done
         """
-
+#TODO ADD OFFSET HERE BC LIFTOVER USES HALF OPEN INT AND BEDTOOLS USE OPEN ENDED ONES
 rule updateInterval:
     input:
         bed = "data/intersected.bed",
@@ -88,7 +88,15 @@ rule getSeqsFromInt:
         """
         bedtools getfasta -s -fi {input.fa} -bed {input.bed} > {output.fasta}
         """
-        
+
+rule correct_Seqs:
+    input:
+        "data/commonSeqs_{species}.fa"
+    output:
+        "data/corrected.commonSeqs_{species}.fa"
+    shell:
+        "bin/correctBedtools.bin {input} {output}"
+
 rule checkLength:
     input:
         fasta = expand("data/commonSeqs_{species}.fa", species = [config["speciesB"],] + config["outgroups"]),
@@ -100,8 +108,8 @@ rule checkLength:
 rule getAncestralState:
 # will output file with headers and pos and seq set for the ref2 !!!
     input:
-        fasta = expand("data/commonSeqs_{species}.fa", species = config["outgroups"]),
-        ref = "data/commonSeqs_{ref}.fa",
+        fasta = expand("data/corrected.commonSeqs_{species}.fa", species = config["outgroups"]),
+        ref = "data/corrected.commonSeqs_{ref}.fa",
         check = ".checkCompleted"
     output:
         "data/{ref}_ancestralBases.vcf"

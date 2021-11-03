@@ -1,27 +1,33 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
-#include <sys/stat.h>
 #include <stdexcept>
-
-inline bool exists (const std::string& name) {
-  struct stat buffer;   
-  return (stat (name.c_str(), &buffer) == 0); 
-}
 
 class header {
 public:
-    int getStart() {return m_start;}
+    int getPos(int count) {
+        if(m_strand == '+') {
+            return (m_start + count);
+        } else if(m_strand == '-') {
+            return (m_stop - count);
+        } else {
+            std::cout << "Strand is : " << m_strand << std::endl;
+            throw std::logic_error("Undefined strand");
+        }
+    }
     std::string getChrom() {return m_chrom;}
-    header(int start, std::string chrom) {
+    header(int start, int stop, char strand, std::string chrom) {
         m_start = start;
         m_chrom = chrom;
+        m_strand = strand;
+        m_stop = stop;
     }
     header(){};
 private:
     int m_start;
+    int m_stop;
+    char m_strand;
     std::string m_chrom;
-    
 };
 
 void vcf_writer(std::ofstream& output, std::string chrom, int pos, char ref, char alt, bool toInit) {
@@ -61,6 +67,8 @@ int main(int argc, char* argv[])
     bool firstLine = true;
     char character[argc-2];
     int countChars = 0;
+    char strand;
+    int stop;
     
     while(not_finished) { // not at the end of the file
         for(int file(0); file < argc-2; file++) { // for each file
@@ -73,18 +81,29 @@ int main(int argc, char* argv[])
                 int info = 0;
                 std::string chrom = "";
                 std::string startS = "";
+                std::string stopS = "";
+                bool notStrand = true;
+                
                 while(tchar != '\n') {
                     files[file].get(tchar);
-                    if(tchar == ':' || tchar == '-') {
+                    if(tchar == ':' || tchar == '(' || tchar == ')') {
+                        info ++;
+                    } else if(tchar == '-' && notStrand) {
+                        notStrand = false;
                         info ++;
                     } else if(info == 0){
                         chrom += tchar;
                     } else if(info == 1){
                         startS += tchar;
+                    } else if(info == 2) {
+                        stopS += tchar;
+                    } else if(info == 3) {
+                        strand = tchar;
                     }
                 }
                 start = stoi(startS);
-                headers[file] = header(start, chrom);
+                stop = stoi(stopS);
+                headers[file] = header(start, stop, strand, chrom);
                 files[file].get(tchar); // get beyond \n
                 countChars = 0;
             }
@@ -114,11 +133,11 @@ int main(int argc, char* argv[])
                 
                 if(ancestralDefined) {
                     if(!equalRef) { // diff ref1 
-                        vcf_writer(outputFile, headers[0].getChrom(), headers[0].getStart()+countChars, ref, outgroup1, firstLine);
+                        vcf_writer(outputFile, headers[0].getChrom(), headers[0].getPos(countChars), ref, outgroup1, firstLine);
                         firstLine = false;
                     }
                 } else {
-                    vcf_writer(outputFile, headers[0].getChrom(), headers[0].getStart()+countChars, ref, 'N', firstLine);
+                    vcf_writer(outputFile, headers[0].getChrom(), headers[0].getPos(countChars), ref, 'N', firstLine);
                     firstLine = false;
                 }
             }
