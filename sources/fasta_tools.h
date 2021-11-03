@@ -44,8 +44,10 @@ public:
     std::string getSequence();
     std::string getPluStrand();
     std::string getMinusStrand();
+    std::string getChrom();
     void trimSequence(int size, int end);
     void write_fasta_entry(std::ofstream& outputFile);
+    int getPos(int pos_sequence);
 };
 
 class fasta {

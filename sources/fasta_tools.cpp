@@ -220,6 +220,23 @@ void fasta_entry::write_fasta_entry(std::ofstream& outputFile)
     outputFile << m_sequence.getSequence() << '\n';
 }
 
+int fasta_entry::getPos(int pos_sequence)
+{
+    if(m_header.getStrand() == '+') {
+        return (m_header.getStart() + pos_sequence);
+    } else if(m_header.getStrand() == '-') {
+        return (m_header.getEnd() - pos_sequence);
+    } else {
+        std::cout << "Undefined strand, using + as default" << std::endl;
+        return (m_header.getStart() + pos_sequence);
+    }
+}
+
+std::string fasta_entry::getChrom()
+{
+    return m_header.getID();
+}
+
 fasta::fasta()
 {
 }

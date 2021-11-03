@@ -48,9 +48,8 @@ std::string vcf_entry::getAttributeString() const
     return result;
 }
 
-void vcf::vcf_read(std::string filename)
+void vcf::vcf_read()
 {
-    std::ifstream vcfFile(filename);
     std::string line;
     char tchar;
     int col = 1;
@@ -66,9 +65,9 @@ void vcf::vcf_read(std::string filename)
     std::string filter = "";
     std::string info = "";
     
-    while(!vcfFile.eof()) {
+    while(!m_input.eof()) {
         // file is chrom pos id ref alt qual filter info
-        vcfFile.get(tchar);
+        m_input.get(tchar);
         
         if(tchar != '\n' && tchar != '\t' && tchar != '#') {
             switch(col) {
@@ -122,7 +121,7 @@ void vcf::vcf_read(std::string filename)
             info = "";
         } else if(tchar == '#') {
             while(tchar != '\n') {
-                vcfFile.get(tchar);
+                m_input.get(tchar);
             }
         } else {
             std::cout << "Skipped line" << std::endl;
@@ -134,7 +133,10 @@ void vcf::vcf_read(std::string filename)
 
 vcf::vcf(std::string filename, bool read) {
     if(read) {
-        vcf::vcf_read(filename);
+        std::ifstream m_input(filename);
+        vcf::vcf_read();
+    } else {
+        std::ofstream m_output(filename);
     }
 }
 
@@ -158,7 +160,6 @@ std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
     }
 }
 
-void vcf_writeline(std::string filename, vcf_entry entry_vcf) {
-    std::ofstream outputFile(filename, std::ofstream::app);
-    outputFile << entry_vcf.getAttributeString();
+void vcf::vcf_writeline(vcf_entry entry_vcf) {
+    m_output << entry_vcf.getAttributeString();
 }

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <fstream>
 
 std::string toUpper(std::string lower);
 
@@ -27,13 +28,15 @@ private:
 class vcf {
 public:
     vcf(std::string filename, bool read);
-    void vcf_writeline(std::string filename);
+    void vcf_writeline(vcf_entry entry_vcf);
 //     void vcf_writelines(std::string filename);
-    void vcf_read(std::string filename);
+    void vcf_read();
     std::string isMuted(std::string chrom, int pos, std::string ref_bases);
 private:
     std::map <std::string, std::map<int, vcf_entry>> m_content;
     bool m_isInit;
+    std::ifstream m_input;
+    std::ofstream m_output;
 };
 
 #endif
