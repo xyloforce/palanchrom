@@ -52,8 +52,6 @@ int main(int argc, char* argv[])
                     refS += reverseComp(ref[i]);
                     commonBase = reverseComp(commonBase);
                 }
-                std::cout << consensus[i] << "   " << ref[i] << std::endl;
-                std::cout << commonBase << "   " << refS << std::endl;
                 outputFile.vcf_writeline(vcf_entry(entries[0].getChrom(), entries[0].getPos(i), ".", refS, commonBase));
             }
         }

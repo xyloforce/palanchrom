@@ -100,8 +100,8 @@ rule checkLength:
 rule getAncestralState:
 # will output file with headers and pos and seq set for the ref2 !!!
     input:
-        fasta = expand("data/corrected.commonSeqs_{species}.fa", species = config["outgroups"]),
-        ref = "data/corrected.commonSeqs_{ref}.fa",
+        fasta = expand("data/commonSeqs_{species}.fa", species = [config["speciesB"],] + config["outgroups"]),
+        ref = rules.getSeqsRef.output,
         check = ".checkCompleted"
     output:
         "data/{ref}_ancestralBases.vcf"

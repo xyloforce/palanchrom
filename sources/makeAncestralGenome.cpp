@@ -57,7 +57,6 @@ int main(int argc, char* argv[]) {
             std::cout<< entry2.getSequence() << std::endl;
             if(entry2.subsetEntry(posMut, posMut+1).getSequence() == pair.second.get_ref()) {
                 temp += pair.second.get_alternate();
-                std::cout << "Replacement : " << temp << " pos : " << posMut << " original : " << entry2.subsetEntry(posMut, posMut+1).getSequence() << std::endl;
                 entry2.editSeq(temp, pair.first -1, pair.first);
             } else {
                 std::cout << "Ref is : " << pair.second.get_ref() << " and current is : " << entry2.subsetEntry(posMut, posMut+1).getSequence() << " at pos : " << posMut << std::endl;
