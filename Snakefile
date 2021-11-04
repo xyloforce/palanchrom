@@ -89,14 +89,6 @@ rule getSeqsFromInt:
         bedtools getfasta -s -fi {input.fa} -bed {input.bed} > {output.fasta}
         """
 
-rule correct_Seqs:
-    input:
-        "data/commonSeqs_{species}.fa"
-    output:
-        "data/corrected.commonSeqs_{species}.fa"
-    shell:
-        "bin/correctBedtools.bin {input} {output}"
-
 rule checkLength:
     input:
         fasta = expand("data/commonSeqs_{species}.fa", species = [config["speciesB"],] + config["outgroups"]),

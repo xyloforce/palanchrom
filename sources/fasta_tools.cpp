@@ -68,9 +68,25 @@ std::string sequence::getSequence()
     return m_sequence;
 }
 
+int sequence::getSize()
+{
+    return m_sequence.size();
+}
+
+
 void sequence::setSequence(std::string sequence) {
     m_sequence = sequence;
 }
+
+sequence sequence::subsetSequence ( int begin, int end )
+{
+    std::string tString;
+    tString = m_sequence.substr(begin, end - begin);
+    sequence tSeq(tString);
+    return tSeq;
+}
+
+
 
 fasta_entry::fasta_entry(std::string inputSeq, std::string id, int start = 0, int stop = 0, char strand = 'U')
 {
@@ -82,85 +98,6 @@ fasta_entry::fasta_entry()
 {
     m_sequence = sequence("");
     m_header = header("");
-}
-
-
-fasta::fasta(std::string filename, std::string read, bool bedtools_type)
-{
-    if(read == "read") {
-        m_input = std::ifstream(filename);
-        read_fasta(bedtools_type);
-    } else if(read == "read_line") {
-        m_input = std::ifstream(filename);
-    } else if(read == "write") {
-        m_output = std::ofstream(filename);
-    }
-}
-
-void fasta::read_fasta(bool bedtools_type)
-{
-    while(!m_input.eof()) {
-        m_content.push_back(read_fasta_line(bedtools_type));
-    }
-}
-
-fasta_entry fasta::read_fasta_line(bool bedtools_type)
-{
-    char tchar = '\0';
-    std::string headerF;
-    int start;
-    std::string startS;
-    int stop;
-    std::string stopS;
-    char strand = 'U';
-    std::string sequence;
-    
-    int info = 0;
-    bool notStrand = true;
-    
-    while(tchar != '\n' || !m_input.eof()) {
-        m_input.get(tchar);
-        if(tchar == '>') {
-            while(tchar != '\n') {
-                if(bedtools_type) {
-                    if(tchar == ':' || tchar == '(' || tchar == ')') {
-                        info ++;
-                    } else if(tchar == '-' && notStrand) {
-                        notStrand = false;
-                        info ++;
-                    } else if(info == 0){
-                        headerF += tchar;
-                    } else if(info == 1){
-                        startS += tchar;
-                    } else if(info == 2) {
-                        stopS += tchar;
-                    } else if(info == 3) {
-                        strand = tchar;
-                    }
-                } else {
-                    headerF += tchar;
-                }
-                m_input.get(tchar);
-            }
-        } else if(tchar != '\n') {
-            sequence += tchar;
-        }
-    }
-    
-    if(bedtools_type) {
-        if(startS != "" && stopS != "") {
-            start = stoi(startS);
-            stop = stoi(stopS);
-        } else {
-            start = 0;
-            stop = sequence.size();
-        }
-    } else {
-        start = 0;
-        stop = sequence.size();
-    }
-    
-    return fasta_entry(sequence, headerF, start, stop, strand);
 }
 
 std::string fasta_entry::getMinusStrand()
@@ -237,8 +174,132 @@ std::string fasta_entry::getChrom()
     return m_header.getID();
 }
 
+fasta_entry fasta_entry::subsetEntry(int begin, int end)
+{
+    sequence tSequence = m_sequence.subsetSequence(begin, end);
+    header tHeader = m_header;
+    tHeader.setStart(m_header.getStart() + begin);
+    tHeader.setEnd(m_header.getEnd() - end);
+    fasta_entry tEntry(tSequence, tHeader);
+    
+    return tEntry;
+}
+
+int fasta_entry::getSize()
+{
+    return m_sequence.getSize();
+}
+
+void fasta_entry::editSeq ( std::string edit, int start, int end )
+{
+    std::string seq = m_sequence.getSequence();
+    seq.replace(start, end - start, edit);
+    m_sequence.setSequence(seq);
+    int editSize = seq.size() - (end - start);
+    if(m_header.getStrand() == '+') {
+        m_header.setEnd(m_header.getEnd() + editSize);
+    } else if (m_header.getStrand() == '-') {
+        m_header.setStart(m_header.getStart() - editSize);
+    } else {
+        std::cout << "Undefined strand, using + as default" << std::endl;
+        m_header.setEnd(m_header.getEnd() + editSize);
+    }
+}
+
+char fasta_entry::getStrand()
+{
+    return m_header.getStrand();
+}
+
 fasta::fasta()
 {
+}
+
+fasta::fasta(std::string filename, std::string read, bool bedtools_type)
+{
+    m_bedtools_type = bedtools_type;
+    if(read == "read") {
+        m_input = std::ifstream(filename);
+        read_fasta();
+    } else if(read == "read_line") {
+        m_input = std::ifstream(filename);
+    } else if(read == "write") {
+        m_output = std::ofstream(filename);
+    }
+}
+
+fasta_entry::fasta_entry(sequence seq, header head)
+{
+    m_sequence = seq;
+    m_header = head;
+}
+
+
+void fasta::read_fasta()
+{
+    while(!m_input.eof()) {
+        m_content.push_back(read_fasta_line());
+    }
+}
+
+fasta_entry fasta::read_fasta_line()
+{
+    char tchar = '\0';
+    std::string headerF;
+    int start;
+    std::string startS;
+    int stop;
+    std::string stopS;
+    char strand = 'U';
+    std::string sequence;
+    
+    int info = 0;
+    bool notStrand = true;
+    
+    while(tchar != '\n' || !m_input.eof()) {
+        m_input.get(tchar);
+        if(tchar == '>') {
+            while(tchar != '\n') {
+                if(m_bedtools_type) {
+                    if(tchar == ':' || tchar == '(' || tchar == ')') {
+                        info ++;
+                    } else if(tchar == '-' && notStrand) {
+                        notStrand = false;
+                        info ++;
+                    } else if(info == 0 && tchar != '>'){
+                        headerF += tchar;
+                    } else if(info == 1){
+                        startS += tchar;
+                    } else if(info == 2) {
+                        stopS += tchar;
+                    } else if(info == 3) {
+                        strand = tchar;
+                    }
+                } else {
+                    if(tchar != '>') {
+                        headerF += tchar;
+                    }
+                }
+                m_input.get(tchar);
+            }
+        } else if(tchar != '\n') {
+            sequence += tchar;
+        }
+    }
+    
+    if(m_bedtools_type) {
+        if(startS != "" && stopS != "") {
+            start = stoi(startS);
+            stop = stoi(stopS);
+        } else {
+            start = 0;
+            stop = sequence.size();
+        }
+    } else {
+        start = 0;
+        stop = sequence.size();
+    }
+    return fasta_entry(sequence, headerF, start, stop, strand);
 }
 
 void fasta::write_fasta_entry(fasta_entry entry)

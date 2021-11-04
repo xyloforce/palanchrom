@@ -60,7 +60,6 @@ char bed_entry::getStrand() const
     return m_strand;
 }
 
-
 bool bed_entry::operator == (const bed_entry& entry) const
 {
     return (m_start == entry.getStart() && m_stop == entry.getStop());
@@ -186,6 +185,12 @@ bed_entry bed::inInt ( std::string chrom, int pos, int size = 0 )
     // if in it : stop
     
 }
+
+std::map<int, bed_entry> bed::getBedByID ( std::string id )
+{
+    return m_content[id];
+}
+
 
 
 // future alg is : for pos in fasta seq :

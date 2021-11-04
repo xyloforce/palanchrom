@@ -26,6 +26,7 @@ public:
     bed(std::string filename, bool read);
     void readBed(std::string filename);
     bed_entry inInt(std::string chrom, int pos, int size);
+    std::map <int, bed_entry> getBedByID(std::string id);
 private:
     std::map <std::string, std::map<int, bed_entry>> m_content;
     bool m_isInit;

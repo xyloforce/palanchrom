@@ -32,6 +32,8 @@ public:
     std::string getReverseComplement();
     std::string getSequence();
     void setSequence(std::string sequence);
+    sequence subsetSequence(int begin, int end);
+    int getSize();
 };
 
 class fasta_entry {
@@ -41,13 +43,18 @@ private:
 public:
     fasta_entry(std::string inputSeq, std::string id, int start, int stop, char strand);
     fasta_entry();
+    fasta_entry(sequence seq, header head);
     std::string getSequence();
     std::string getPluStrand();
     std::string getMinusStrand();
     std::string getChrom();
+    char getStrand();
     void trimSequence(int size, int end);
     void write_fasta_entry(std::ofstream& outputFile);
     int getPos(int pos_sequence);
+    fasta_entry subsetEntry(int begin, int end);
+    int getSize();
+    void editSeq(std::string edit, int start, int end);
 };
 
 class fasta {
@@ -55,11 +62,12 @@ private:
     std::vector <fasta_entry> m_content;
     std::ifstream m_input;
     std::ofstream m_output;
+    bool m_bedtools_type;
 public:
     fasta(std::string filename, std::string read, bool bedtools_type);
     fasta();
-    void read_fasta(bool bedtools_type);
-    fasta_entry read_fasta_line(bool bedtools_type);
+    void read_fasta();
+    fasta_entry read_fasta_line();
     void write_fasta_entry(fasta_entry entry);
     bool isEOF() const;
 };

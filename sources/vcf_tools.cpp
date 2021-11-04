@@ -43,10 +43,21 @@ std::string vcf_entry::get_ref() const
 std::string vcf_entry::getAttributeString() const
 {
     std::string result;
-    result = m_chrom + std::to_string(m_pos) + m_id + m_ref + m_alt + std::to_string(m_qual) + m_filter + m_info;
+    result = m_chrom + "\t" + std::to_string(m_pos) + "\t" + m_id + "\t" + m_ref + "\t" + m_alt + "\t" + std::to_string(m_qual) + "\t" + m_filter + "\t" + m_info;
     
     return result;
 }
+
+void vcf_entry::vcf_writeline(std::ofstream& output) const
+{
+    output << getAttributeString() << '\n';
+}
+
+int vcf_entry::getPos() const
+{
+    return m_pos;
+}
+
 
 void vcf::vcf_read()
 {
@@ -133,13 +144,15 @@ void vcf::vcf_read()
 
 vcf::vcf(std::string filename, bool read) {
     if(read) {
-        std::ifstream m_input(filename);
+        m_input = std::ifstream(filename);
         vcf::vcf_read();
     } else {
-        std::ofstream m_output(filename);
+        m_output = std::ofstream(filename);
+        m_output <<"##fileformat=VCFv4.2\n";
+        m_output <<"#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n";
     }
 }
-
+ 
 std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
 {
     if (m_content.find(chrom) != m_content.end()) {
@@ -161,5 +174,10 @@ std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
 }
 
 void vcf::vcf_writeline(vcf_entry entry_vcf) {
-    m_output << entry_vcf.getAttributeString();
+    entry_vcf.vcf_writeline(m_output);
+}
+
+std::map<int, vcf_entry> vcf::getVCFByID(std::string id)
+{
+    return m_content[id];
 }

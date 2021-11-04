@@ -14,6 +14,8 @@ public:
     char get_alternate() const;
     std::string get_ref() const;
     std::string getAttributeString() const;
+    int getPos() const;
+    void vcf_writeline(std::ofstream& output) const;
 private:
     std::string m_chrom;
     int m_pos;
@@ -32,6 +34,7 @@ public:
 //     void vcf_writelines(std::string filename);
     void vcf_read();
     std::string isMuted(std::string chrom, int pos, std::string ref_bases);
+    std::map <int, vcf_entry> getVCFByID(std::string id);
 private:
     std::map <std::string, std::map<int, vcf_entry>> m_content;
     bool m_isInit;
