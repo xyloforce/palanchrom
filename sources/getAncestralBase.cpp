@@ -44,13 +44,15 @@ int main(int argc, char* argv[])
         // now we have a string with "N" if not common
         std::string ref = entries[0].getSequence();
         for(int i(0); i<ref.size(); i++) {
-            if(consensus[i] != ref[i] && consensus[i] != 'N' && ref[i] != 'N') {
+            if(consensus[i] != ref[i]) {
                 // write mutation in file
                 std::string refS = "";
                 char commonBase = consensus[i];
                 if(entries[0].getStrand() == '-') {
                     refS += reverseComp(ref[i]);
                     commonBase = reverseComp(commonBase);
+                } else {
+                    refS += ref[i];
                 }
                 outputFile.vcf_writeline(vcf_entry(entries[0].getChrom(), entries[0].getPos(i), ".", refS, commonBase));
             }

@@ -18,6 +18,7 @@ char reverseComp(char base) {
             break;
         case 'N':
             return 'N';
+            break;
         default:
             std::cout << std::endl;
             std::cout << base << std::endl;

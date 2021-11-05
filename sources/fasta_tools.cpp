@@ -245,13 +245,13 @@ void fasta::read_fasta()
 fasta_entry fasta::read_fasta_line()
 {
     char tchar = '\0';
-    std::string headerF;
-    int start;
-    std::string startS;
-    int stop;
-    std::string stopS;
+    std::string headerF = "";
+    int start = 0;
+    std::string startS = "";
+    int stop = 0;
+    std::string stopS = "";
     char strand = 'U';
-    std::string sequence;
+    std::string sequence = "";
     
     int info = 0;
     bool notStrand = true;
