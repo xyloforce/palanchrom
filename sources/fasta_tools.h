@@ -40,10 +40,11 @@ class fasta_entry {
 private:
     sequence m_sequence;
     header m_header;
+    bool m_bedtools_type;
 public:
-    fasta_entry(std::string inputSeq, std::string id, int start, int stop, char strand);
+    fasta_entry(std::string inputSeq, std::string id, int start, int stop, char strand, bool bedtools_type);
     fasta_entry();
-    fasta_entry(sequence seq, header head);
+    fasta_entry(sequence seq, header head, bool bedtools_type);
     std::string getSequence();
     std::string getPluStrand();
     std::string getMinusStrand();
@@ -63,6 +64,7 @@ private:
     std::ifstream m_input;
     std::ofstream m_output;
     bool m_bedtools_type;
+    bool m_read;
 public:
     fasta(std::string filename, std::string read, bool bedtools_type);
     fasta();

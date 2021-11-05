@@ -121,9 +121,7 @@ void vcf::vcf_read()
             } else {
                 qual = 0;
             }
-            vcf_entry* entryPtr = new vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
-            m_content[chrom][pos] = *entryPtr;
-            delete entryPtr;
+            m_content[chrom][pos] = vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
         
             chrom = "";
             tpos = "";

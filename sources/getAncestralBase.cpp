@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
         // now we have a string with "N" if not common
         std::string ref = entries[0].getSequence();
         for(int i(0); i<ref.size(); i++) {
-            if(consensus[i] != ref[i]) {
+            if(consensus[i] != ref[i] && ref[i] != 'N') { // no need to consider N on the ref side bc there already muted
                 // write mutation in file
                 std::string refS = "";
                 char commonBase = consensus[i];
