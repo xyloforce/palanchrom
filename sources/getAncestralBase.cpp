@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
         std::string tstring;
         for(int i(1); i < argc - 2; i++) {
             tstring = entries[i].getSequence();
-            for (int j(0); j < tstring.size(); j++) {
+            for (long j(0); j < tstring.size(); j++) {
                 if(tstring[j] != consensus[j]) {
                     consensus[j] = 'N';
                 }
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
         }
         // now we have a string with "N" if not common
         std::string ref = entries[0].getSequence();
-        for(int i(0); i<ref.size(); i++) {
+        for(long i(0); i<ref.size(); i++) {
             if(consensus[i] != ref[i] && ref[i] != 'N') { // no need to consider N on the ref side bc there already muted
                 // write mutation in file
                 std::string refS = "";

@@ -52,7 +52,7 @@ public:
     char getStrand();
     void trimSequence(int size, int end);
     void write_fasta_entry(std::ofstream& outputFile);
-    int getPos(int pos_sequence);
+    long getPos(long pos_sequence);
     fasta_entry subsetEntry(int begin, int end);
     int getSize();
     void editSeq(std::string edit, int start, int end);

@@ -67,7 +67,7 @@ void vcf::vcf_read()
     
     std::string chrom = "";
     std::string tpos = "";
-    int pos = 0;
+    long int pos = 0;
     std::string id = "";
     std::string ref = "";
     char alt;
@@ -115,7 +115,7 @@ void vcf::vcf_read()
             col ++;
         } else if(tchar == '\n' && col == 8) {
             col = 1;
-            pos = stoi(tpos);
+            pos = stol(tpos);
             if(tqual != ".") {
                 qual = stoi(tqual);
             } else {

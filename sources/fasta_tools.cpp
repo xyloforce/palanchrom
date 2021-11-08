@@ -170,7 +170,7 @@ void fasta_entry::write_fasta_entry(std::ofstream& outputFile)
     outputFile << m_sequence.getSequence() << '\n';
 }
 
-int fasta_entry::getPos(int pos_sequence)
+long fasta_entry::getPos(long pos_sequence)
 {
     if(m_header.getStrand() == '+') {
         return (m_header.getStart() + pos_sequence);

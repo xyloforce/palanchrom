@@ -19,7 +19,7 @@ public:
     void vcf_writeline(std::ofstream& output) const;
 private:
     std::string m_chrom;
-    int m_pos;
+    long m_pos;
     std::string m_id;
     std::string m_ref;
     char m_alt;

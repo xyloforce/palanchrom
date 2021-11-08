@@ -38,19 +38,28 @@ int main(int argc, char* argv[]) {
         }
         
         entry2.editSeq(N, 0, entry2.getSize());
-        std::cout << "Checking int..." << std::endl;
         
         std::map <int, bed_entry> currentInt = intervals.getBedByID(entry2.getChrom());
+        std::cout << "Checking int..." << currentInt.size() << " intervals left" << std::endl;
+        int count = 0;
+
         for(const auto &pair : currentInt) {
+            count ++;
             entry2.editSeq(
                 entry.subsetEntry(pair.second.getStart(), pair.second.getStop()).getSequence(),
                            pair.second.getStart(),
                            pair.second.getStop());
+            if(count % 100 == 0) {
+                std::cout << count << "         \r";
+            }
         }
+
+        count = 0;
         std::vector <vcf_entry> currentVCF = mutations.getVCFByID(entry2.getChrom());
         std::cout << "Checking mutations..." << currentVCF.size() << " mutations left" << std::endl;
         for(const auto &VCFentry : currentVCF) {
             temp = "";
+            count ++;
             // check old base
             int posMut = VCFentry.getPos();
             posMut --; // bc vcf are 1-based
@@ -61,6 +70,9 @@ int main(int argc, char* argv[]) {
             } else {
                 std::cout << "Ref is : " << VCFentry.get_ref() << " and current is : " << entry2.subsetEntry(posMut, posMut+1).getSequence() << " at pos : " << posMut << std::endl;
                 throw std::logic_error("Probable index issue");
+            }
+            if(count % 100 == 0) {
+                std::cout << count << "         \r";
             }
             
         }
