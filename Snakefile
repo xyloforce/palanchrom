@@ -105,7 +105,7 @@ rule getAncestralState:
         check = ".checkCompleted",
         chromSizes = "data/{species}.chrom.sizes"
     output:
-        "data/{ref}_ancestralBases.vcf"
+        "data/{species}_ancestralBases.vcf"
     shell:
         "./bin/getAncestralBase.bin {input.ref} {input.fasta} {output}"
 
