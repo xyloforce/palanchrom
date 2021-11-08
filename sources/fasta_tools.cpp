@@ -183,7 +183,7 @@ long fasta_entry::getPos(long pos_sequence)
         if(m_bedtools_type) {
             std::cout << "Undefined strand, using + as default" << std::endl;
         }
-        return (m_header.getStart() + pos_sequence);
+        return (m_header.getStart() + pos_sequence +1);
     }
 }
 
