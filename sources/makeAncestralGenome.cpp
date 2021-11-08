@@ -49,85 +49,23 @@ int main(int argc, char* argv[]) {
         }
         std::vector <vcf_entry> currentVCF = mutations.getVCFByID(entry2.getChrom());
         std::cout << "Checking mutations..." << std::endl;
-        for(const auto &pair : currentVCF) {
+        for(const auto &VCFentry : currentVCF) {
             temp = "";
             // check old base
-            int posMut = pair.getPos();
+            int posMut = VCFentry.getPos();
             posMut --; // bc vcf are 1-based
             std::cout<< entry2.getSequence() << std::endl;
-            if(entry2.subsetEntry(posMut, posMut+1).getSequence() == pair.get_ref()) {
-                temp += pair.get_alternate();
+            if(entry2.subsetEntry(posMut, posMut+1).getSequence() == VCFentry.get_ref()) {
+                temp += VCFentry.get_alternate();
                 entry2.editSeq(temp, posMut, posMut +1);
             } else {
-                std::cout << "Ref is : " << pair.get_ref() << " and current is : " << entry2.subsetEntry(posMut, posMut+1).getSequence() << " at pos : " << posMut << std::endl;
+                std::cout << "Ref is : " << VCFentry.get_ref() << " and current is : " << entry2.subsetEntry(posMut, posMut+1).getSequence() << " at pos : " << posMut << std::endl;
                 throw std::logic_error("Probable index issue");
             }
             
         }
         outputFasta.write_fasta_entry(entry2);
     }
-    /*
-    std::ifstream fasta(argv[3]);
-    std::ofstream ancestralFasta(argv[4]);
-    std::string header;
-    char tchar;
-    int start;
-    
-    const int size = 1000; // size of int to check for overlap with bed
-    
-    int count = 0;
-    bed_entry temp;
-    
-    while(!fasta.eof()) {
-        fasta.get(tchar);
-        if(tchar == '>') {
-            while(tchar != '\n') {
-                fasta.get(tchar);
-                if(tchar != '\n') {
-                    header += tchar;
-                }
-            }
-            start = 0;
-            ancestralFasta << '>' << header << '\n';
-        } else if(tchar != '\n') {
-            start ++;
-            // check if were in a bed region like on ten nt
-            // yes : check each time for mutations
-            // no : write N
-            // overlapping : write N until you reach the border
-            if(count == 0) {
-                temp = intervals.inInt(header, start, size);
-                if(temp == bed_entry()) {
-                    ancestralFasta << 'N';
-                    count = size;
-                } else if(start < temp.getStart()) {
-                    ancestralFasta << 'N';
-                    count = temp.getStart() - (start + 1);
-                } else {
-                    std::string tstring = "";
-                    // in all other cases i'm for now at last in the current int
-                    if(temp.getStrand() == '+') {
-                        tstring += tchar;
-                        char base = mutations.isMuted(header, start, tstring)[0];
-                        ancestralFasta << base;
-                    } else if(temp.getStrand() == '-') {
-                        tchar = reverseComp(tchar);
-                        tstring += tchar;
-                        char base = mutations.isMuted(header, start, tstring)[0];
-                        ancestralFasta << reverseComp(base);
-                    } else {
-                        std::cout << temp.getStrand() << std::endl;
-                        throw std::domain_error("Strand unset");
-                    }
-                }
-            } else {
-                ancestralFasta << 'N';
-                count --;
-            }
-        } else {
-            ancestralFasta << '\n';
-        }
-    }*/
     
     return 0;
 }

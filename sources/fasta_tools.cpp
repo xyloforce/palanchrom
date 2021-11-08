@@ -268,7 +268,7 @@ fasta_entry fasta::read_fasta_line()
     bool continueIter = true;
     bool currentHeader = true;
     
-    while(continueIter || !m_input.eof()) {
+    while(continueIter && !m_input.eof()) {
         m_input.get(tchar);
         if(tchar == '>' && currentHeader) {
             currentHeader = false;
@@ -296,7 +296,7 @@ fasta_entry fasta::read_fasta_line()
                 m_input.get(tchar);
             }
         } else if (tchar == '>') {
-            m_input.seekg(-2, std::ios::cur);
+            m_input.seekg(-1, std::ios::cur);
             continueIter = false;
         } else if(tchar != '\n') {
             sequence += tchar;
