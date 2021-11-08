@@ -297,6 +297,7 @@ fasta_entry fasta::read_fasta_line()
             }
         } else if (tchar == '>') {
             m_input.seekg(-2, std::ios::cur);
+            continueIter = false;
         } else if(tchar != '\n') {
             sequence += tchar;
         }
