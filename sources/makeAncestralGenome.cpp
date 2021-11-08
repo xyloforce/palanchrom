@@ -49,6 +49,8 @@ int main(int argc, char* argv[]) {
                 entry.subsetEntry(pair.second.getStart(), pair.second.getStop()).getSequence(),
                            pair.second.getStart(),
                            pair.second.getStop());
+            
+            std::cout << count << std::endl;
             if(count % 100 == 0) {
                 std::cout << count << "         \r";
             }
