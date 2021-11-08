@@ -101,7 +101,7 @@ rule getAncestralState:
 # will output file with headers and pos and seq set for the ref2 !!!
     input:
         fasta = expand("data/commonSeqs_{outgroups}.fa", outgroups = config["outgroups"]),
-        ref = "commonSeqs_{species}.fa",
+        ref = "data/commonSeqs_{species}.fa",
         check = ".checkCompleted",
         chromSizes = "data/{species}.chrom.sizes"
     output:
