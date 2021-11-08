@@ -177,6 +177,9 @@ int fasta_entry::getPos(int pos_sequence)
     } else if(m_header.getStrand() == '-') {
         return (m_header.getEnd() - pos_sequence);
     } else {
+        if(m_bedtools_type == true) {
+            
+        }
         std::cout << "Undefined strand, using + as default" << std::endl;
         return (m_header.getStart() + pos_sequence);
     }

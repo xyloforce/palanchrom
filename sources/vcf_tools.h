@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <fstream>
+#include <vector>
 
 std::string toUpper(std::string lower);
 
@@ -33,10 +34,10 @@ public:
     void vcf_writeline(vcf_entry entry_vcf);
 //     void vcf_writelines(std::string filename);
     void vcf_read();
-    std::string isMuted(std::string chrom, int pos, std::string ref_bases);
-    std::map <int, vcf_entry> getVCFByID(std::string id);
+    // std::string isMuted(std::string chrom, int pos, std::string ref_bases);
+    std::vector <vcf_entry> getVCFByID(std::string id);
 private:
-    std::map <std::string, std::map<int, vcf_entry>> m_content;
+    std::map <std::string, std::vector<vcf_entry>> m_content;
     bool m_isInit;
     std::ifstream m_input;
     std::ofstream m_output;

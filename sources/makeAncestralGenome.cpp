@@ -47,19 +47,19 @@ int main(int argc, char* argv[]) {
                            pair.second.getStart(),
                            pair.second.getStop());
         }
-        std::map <int, vcf_entry> currentVCF = mutations.getVCFByID(entry2.getChrom());
+        std::vector <vcf_entry> currentVCF = mutations.getVCFByID(entry2.getChrom());
         std::cout << "Checking mutations..." << std::endl;
         for(const auto &pair : currentVCF) {
             temp = "";
             // check old base
-            int posMut = pair.second.getPos();
+            int posMut = pair.getPos();
             posMut --; // bc vcf are 1-based
             std::cout<< entry2.getSequence() << std::endl;
-            if(entry2.subsetEntry(posMut, posMut+1).getSequence() == pair.second.get_ref()) {
-                temp += pair.second.get_alternate();
-                entry2.editSeq(temp, pair.first -1, pair.first);
+            if(entry2.subsetEntry(posMut, posMut+1).getSequence() == pair.get_ref()) {
+                temp += pair.get_alternate();
+                entry2.editSeq(temp, posMut, posMut +1);
             } else {
-                std::cout << "Ref is : " << pair.second.get_ref() << " and current is : " << entry2.subsetEntry(posMut, posMut+1).getSequence() << " at pos : " << posMut << std::endl;
+                std::cout << "Ref is : " << pair.get_ref() << " and current is : " << entry2.subsetEntry(posMut, posMut+1).getSequence() << " at pos : " << posMut << std::endl;
                 throw std::logic_error("Probable index issue");
             }
             

@@ -121,7 +121,7 @@ void vcf::vcf_read()
             } else {
                 qual = 0;
             }
-            m_content[chrom][pos] = vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
+            m_content[chrom].push_back(vcf_entry(chrom, pos, id, ref, alt, qual, filter, info));
         
             chrom = "";
             tpos = "";
@@ -153,31 +153,31 @@ vcf::vcf(std::string filename, bool read) {
     }
 }
  
-std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
-{
-    if (m_content.find(chrom) != m_content.end()) {
-        if (m_content[chrom].find(pos) != m_content[chrom].end()) {
-            if(m_content[chrom][pos].get_ref() == toUpper(ref_bases)) {
-                std::string tstring = "";
-                tstring += m_content[chrom][pos].get_alternate();
-                return tstring;
-            } else {
-                std::cout<<"Pos : "<< pos << " base is "<< ref_bases << " and expected is " << m_content[chrom][pos].get_ref() << std::endl;
-                throw std::logic_error("ref doesnt match current base");
-            }
-        } else {
-            return ref_bases;
-        }
-    } else {
-        return ref_bases;
-    }
-}
+// std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
+// {
+//     if (m_content.find(chrom) != m_content.end()) {
+//         if (m_content[chrom].find(pos) != m_content[chrom].end()) {
+//             if(m_content[chrom][pos].get_ref() == toUpper(ref_bases)) {
+//                 std::string tstring = "";
+//                 tstring += m_content[chrom][pos].get_alternate();
+//                 return tstring;
+//             } else {
+//                 std::cout<<"Pos : "<< pos << " base is "<< ref_bases << " and expected is " << m_content[chrom][pos].get_ref() << std::endl;
+//                 throw std::logic_error("ref doesnt match current base");
+//             }
+//         } else {
+//             return ref_bases;
+//         }
+//     } else {
+//         return ref_bases;
+//     }
+// }
 
 void vcf::vcf_writeline(vcf_entry entry_vcf) {
     entry_vcf.vcf_writeline(m_output);
 }
 
-std::map<int, vcf_entry> vcf::getVCFByID(std::string id)
+std::vector<vcf_entry> vcf::getVCFByID(std::string id)
 {
     return m_content[id];
 }
