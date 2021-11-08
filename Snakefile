@@ -44,7 +44,7 @@ rule intersect:
         sort -k1,1 -k2,2n $tempFile > {output}
         done
         """
-#TODO ADD OFFSET HERE BC LIFTOVER USES HALF OPEN INT AND BEDTOOLS USE OPEN ENDED ONES
+
 rule updateInterval:
     input:
         bed = "data/intersected.bed",
@@ -56,12 +56,14 @@ rule updateInterval:
 
 rule getFastas:
     output:
-        "data/{species}.fa"
+        "data/{species}.fa",
+        "data/{species}.chrom.sizes"
     wildcard_constraints:
         species="[A-Za-z\d]+"
     shell:
         """
         wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz' -P data/
+        wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.chrom.sizes' -P data/
         gunzip data/{wildcards.species}.fa.gz
         """
 
@@ -82,8 +84,6 @@ rule getSeqsFromInt:
         bed = "data/common" + config["speciesA"] + "Lift{species}.bed"
     output:
         fasta = "data/commonSeqs_{species}.fa"
-    wildcard_constraints:
-        species= config["speciesA"]
     shell:
         """
         bedtools getfasta -s -fi {input.fa} -bed {input.bed} > {output.fasta}
@@ -100,9 +100,10 @@ rule checkLength:
 rule getAncestralState:
 # will output file with headers and pos and seq set for the ref2 !!!
     input:
-        fasta = expand("data/commonSeqs_{species}.fa", species = [config["speciesB"],] + config["outgroups"]),
-        ref = rules.getSeqsRef.output,
-        check = ".checkCompleted"
+        fasta = expand("data/commonSeqs_{outgroups}.fa", outgroups = config["outgroups"]),
+        ref = "commonSeqs_{species}.fa",
+        check = ".checkCompleted",
+        chromSizes = "data/{species}.chrom.sizes"
     output:
         "data/{ref}_ancestralBases.vcf"
     shell:
