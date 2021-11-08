@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
             }
         }
         count ++;
-        if(count % 10 == 0) {
+        if(count % 1000 == 0) {
             std::cout << count << "                    \r";
         }
     }

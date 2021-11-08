@@ -53,6 +53,7 @@ int main(int argc, char* argv[]) {
                 std::cout << count << "         \r";
             }
         }
+        std::cout << std::endl;
 
         count = 0;
         std::vector <vcf_entry> currentVCF = mutations.getVCFByID(entry.getChrom());

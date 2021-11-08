@@ -172,8 +172,11 @@ void fasta_entry::write_fasta_entry(std::ofstream& outputFile)
 
 long fasta_entry::getPos(long pos_sequence)
 {
+    // beware : were 0-based and need to return 1-based pos
+    // for negative strand its ok bc the last pos is not included so it's like zero
+    // for plus strand need to add one
     if(m_header.getStrand() == '+') {
-        return (m_header.getStart() + pos_sequence);
+        return (m_header.getStart() + pos_sequence +1);
     } else if(m_header.getStrand() == '-') {
         return (m_header.getEnd() - pos_sequence);
     } else {
