@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
         for(int i(1); i < argc - 2; i++) {
             tstring = entries[i].getSequence();
             for (long j(0); j < tstring.size(); j++) {
-                if(tstring[j] != consensus[j]) {
+                if(toupper(tstring[j]) != toupper(consensus[j])) {
                     consensus[j] = 'N';
                 }
             }
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
         // now we have a string with "N" if not common
         std::string ref = entries[0].getSequence();
         for(long i(0); i<ref.size(); i++) {
-            if(consensus[i] != ref[i] && ref[i] != 'N') { // no need to consider N on the ref side bc there already muted
+            if(toupper(consensus[i]) != toupper(ref[i]) && toupper(ref[i]) != 'N') { // no need to consider N on the ref side bc there already muted
                 // write mutation in file
                 std::string refS = "";
                 char commonBase = consensus[i];
