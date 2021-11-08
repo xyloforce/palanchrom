@@ -265,10 +265,13 @@ fasta_entry fasta::read_fasta_line()
     
     int info = 0;
     bool notStrand = true;
+    bool continueIter = true;
+    bool currentHeader = true;
     
-    while(tchar != '\n' || !m_input.eof()) {
+    while(continueIter || !m_input.eof()) {
         m_input.get(tchar);
-        if(tchar == '>') {
+        if(tchar == '>' && currentHeader) {
+            currentHeader = false;
             while(tchar != '\n') {
                 if(m_bedtools_type) {
                     if(tchar == ':' || tchar == '(' || tchar == ')') {
@@ -292,6 +295,8 @@ fasta_entry fasta::read_fasta_line()
                 }
                 m_input.get(tchar);
             }
+        } else if (tchar == '>') {
+            m_input.seekg(-2, std::ios::cur);
         } else if(tchar != '\n') {
             sequence += tchar;
         }
