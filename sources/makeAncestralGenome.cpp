@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Started analysis" << std::endl;
     
     fasta inputFasta(argv[3], "read_line", false);
-    fasta outputFasta(argv[4], "write", true);
+    fasta outputFasta(argv[4], "write", false);
     fasta_entry entry;
     
     std::string temp = "";
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
                            pair.second.getStop());
         }
         std::vector <vcf_entry> currentVCF = mutations.getVCFByID(entry2.getChrom());
-        std::cout << "Checking mutations..." << std::endl;
+        std::cout << "Checking mutations..." << currentVCF.size() << " mutations left" << std::endl;
         for(const auto &VCFentry : currentVCF) {
             temp = "";
             // check old base

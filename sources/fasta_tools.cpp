@@ -177,10 +177,9 @@ int fasta_entry::getPos(int pos_sequence)
     } else if(m_header.getStrand() == '-') {
         return (m_header.getEnd() - pos_sequence);
     } else {
-        if(m_bedtools_type == true) {
-            
+        if(m_bedtools_type) {
+            std::cout << "Undefined strand, using + as default" << std::endl;
         }
-        std::cout << "Undefined strand, using + as default" << std::endl;
         return (m_header.getStart() + pos_sequence);
     }
 }
@@ -217,7 +216,9 @@ void fasta_entry::editSeq ( std::string edit, int start, int end )
     } else if (m_header.getStrand() == '-') {
         m_header.setStart(m_header.getStart() - editSize);
     } else {
-        std::cout << "Undefined strand, using + as default" << std::endl;
+        if(m_bedtools_type) {
+            std::cout << "Undefined strand, using + as default" << std::endl;
+        }
         m_header.setEnd(m_header.getEnd() + editSize);
     }
 }
