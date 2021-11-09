@@ -16,6 +16,9 @@ def getCorrectFile(wildcards):
     else:
         return "data/common" + config["speciesA"] + "Lift{species}.bed"
 
+def returnPath(wildcards):
+    return wildcards.species[0].toupper() + wildcards.species[1:]
+
 rule getDatFiles:
     output:
         path = directory("data/{species}"),
