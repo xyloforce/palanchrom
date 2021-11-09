@@ -1,23 +1,27 @@
 configfile: "config.yaml"
-ruleorder: getSeqsFromInt > getSeqsRef
+wildcard_constraints:
+    species = "\w+"
 
 rule all:
     input:
         "data/hg38_ancestralGenome.fasta",
         "data/panTro5_ancestralGenome.fasta"
 
-def getSpeciesFolder(wildcards):
-    return config["liftover"][wildcards.species]
-
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
 
+def getCorrectFile(wildcards):
+    if wildcards.species == config["speciesA"]:
+        return "intersected.bed"
+    else:
+        return "data/common" + config["speciesA"] + "Lift{species}.bed"
+
 rule getDatFiles:
     output:
-        path = directory("data/{species}")
+        path = directory("data/{species}"),
         interesting_stuff = directory("data/{species}/Non_Overlapping_regions/")
     params:
-        speciesA = config["speciesA"]
+        speciesA = config["speciesA"],
         currentSp = "{species}"
     shell:
         """
@@ -64,7 +68,7 @@ rule intersect:
 rule updateInterval:
     input:
         bed = "data/intersected.bed",
-        folder = getSpeciesFolder
+        folder = "data/{species}/Non_Overlapping_regions/"
     output:
         "data/common" + config["speciesA"] + "Lift{species}.bed"
     shell:
@@ -83,21 +87,10 @@ rule getFastas:
         gunzip data/{wildcards.species}.fa.gz
         """
 
-rule getSeqsRef:
-    input:
-        fa = "data/" + config["speciesA"] + ".fa",
-        bed = "data/intersected.bed"
-    output:
-        "data/commonSeqs_" + config["speciesA"] + ".fa"
-    shell:
-        """
-        bedtools getfasta -s -fi {input.fa} -bed {input.bed} > {output}
-        """
-
 rule getSeqsFromInt:
     input:
         fa = "data/{species}.fa",
-        bed = "data/common" + config["speciesA"] + "Lift{species}.bed"
+        bed = getCorrectFile
     output:
         fasta = "data/commonSeqs_{species}.fa"
     shell:
@@ -107,8 +100,7 @@ rule getSeqsFromInt:
 
 rule checkLength:
     input:
-        fasta = expand("data/commonSeqs_{species}.fa", species = [config["speciesB"],] + config["outgroups"]),
-        ref = rules.getSeqsRef.output
+        fasta = expand("data/commonSeqs_{species}.fa", species = [config["speciesB"],] + config["outgroups"] + [config["speciesA"],])
     output: touch(".checkCompleted")
     shell:
         "python3 scripts/checkLength.py {input}"
