@@ -17,7 +17,7 @@ def getCorrectFile(wildcards):
         return "data/common" + config["speciesA"] + "Lift{species}.bed"
 
 def correctWildcard(wildcards):
-    return wildcards.species[0].toupper() + wildcards.species[1:]
+    return wildcards.species[0].upper() + wildcards.species[1:]
 
 rule getDatFiles:
     output:
@@ -28,7 +28,7 @@ rule getDatFiles:
         currentSp = correctWildcard
     shell:
         """
-        wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}to{params.currentSp}.over.chain.gz
+        wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
         python3 scripts/getDatFiles.py -i {params.speciesA}to{params.currentSp}.over.chain.gz -o {output.path}
         """
 
