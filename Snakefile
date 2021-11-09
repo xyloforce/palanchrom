@@ -9,9 +9,25 @@ rule all:
 def getSpeciesFolder(wildcards):
     return config["liftover"][wildcards.species]
 
+def getLiftoverFile(wildcards):
+    return config["liftover"][wildcards.species]
+
+rule getDatFiles:
+    output:
+        path = directory("data/{species}")
+        interesting_stuff = directory("data/{species}/Non_Overlapping_regions/")
+    params:
+        speciesA = config["speciesA"]
+        currentSp = "{species}"
+    shell:
+        """
+        wget https://hgdownload.soe.ucsc.edu/goldenPath/{speciesA}/liftOver/{speciesA}to{currentSp}.over.chain.gz
+        python3 scripts/getDatFiles.py -i {speciesA}to{currentSp}.over.chain.gz -o {output.path}
+        """
+
 rule convert:
     input:
-        folder = getSpeciesFolder
+        folder = "data/{species}/Non_Overlapping_regions/"
     output:
         "data/" + config["speciesA"] + "Lift{species}.bed"
     shell:

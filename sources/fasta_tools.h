@@ -12,13 +12,13 @@ private:
     int m_stop;
     char m_strand;
 public:
-    char getStrand();
+    char getStrand() const;
     void setStart(int start);
     void setEnd(int stop);
-    int getStart();
-    int getEnd();
-    std::string getID();
-    std::string getID_full();
+    int getStart() const;
+    int getEnd() const;
+    std::string getID() const;
+    std::string getID_full() const;
     header(std::string chrom, int start, int stop, char strand);
     header();
 };
@@ -45,6 +45,7 @@ public:
     fasta_entry(std::string inputSeq, std::string id, int start, int stop, char strand, bool bedtools_type);
     fasta_entry();
     fasta_entry(sequence seq, header head, bool bedtools_type);
+    std::string getHeader() const;
     std::string getSequence();
     std::string getPluStrand();
     std::string getMinusStrand();

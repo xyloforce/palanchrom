@@ -11,7 +11,7 @@ header::header(std::string chrom, int start = 0, int stop = 0, char strand = 'U'
     m_strand = strand;
 }
 
-char header::getStrand()
+char header::getStrand() const
 {
     return m_strand;
 }
@@ -26,22 +26,22 @@ void header::setEnd(int stop)
     m_stop = stop;
 }
 
-int header::getEnd()
+int header::getEnd() const
 {
     return m_stop;
 }
 
-int header::getStart() {
+int header::getStart() const {
     return m_start;
 }
 
-std::string header::getID()
+std::string header::getID() const
 {
     return m_chrom;
 }
 
 
-std::string header::getID_full()
+std::string header::getID_full() const
 {
     return (m_chrom + std::to_string(m_start) + std::to_string(m_stop) + m_strand);
 }
@@ -85,8 +85,6 @@ sequence sequence::subsetSequence ( int begin, int end )
     sequence tSeq(tString);
     return tSeq;
 }
-
-
 
 fasta_entry::fasta_entry(std::string inputSeq, std::string id, int start = 0, int stop = 0, char strand = 'U', bool bedtools_type = false)
 {
@@ -142,6 +140,12 @@ std::string fasta_entry::getSequence()
     return m_sequence.getSequence();
 }
 
+std::string fasta_entry::getHeader() const
+{
+    return m_header.getID_full();
+}
+
+
 void fasta_entry::trimSequence(int size, int end)
 {
     std::string seq = m_sequence.getSequence();
@@ -166,7 +170,7 @@ void fasta_entry::trimSequence(int size, int end)
 
 void fasta_entry::write_fasta_entry(std::ofstream& outputFile)
 {
-    outputFile << m_header.getID() << ":" << m_header.getStart() << "-" << m_header.getEnd() << "(" << m_header.getStrand() << ")" << '\n';
+    outputFile << ">" << m_header.getID() << ":" << m_header.getStart() << "-" << m_header.getEnd() << "(" << m_header.getStrand() << ")" << '\n';
     outputFile << m_sequence.getSequence() << '\n';
 }
 
@@ -211,9 +215,9 @@ int fasta_entry::getSize()
 void fasta_entry::editSeq ( std::string edit, int start, int end )
 {
     std::string seq = m_sequence.getSequence();
+    int editSize = seq.size() - (end - start);
     seq.replace(start, end - start, edit);
     m_sequence.setSequence(seq);
-    int editSize = seq.size() - (end - start);
     if(m_header.getStrand() == '+') {
         m_header.setEnd(m_header.getEnd() + editSize);
     } else if (m_header.getStrand() == '-') {

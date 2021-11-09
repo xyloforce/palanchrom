@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
     
     while(!inputFasta.isEOF()) {
         entry = inputFasta.read_fasta_line();
+        std::cout << entry.getHeader() << " " << entry.getSize() << std::endl;
         // for each entry in bed
         // subset entry accordingly
         // get seq
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]) {
         //fasta_entry entry2 = entry;
         // std::string N = "";
         for(int i(0); i< entry.getSize(); i++) {
-            sequence += 'N';
+            sequence += 'n';
         }
         
         // entry2.editSeq(N, 0, entry2.getSize());
@@ -47,14 +48,15 @@ int main(int argc, char* argv[]) {
         for(const auto &pair : currentInt) {
             count ++;
             int size(pair.second.getStop()-pair.second.getStart());
-            sequence.replace(pair.second.getStart(),  size, entry.subsetEntry(pair.second.getStart(), pair.second.getStop()).getSequence());
+            // first arg is POS of char so it's zero based
+            sequence.replace(pair.second.getStart(), size, entry.subsetEntry(pair.second.getStart(), pair.second.getStop()).getSequence());
 
             if(count % 1000 == 0) {
                 std::cout << count << "         \r";
             }
         }
         std::cout << std::endl;
-
+        std::cout << sequence.size() << "    " << entry.getSize() << std::endl;
         count = 0;
         std::vector <vcf_entry> currentVCF = mutations.getVCFByID(entry.getChrom());
         std::cout << "Checking mutations..." << currentVCF.size() << " mutations left" << std::endl;
@@ -70,7 +72,7 @@ int main(int argc, char* argv[]) {
             if(strBase == VCFentry.get_ref()) {
                 sequence[posMut] = VCFentry.get_alternate();
             } else {
-                std::cout << "Ref is : " << VCFentry.get_ref() << " and current is : " << sequence[posMut] << " at pos : " << posMut << std::endl;
+                std::cout << "Ref is : " << VCFentry.get_ref() << " and current is : " << sequence.substr(posMut -2, 4) << " at pos : " << posMut << std::endl;
                 throw std::logic_error("Probable index issue");
             }
             if(count % 100 == 0) {
