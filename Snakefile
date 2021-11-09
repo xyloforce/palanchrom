@@ -26,7 +26,7 @@ rule getDatFiles:
     params:
         speciesA = config["speciesA"],
         currentSp = correctWildcard
-    shadow: shallow
+    shadow: "shallow"
     shell:
         """
         wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
@@ -84,6 +84,7 @@ rule getFastas:
         "data/{species}.chrom.sizes"
     wildcard_constraints:
         species="[A-Za-z\d]+"
+    shadow: "shallow"
     shell:
         """
         wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz' -P data/
