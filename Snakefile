@@ -25,8 +25,8 @@ rule getDatFiles:
         currentSp = "{species}"
     shell:
         """
-        wget https://hgdownload.soe.ucsc.edu/goldenPath/{speciesA}/liftOver/{speciesA}to{currentSp}.over.chain.gz
-        python3 scripts/getDatFiles.py -i {speciesA}to{currentSp}.over.chain.gz -o {output.path}
+        wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}to{params.currentSp}.over.chain.gz
+        python3 scripts/getDatFiles.py -i {params.speciesA}to{params.currentSp}.over.chain.gz -o {output.path}
         """
 
 rule convert:
