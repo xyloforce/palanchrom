@@ -12,7 +12,7 @@ def getLiftoverFile(wildcards):
 
 def getCorrectFile(wildcards):
     if wildcards.species == config["speciesA"]:
-        return "intersected.bed"
+        return "data/intersected.bed"
     else:
         return "data/common" + config["speciesA"] + "Lift{species}.bed"
 
@@ -20,13 +20,13 @@ def correctWildcard(wildcards):
     return wildcards.species[0].upper() + wildcards.species[1:]
 
 rule getDatFiles:
+    shadow: "shallow"
     output:
         path = directory("data/{species}"),
         interesting_stuff = directory("data/{species}/Non_Overlapping_regions/")
     params:
         speciesA = config["speciesA"],
         currentSp = correctWildcard
-    shadow: "shallow"
     shell:
         """
         wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
