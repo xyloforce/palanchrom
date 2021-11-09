@@ -26,10 +26,11 @@ rule getDatFiles:
     params:
         speciesA = config["speciesA"],
         currentSp = correctWildcard
+    shadow: shallow
     shell:
         """
         wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
-        python3 scripts/getDatFiles.py -i {params.speciesA}to{params.currentSp}.over.chain.gz -o {output.path}
+        python3 scripts/getDatFiles.py -i {params.speciesA}To{params.currentSp}.over.chain.gz -o {output.path}
         """
 
 rule convert:
