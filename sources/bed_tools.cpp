@@ -285,7 +285,7 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
                     col ++;
                     break;
                 default:
-                    std::cout << "Skipping chars" << std::endl;
+                    std::cout << tchar << "Skipping chars" << std::endl;
                     break;
             }
         } else if(tchar == '\t') {
