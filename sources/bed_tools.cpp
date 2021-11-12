@@ -248,6 +248,7 @@ minimal_sorted_bed::minimal_sorted_bed(std::string filename) {
             std::cout << index << "         \r";
         }
     }
+    std::cout << "Finished loading file" << std::endl;
 }
 
 std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() {

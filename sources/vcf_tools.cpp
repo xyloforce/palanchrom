@@ -133,7 +133,7 @@ void vcf::vcf_read()
             info = "";
             index ++;
         
-            if(index % 100 == 0) {
+            if(index % 1000 == 0) {
                 std::cout << index << "         \r";
             }
         } else if(tchar == '#') {
