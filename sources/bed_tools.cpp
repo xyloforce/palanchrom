@@ -262,6 +262,7 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
     while(tchar != '\n') {
         // file is chrom start stop name strand
         m_input.get(tchar);
+        std::cout << tchar << std::endl;
         
         if(tchar != '\t') {
             switch(col) {
