@@ -259,10 +259,9 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
     std::string chrom = "";
     std::string tstart(""), tstop("");
 
-    while(tchar != '\n') {
+    while(tchar != '\n' && tchar != EOF) {
         // file is chrom start stop name strand
         m_input.get(tchar);
-        std::cout << tchar << std::endl;
         
         if(tchar != '\t') {
             switch(col) {
@@ -295,17 +294,16 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
         std::get<2>(output) = stoi(tstart);
         std::get<3>(output) = stoi(tstop);
         std::get<4>(output) = strand;
-        return output;
     } else if(col == 3) {
         std::get<1>(output) = chrom;
         std::get<2>(output) = stoi(tstart);
         std::get<3>(output) = stoi(tstop);
         std::get<4>(output) = '+';
-        return output;
     } else {
         std::cout << "Expected 3 or 6 columns, found " << col << std::endl;
         throw std::domain_error("incorrect number of cols");
     }
+    return output;
 }
 
 std::map <std::array <int, 3>, bed_entry> minimal_sorted_bed::getBedByID(std::string id) {
