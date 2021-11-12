@@ -216,7 +216,7 @@ void sorted_bed::readBed() {
         key[0] = entry.getStart();
         key[1] = entry.getStop() - entry.getStart();
         key[2] = entry.getStrand();
-        m_indexes[entry.getID()][key] = entry;
+        m_indexes[entry.getID()][key] = index;
         m_content.push_back(entry);
         index ++;
     }
@@ -225,7 +225,7 @@ void sorted_bed::readBed() {
 std::map <std::array <int, 3>, bed_entry> sorted_bed::getBedByID(std::string id) {
     std::map <std::array <int, 3>, bed_entry> output;
     for (const auto &pair : m_indexes[id]) {
-        output[pair.first] = pair.second;
+        output[pair.first] = m_content[pair.second];
     }
     return output;
 }

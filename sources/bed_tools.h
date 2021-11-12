@@ -46,7 +46,7 @@ public:
     void readBed();
     std::map <std::array <int, 3>, bed_entry> getBedByID(std::string id);
 private:
-    std::map <std::string, std::map <std::array <int, 3>, bed_entry>> m_indexes;
+    std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
 };
 
 #endif
