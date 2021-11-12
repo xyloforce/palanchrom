@@ -43,7 +43,7 @@ std::string header::getID() const
 
 std::string header::getID_full() const
 {
-    return (m_chrom + std::to_string(m_start) + std::to_string(m_stop) + m_strand);
+    return (m_chrom + " " + std::to_string(m_start) + " " + std::to_string(m_stop) + " " + m_strand);
 }
 
 header::header() {}

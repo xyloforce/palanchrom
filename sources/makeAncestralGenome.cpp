@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Loading vcf... " << std::endl;
     vcf mutations(argv[1], true);
     std::cout << "Loading bed... " << std::endl; 
-    bed intervals(argv[2], true);
+    sorted_bed intervals(argv[2]);
     std::cout << "Started analysis" << std::endl;
     
     fasta inputFasta(argv[3], "read_line", false);
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
         
         // entry2.editSeq(N, 0, entry2.getSize());
         
-        std::map <int, bed_entry> currentInt = intervals.getBedByID(entry.getChrom());
+        std::map <std::array <int, 3>, bed_entry> currentInt = intervals.getBedByID(entry.getChrom());
         std::cout << "Checking int..." << currentInt.size() << " intervals left" << std::endl;
         int count = 0;
 

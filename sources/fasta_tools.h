@@ -66,6 +66,7 @@ private:
     std::ofstream m_output;
     bool m_bedtools_type;
     bool m_read;
+    bool m_warned;
 public:
     fasta(std::string filename, std::string read, bool bedtools_type);
     fasta();

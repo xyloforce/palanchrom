@@ -54,6 +54,11 @@ int main(int argc, char* argv[])
                 } else {
                     refS += ref[i];
                 }
+                if(entries[0].getPos(i) == 222264770) {
+                    for(int entry(0); entry < argc -2; entry ++) {
+                        std::cout << entries[entry].getHeader() << std::endl;
+                    }
+                }
                 outputFile.vcf_writeline(vcf_entry(entries[0].getChrom(), entries[0].getPos(i), ".", refS, commonBase));
             }
         }
