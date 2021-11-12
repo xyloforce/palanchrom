@@ -98,7 +98,7 @@ bed_entry bed::redBedLine() {
     int score = 0;
     bool strandUndefined = true;
 
-    while(tchar != '\n' && tchar != EOF) {
+    while(tchar != '\n' && !m_input.eof()) {
         // file is chrom start stop name strand
         m_input.get(tchar);
         
