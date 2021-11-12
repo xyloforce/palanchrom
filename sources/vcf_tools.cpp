@@ -123,7 +123,7 @@ vcf_entry vcf::readVCFLine()
             }
         }
     }
-    if(col > 7) {
+    if(col > 6) {
         pos = stol(tpos);
         if(tqual != ".") {
             qual = stoi(tqual);
