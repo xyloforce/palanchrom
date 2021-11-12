@@ -256,6 +256,7 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
     std::get <0>(output) = m_input.tellg();
     int col = 1;
     char tchar = '\0';
+    bool strandUndefined = true;
     char strand;
     std::string chrom = "";
     std::string tstart(""), tstop("");
@@ -280,7 +281,12 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
                 case 5:
                     break;
                 case 6:
-                    strand = tchar;
+                    if(strandUndefined) {
+                        strand = tchar;
+                        strandUndefined = false;
+                    } else {
+                        throw std::logic_error("i was right");
+                    }
                     break;
                 default:
                     throw std::domain_error("more than 6 cols");
