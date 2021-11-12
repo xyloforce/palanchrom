@@ -244,19 +244,13 @@ fasta::fasta(std::string filename, std::string read, bool bedtools_type)
     m_bedtools_type = bedtools_type;
     if(read == "read") {
         m_input = std::ifstream(filename);
-        read_fasta();
+        while(!m_input.eof()) {
+            m_content.push_back(read_fasta_line());
+        }
     } else if(read == "read_line") {
         m_input = std::ifstream(filename);
     } else if(read == "write") {
         m_output = std::ofstream(filename);
-    }
-}
-
-
-void fasta::read_fasta()
-{
-    while(!m_input.eof()) {
-        m_content.push_back(read_fasta_line());
     }
 }
 

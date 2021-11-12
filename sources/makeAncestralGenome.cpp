@@ -69,10 +69,10 @@ int main(int argc, char* argv[]) {
             std::string strBase = "";
             strBase += sequence[posMut];
 
-            if(strBase == VCFentry.get_ref()) {
-                sequence[posMut] = VCFentry.get_alternate();
+            if(strBase == VCFentry.getRef()) {
+                sequence[posMut] = VCFentry.getAlternate();
             } else {
-                std::cout << "Ref is : " << VCFentry.get_ref() << " and current is : " << sequence.substr(posMut -2, 4) << " at pos : " << posMut << std::endl;
+                std::cout << "Ref is : " << VCFentry.getRef() << " and current is : " << sequence.substr(posMut -2, 4) << " at pos : " << posMut << std::endl;
                 throw std::logic_error("Probable index issue");
             }
             if(count % 100 == 0) {

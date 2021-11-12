@@ -29,16 +29,19 @@ vcf_entry::vcf_entry()
 }
 
 
-char vcf_entry::get_alternate() const
+char vcf_entry::getAlternate() const
 {
     return m_alt;
 }
 
-std::string vcf_entry::get_ref() const
+std::string vcf_entry::getRef() const
 {
     return m_ref;
 }
 
+std::string vcf_entry::getChrom() const {
+    return m_chrom;
+}
 
 std::string vcf_entry::getAttributeString() const
 {
@@ -59,7 +62,7 @@ int vcf_entry::getPos() const
 }
 
 
-void vcf::vcf_read()
+vcf_entry vcf::readVCFLine()
 {
     std::string line;
     char tchar;
@@ -77,7 +80,7 @@ void vcf::vcf_read()
     std::string filter = "";
     std::string info = "";
     
-    while(!m_input.eof()) {
+    while(tchar != '\n' && !m_input.eof()) {
         // file is chrom pos id ref alt qual filter info
         m_input.get(tchar);
         
@@ -114,44 +117,40 @@ void vcf::vcf_read()
             }
         } else if(tchar == '\t') {
             col ++;
-        } else if(tchar == '\n' && col == 8) {
-            col = 1;
-            pos = stol(tpos);
-            if(tqual != ".") {
-                qual = stoi(tqual);
-            } else {
-                qual = 0;
-            }
-            m_content[chrom].push_back(vcf_entry(chrom, pos, id, ref, alt, qual, filter, info));
-        
-            chrom = "";
-            tpos = "";
-            id = "";
-            ref = "";
-            tqual = "";
-            filter = "";
-            info = "";
-            index ++;
-        
-            if(index % 1000 == 0) {
-                std::cout << index << "         \r";
-            }
         } else if(tchar == '#') {
             while(tchar != '\n') {
                 m_input.get(tchar);
             }
-        } else {
-            std::cout << "Skipped line" << std::endl;
-            std::cout << "If it happens more than once, that's a bad sign, sry :/" << std::endl;
         }
     }
+
+    pos = stol(tpos);
+    if(tqual != ".") {
+        qual = stoi(tqual);
+    } else {
+        qual = 0;
+    }
+
+    return vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
     // init m_content
 }
 
 vcf::vcf(std::string filename, bool read) {
     if(read) {
+        int index = 0;
         m_input = std::ifstream(filename);
-        vcf::vcf_read();
+        while(!m_input.eof()) {
+            index ++;
+            readVCFLine();
+            vcf_entry entry = readVCFLine();
+            m_content.push_back(entry);
+            std::tuple <int, std::string, char> description(entry.getPos(), entry.getRef(), entry.getAlternate());
+            m_indexes[entry.getChrom()][description] = index;
+            if(index % 1000 == 0) {
+                std::cout << index << "           \r";
+            }
+        }
+        std::cout << std::endl;
     } else {
         m_output = std::ofstream(filename);
         m_output <<"##fileformat=VCFv4.2\n";
@@ -163,12 +162,12 @@ vcf::vcf(std::string filename, bool read) {
 // {
 //     if (m_content.find(chrom) != m_content.end()) {
 //         if (m_content[chrom].find(pos) != m_content[chrom].end()) {
-//             if(m_content[chrom][pos].get_ref() == toUpper(ref_bases)) {
+//             if(m_content[chrom][pos].getRef() == toUpper(ref_bases)) {
 //                 std::string tstring = "";
-//                 tstring += m_content[chrom][pos].get_alternate();
+//                 tstring += m_content[chrom][pos].getAlternate();
 //                 return tstring;
 //             } else {
-//                 std::cout<<"Pos : "<< pos << " base is "<< ref_bases << " and expected is " << m_content[chrom][pos].get_ref() << std::endl;
+//                 std::cout<<"Pos : "<< pos << " base is "<< ref_bases << " and expected is " << m_content[chrom][pos].getRef() << std::endl;
 //                 throw std::logic_error("ref doesnt match current base");
 //             }
 //         } else {
@@ -185,5 +184,9 @@ void vcf::vcf_writeline(vcf_entry entry_vcf) {
 
 std::vector<vcf_entry> vcf::getVCFByID(std::string id)
 {
-    return m_content[id];
+    std::vector <vcf_entry> results;
+    for (const auto &pair: m_indexes[id]) {
+        results.push_back(m_content[pair.second]);
+    }
+    return results;
 }

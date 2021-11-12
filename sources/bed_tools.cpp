@@ -80,11 +80,14 @@ bed::bed ( std::string filename, bool read )
 {
     if(read) {
         m_input = std::ifstream(filename);
-        readBed();
+        while(!m_input.eof()) {
+        // file is chrom start stop name strand
+            m_content.push_back(readBedLine());
+        }
     }
 }
 
-bed_entry bed::redBedLine() {
+bed_entry bed::readBedLine() {
     char tchar = '\0';
     std::string tstart = "";
     std::string tstop = "";
@@ -102,7 +105,7 @@ bed_entry bed::redBedLine() {
         // file is chrom start stop name strand
         m_input.get(tchar);
         
-        if(tchar != '\t') {
+        if(tchar != '\t' && tchar != '\n') {
             switch(col) {
                 case 1:
                     chrom += tchar;
@@ -148,14 +151,6 @@ bed_entry bed::redBedLine() {
             score = 0;
         }
         return bed_entry(chrom, start, stop, name, score, strand);
-    }
-}
-
-void bed::readBed ()
-{
-    while(!m_input.eof()) {
-        // file is chrom start stop name strand
-        m_content.push_back(redBedLine());
     }
 }
 
@@ -208,13 +203,9 @@ sorted_bed::sorted_bed() {}
 
 sorted_bed::sorted_bed(std::string filename) {
     m_input = std::ifstream(filename);
-    readBed();
-}
-
-void sorted_bed::readBed() {
     int index = 0;
     while(!m_input.eof()) {
-        bed_entry entry = redBedLine();
+        bed_entry entry = readBedLine();
         std::array <int, 3> key;
         key[0] = entry.getStart();
         key[1] = entry.getStop() - entry.getStart();
@@ -222,7 +213,12 @@ void sorted_bed::readBed() {
         m_indexes[entry.getID()][key] = index;
         m_content.push_back(entry);
         index ++;
+
+        if(index % 1000 == 0) {
+            std::cout << index << "         \r";
+        }
     }
+    std::cout << std::endl;
 }
 
 std::map <std::array <int, 3>, bed_entry> sorted_bed::getBedByID(std::string id) {
@@ -266,7 +262,7 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
         // file is chrom start stop name strand
         m_input.get(tchar);
         
-        if(tchar != '\t') {
+        if(tchar != '\t' && tchar != '\n') {
             switch(col) {
                 case 1:
                     chrom += tchar;
@@ -286,6 +282,7 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
                     col ++;
                     break;
                 default:
+                    std::cout << "Skipping chars" << std::endl;
                     break;
             }
         } else if(tchar == '\t') {
@@ -317,7 +314,7 @@ std::map <std::array <int, 3>, bed_entry> minimal_sorted_bed::getBedByID(std::st
     for (const auto &pair : m_indexes[id]) {
         int posLine = m_content[pair.second];
         m_input.seekg(posLine, std::ios::beg);
-        bed_entry line = bed::redBedLine();
+        bed_entry line = bed::readBedLine();
         output[pair.first] = line;
     }
     return output;

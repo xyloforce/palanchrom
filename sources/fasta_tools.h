@@ -70,7 +70,6 @@ private:
 public:
     fasta(std::string filename, std::string read, bool bedtools_type);
     fasta();
-    void read_fasta();
     fasta_entry read_fasta_line();
     void write_fasta_entry(fasta_entry entry);
     bool isEOF() const;

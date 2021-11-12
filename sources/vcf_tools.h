@@ -12,9 +12,10 @@ class vcf_entry {
 public:
     vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual = 0, std::string filter = ".", std::string info = ".");
     vcf_entry();
-    char get_alternate() const;
-    std::string get_ref() const;
+    char getAlternate() const;
+    std::string getRef() const;
     std::string getAttributeString() const;
+    std::string getChrom() const;
     int getPos() const;
     void vcf_writeline(std::ofstream& output) const;
 private:
@@ -33,11 +34,12 @@ public:
     vcf(std::string filename, bool read);
     void vcf_writeline(vcf_entry entry_vcf);
 //     void vcf_writelines(std::string filename);
-    void vcf_read();
+    vcf_entry readVCFLine();
     // std::string isMuted(std::string chrom, int pos, std::string ref_bases);
     std::vector <vcf_entry> getVCFByID(std::string id);
 private:
-    std::map <std::string, std::vector<vcf_entry>> m_content;
+    std::vector<vcf_entry> m_content;
+    std::map <std::string, std::map <std::tuple <int, std::string, char>, int>> m_indexes; 
     bool m_isInit;
     std::ifstream m_input;
     std::ofstream m_output;

@@ -29,8 +29,7 @@ class bed {
 public:
     bed();
     bed(std::string filename, bool read);
-    void readBed();
-    bed_entry redBedLine();
+    bed_entry readBedLine();
     bed_entry inInt(std::string chrom, int pos, int size);
     std::map <std::string, bed_entry> getBedByID(std::string id) const;
 protected:
