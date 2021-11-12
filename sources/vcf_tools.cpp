@@ -64,6 +64,7 @@ void vcf::vcf_read()
     std::string line;
     char tchar;
     int col = 1;
+    int index = 0;
     
     std::string chrom = "";
     std::string tpos = "";
@@ -137,6 +138,11 @@ void vcf::vcf_read()
         } else {
             std::cout << "Skipped line" << std::endl;
             std::cout << "If it happens more than once, that's a bad sign, sry :/" << std::endl;
+        }
+        index ++;
+        
+        if(index % 100 == 0) {
+            std::cout << index << "         \r";
         }
     }
     // init m_content

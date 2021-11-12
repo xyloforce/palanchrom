@@ -243,6 +243,10 @@ minimal_sorted_bed::minimal_sorted_bed(std::string filename) {
         key[3] = std::get <4>(inputLine);
         m_indexes[std::get <1>(inputLine)][key] = index;
         index ++;
+
+        if(index % 100 == 0) {
+            std::cout << index << "         \r";
+        }
     }
 }
 
