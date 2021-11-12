@@ -96,8 +96,9 @@ bed_entry bed::redBedLine() {
     int start = 0;
     int stop = 0;
     int score = 0;
+    bool strandUndefined = true;
 
-    while(tchar != '\n') {
+    while(tchar != '\n' && strandUndefined) {
         // file is chrom start stop name strand
         m_input.get(tchar);
         
@@ -120,16 +121,24 @@ bed_entry bed::redBedLine() {
                     break;
                 case 6:
                     strand = tchar;
+                    col ++;
                     break;
                 default:
-                    throw std::domain_error("more than 6 cols");
+                    std::cout << "Skipping chars" << std::endl;
                     break;
             }
         } else if(tchar == '\t') {
             col ++;
         }
     }
-    if (col == 6) {
+    if (col == 3) {
+        start = stoi(tstart);
+        stop = stoi(tstop);
+            
+        return bed_entry(chrom, start, stop, ".", 0, '+');
+    } else if (col < 3) {
+        throw std::domain_error("insufficient number of cols");
+    } else {
         start = stoi(tstart);
         stop = stoi(tstop);
         if(tscore != ".") {
@@ -138,14 +147,6 @@ bed_entry bed::redBedLine() {
             score = 0;
         }
         return bed_entry(chrom, start, stop, name, score, strand);
-    } else if(col == 3) {
-        start = stoi(tstart);
-        stop = stoi(tstop);
-            
-        return bed_entry(chrom, start, stop, ".", 0, '+');
-    } else {
-        std::cout << "Expected 3 or 6 columns, found " << col << std::endl;
-        throw std::domain_error("incorrect number of cols");
     }
 }
 
@@ -256,12 +257,11 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
     std::get <0>(output) = m_input.tellg();
     int col = 1;
     char tchar = '\0';
-    bool strandUndefined = true;
     char strand;
     std::string chrom = "";
     std::string tstart(""), tstop("");
 
-    while(tchar != '\n' && strandUndefined) {
+    while(tchar != '\n') {
         // file is chrom start stop name strand
         m_input.get(tchar);
         
@@ -281,32 +281,29 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
                 case 5:
                     break;
                 case 6:
-                    if(strandUndefined) {
-                        strand = tchar;
-                        strandUndefined = false;
-                    }
+                    strand = tchar;
+                    col ++;
                     break;
                 default:
-                    throw std::domain_error("more than 6 cols");
+                    std::cout << "Skipping chars" << std::endl;
                     break;
             }
         } else if(tchar == '\t') {
             col ++;
         }
     }
-    if (col == 6) {
-        std::get<1>(output) = chrom;
-        std::get<2>(output) = stoi(tstart);
-        std::get<3>(output) = stoi(tstop);
-        std::get<4>(output) = strand;
-    } else if(col == 3) {
+    if (col == 3) {
         std::get<1>(output) = chrom;
         std::get<2>(output) = stoi(tstart);
         std::get<3>(output) = stoi(tstop);
         std::get<4>(output) = '+';
+    } else if (col < 3) {
+        throw std::domain_error("insufficient number of cols");
     } else {
-        std::cout << "Expected 3 or 6 columns, found " << col << std::endl;
-        throw std::domain_error("incorrect number of cols");
+        std::get<1>(output) = chrom;
+        std::get<2>(output) = stoi(tstart);
+        std::get<3>(output) = stoi(tstop);
+        std::get<4>(output) = strand;
     }
     return output;
 }
