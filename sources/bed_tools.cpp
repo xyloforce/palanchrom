@@ -209,6 +209,7 @@ sorted_bed::sorted_bed(std::string filename) {
 }
 
 void sorted_bed::readBed() {
+    int index = 0;
     while(!m_input.eof()) {
         bed_entry entry = redBedLine();
         std::array <int, 3> key;
@@ -217,6 +218,7 @@ void sorted_bed::readBed() {
         key[2] = entry.getStrand();
         m_indexes[entry.getID()][key] = entry;
         m_content.push_back(entry);
+        index ++;
     }
 }
 
