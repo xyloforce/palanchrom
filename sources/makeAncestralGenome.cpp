@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
             if(strBase == VCFentry.getRef()) {
                 sequence[posMut] = VCFentry.getAlternate();
             } else {
-                std::cout << "Ref is : " << VCFentry.getRef() << " and current is : " << sequence.substr(posMut -2, 4) << " at pos : " << posMut << std::endl;
+                std::cout << "Ref is : " << VCFentry.getRef() << " and current is : " << sequence.substr(posMut -2, 4) << " at pos : " << posMut << " or as in vcf " << VCFentry.getPos() << std::endl;
                 throw std::logic_error("Probable index issue");
             }
             if(count % 100 == 0) {
