@@ -132,7 +132,7 @@ vcf_entry vcf::readVCFLine()
         }
         return vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
     } else {
-        std::cout << "Skipping empty line" << std::endl;
+        std::cout << "Incorrect nmber of cols : " << col << " , skipping empty line" << std::endl;
         return vcf_entry();
     }
 }
