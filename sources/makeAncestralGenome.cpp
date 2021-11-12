@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
             std::string strBase = "";
             strBase += sequence[posMut];
 
-            if(strBase == VCFentry.getRef()) {
+            if(toUpper(strBase) == toUpper(VCFentry.getRef())) {
                 sequence[posMut] = VCFentry.getAlternate();
             } else {
                 std::cout << "Ref is : " << VCFentry.getRef() << " and current is : " << sequence.substr(posMut -2, 4) << " at pos : " << posMut << " or as in vcf " << VCFentry.getPos() << std::endl;
