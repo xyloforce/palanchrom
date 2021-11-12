@@ -98,7 +98,7 @@ bed_entry bed::redBedLine() {
     int score = 0;
     bool strandUndefined = true;
 
-    while(tchar != '\n' && strandUndefined) {
+    while(tchar != '\n' && tchar != EOF) {
         // file is chrom start stop name strand
         m_input.get(tchar);
         
@@ -261,7 +261,7 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
     std::string chrom = "";
     std::string tstart(""), tstop("");
 
-    while(tchar != '\n') {
+    while(tchar != '\n' && tchar != EOF) {
         // file is chrom start stop name strand
         m_input.get(tchar);
         
