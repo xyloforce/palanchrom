@@ -56,7 +56,6 @@ int main(int argc, char* argv[]) {
             }
         }
         std::cout << std::endl;
-        std::cout << sequence.size() << "    " << entry.getSize() << std::endl;
         count = 0;
         std::vector <vcf_entry> currentVCF = mutations.getVCFByID(entry.getChrom());
         std::cout << "Checking mutations..." << currentVCF.size() << " mutations left" << std::endl;

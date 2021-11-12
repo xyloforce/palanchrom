@@ -142,12 +142,11 @@ vcf::vcf(std::string filename, bool read) {
         int index = 0;
         m_input = std::ifstream(filename);
         while(!m_input.eof()) {
-            index ++;
-            readVCFLine();
             vcf_entry entry = readVCFLine();
             m_content.push_back(entry);
             std::tuple <int, std::string, char> description(entry.getPos(), entry.getRef(), entry.getAlternate());
             m_indexes[entry.getChrom()][description] = index;
+            index ++;
             if(index % 1000 == 0) {
                 std::cout << index << "           \r";
             }
