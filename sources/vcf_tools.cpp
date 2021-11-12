@@ -123,8 +123,12 @@ vcf_entry vcf::readVCFLine()
             }
         }
     }
+    if(tpos == "") {
+        pos = 0;
+    } else {
+        pos = stol(tpos);
+    }
 
-    pos = stol(tpos);
     if(tqual != ".") {
         qual = stoi(tqual);
     } else {
