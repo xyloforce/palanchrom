@@ -137,7 +137,8 @@ bed_entry bed::redBedLine() {
             
         return bed_entry(chrom, start, stop, ".", 0, '+');
     } else if (col < 3) {
-        throw std::domain_error("insufficient number of cols");
+        std::cout << "incorrect line, returning empty entry" << std::endl;
+        return bed_entry();
     } else {
         start = stoi(tstart);
         stop = stoi(tstop);
@@ -297,7 +298,11 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
         std::get<3>(output) = stoi(tstop);
         std::get<4>(output) = '+';
     } else if (col < 3) {
-        throw std::domain_error("insufficient number of cols");
+        std::cout << "Empty line, returning empty entry" << std::endl;
+        std::get<1>(output) = "";
+        std::get<2>(output) = 0;
+        std::get<3>(output) = 0;
+        std::get<4>(output) = '+';
     } else {
         std::get<1>(output) = chrom;
         std::get<2>(output) = stoi(tstart);
