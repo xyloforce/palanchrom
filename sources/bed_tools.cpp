@@ -139,7 +139,6 @@ bed_entry bed::redBedLine() {
         }
         return bed_entry(chrom, start, stop, name, score, strand);
     } else if(col == 3) {
-        col = 1;
         start = stoi(tstart);
         stop = stoi(tstop);
             
@@ -192,7 +191,7 @@ void bed::readBed ()
     
 // }
 
-std::map<std::string, bed_entry> bed::getBedByID ( std::string id )
+std::map<std::string, bed_entry> bed::getBedByID ( std::string id ) const
 {
     std::map <std::string, bed_entry> bed;
     for(const auto &entry : m_content) {
@@ -202,6 +201,8 @@ std::map<std::string, bed_entry> bed::getBedByID ( std::string id )
     }
     return bed;
 }
+
+sorted_bed::sorted_bed() {}
 
 sorted_bed::sorted_bed(std::string filename) {
     m_input = std::ifstream(filename);
@@ -226,6 +227,89 @@ std::map <std::array <int, 3>, bed_entry> sorted_bed::getBedByID(std::string id)
     std::map <std::array <int, 3>, bed_entry> output;
     for (const auto &pair : m_indexes[id]) {
         output[pair.first] = m_content[pair.second];
+    }
+    return output;
+}
+
+minimal_sorted_bed::minimal_sorted_bed(std::string filename) {
+    m_input = std::ifstream(filename);
+    int index = 0;
+    while(!m_input.eof()) {
+        std::tuple <int, std::string, int, int, char> inputLine = readBedLine();
+        m_content.push_back(std::get <0>(inputLine));
+        std::array <int, 3> key;
+        key[0] = std::get <2>(inputLine);
+        key[1] = std::get <3>(inputLine);
+        key[3] = std::get <4>(inputLine);
+        m_indexes[std::get <1>(inputLine)][key] = index;
+        index ++;
+    }
+}
+
+std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() {
+    std::tuple <int, std::string, int, int, char> output;
+    std::get <0>(output) = m_input.tellg();
+    int col = 1;
+    char tchar = '\0';
+    char strand;
+    std::string chrom = "";
+    std::string tstart(""), tstop("");
+
+    while(tchar != '\n') {
+        // file is chrom start stop name strand
+        m_input.get(tchar);
+        
+        if(tchar != '\t') {
+            switch(col) {
+                case 1:
+                    chrom += tchar;
+                    break;
+                case 2:
+                    tstart += tchar;
+                    break;
+                case 3:
+                    tstop += tchar;
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    strand = tchar;
+                    break;
+                default:
+                    throw std::domain_error("more than 6 cols");
+                    break;
+            }
+        } else if(tchar == '\t') {
+            col ++;
+        }
+    }
+    if (col == 6) {
+        std::get<1>(output) = chrom;
+        std::get<2>(output) = stoi(tstart);
+        std::get<3>(output) = stoi(tstop);
+        std::get<4>(output) = strand;
+        return output;
+    } else if(col == 3) {
+        std::get<1>(output) = chrom;
+        std::get<2>(output) = stoi(tstart);
+        std::get<3>(output) = stoi(tstop);
+        std::get<4>(output) = '+';
+        return output;
+    } else {
+        std::cout << "Expected 3 or 6 columns, found " << col << std::endl;
+        throw std::domain_error("incorrect number of cols");
+    }
+}
+
+std::map <std::array <int, 3>, bed_entry> minimal_sorted_bed::getBedByID(std::string id) {
+    std::map <std::array <int, 3>, bed_entry> output;
+    for (const auto &pair : m_indexes[id]) {
+        int posLine = m_content[pair.second];
+        m_input.seekg(posLine, std::ios::beg);
+        bed_entry line = bed::redBedLine();
+        output[pair.first] = line;
     }
     return output;
 }

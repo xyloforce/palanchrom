@@ -32,7 +32,7 @@ public:
     void readBed();
     bed_entry redBedLine();
     bed_entry inInt(std::string chrom, int pos, int size);
-    std::map <std::string, bed_entry> getBedByID(std::string id);
+    std::map <std::string, bed_entry> getBedByID(std::string id) const;
 protected:
     std::vector <bed_entry> m_content;
     bool m_isInit;
@@ -42,11 +42,22 @@ protected:
 
 class sorted_bed: public bed {
 public:
+    sorted_bed();
     sorted_bed(std::string filename);
     void readBed();
     std::map <std::array <int, 3>, bed_entry> getBedByID(std::string id);
-private:
+protected:
     std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
+};
+
+class minimal_sorted_bed: public sorted_bed {
+    public:
+    minimal_sorted_bed(std::string filename);
+    void readBed();
+    std::tuple <int, std::string, int, int, char> readBedLine();
+    std::map <std::array <int, 3>, bed_entry> getBedByID(std::string id);
+    private:
+    std::vector <int> m_content;
 };
 
 #endif
