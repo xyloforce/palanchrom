@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Loading vcf... " << std::endl;
     vcf mutations(argv[1], true);
     std::cout << "Loading bed... " << std::endl; 
-    sorted_bed intervals(argv[2]);
+    minimal_sorted_bed intervals(argv[2]);
     std::cout << "Started analysis" << std::endl;
     
     fasta inputFasta(argv[3], "read_line", false);
