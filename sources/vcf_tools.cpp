@@ -123,20 +123,18 @@ vcf_entry vcf::readVCFLine()
             }
         }
     }
-    if(tpos == "") {
-        pos = 0;
-    } else {
+    if(col > 7) {
         pos = stol(tpos);
-    }
-
-    if(tqual != ".") {
-        qual = stoi(tqual);
+        if(tqual != ".") {
+            qual = stoi(tqual);
+        } else {
+            qual = 0;
+        }
+        return vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
     } else {
-        qual = 0;
+        std::cout << "Skipping empty line" << std::endl;
+        return vcf_entry();
     }
-
-    return vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
-    // init m_content
 }
 
 vcf::vcf(std::string filename, bool read) {
