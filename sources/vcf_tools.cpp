@@ -65,7 +65,7 @@ int vcf_entry::getPos() const
 vcf_entry vcf::readVCFLine()
 {
     std::string line;
-    char tchar;
+    char tchar = '\0';
     int col = 1;
     int index = 0;
     
