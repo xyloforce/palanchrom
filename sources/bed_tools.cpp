@@ -261,7 +261,7 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
     std::string chrom = "";
     std::string tstart(""), tstop("");
 
-    while(tchar != '\n' && tchar != EOF) {
+    while(tchar != '\n' && strandUndefined) {
         // file is chrom start stop name strand
         m_input.get(tchar);
         
@@ -284,8 +284,6 @@ std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() 
                     if(strandUndefined) {
                         strand = tchar;
                         strandUndefined = false;
-                    } else {
-                        throw std::logic_error("i was right");
                     }
                     break;
                 default:
