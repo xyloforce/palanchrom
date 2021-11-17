@@ -1,55 +1,86 @@
 import sys
 import glob
 
-folder = sys.argv[1]
-intersected = sys.argv[2]
-outputFile = sys.argv[3]
+# folder = sys.argv[1]
+originalH = sys.argv[1]
+originalS = sys.argv[2]
+intersected = sys.argv[3]
+outputFile = sys.argv[4]
 
-fileList = glob.glob(folder + "/*.dat")
+# fileList = glob.glob(folder + "/*.dat")
+
+humanHandler = open(originalH)
+speciesHandler = open(originalS)
+commonHandler = open(intersected)
 
 outputHandler = open(outputFile, "w")
 
-commonHandler = open(intersected)
-commonDict = dict()
-old_file = ""
+# commonDict = dict()
+# old_file = ""
 
 # TODO !!!ATTENTION!!! "-" : intervalle dans un sens sur l'humain & dans l'autre sur le chimpanzé : corriger problèmes
 # if - : startH = stopS // stopH = startS
 
-for intervalR in commonHandler.readlines(): # intervalR is line in intersected file
-    intervalR = intervalR.strip().split("\t") # intervalR is chr:start:stop
-    if old_file != folder + "/" + intervalR[0] + ".dat":
-        fileHandler = open(folder + "/" + intervalR[0] + ".dat")
-        print("\nOpening file " + intervalR[0] + ".dat")
-        intervalList = list()
-        for line2 in fileHandler.readlines(): # is a list
-            intervalList.append(line2.strip().split("\t")) # intervalList is list of startH:stopH:chrS:startS:stopS:strand
-        print("Loading ended, size of list : " + str(len(intervalList)))
-        old_file = folder + "/" + intervalR[0] + ".dat"
-        intervalList.sort(key=lambda x: int(x[0]))
-        windowBegin = 0
-        windowEnd = len(intervalList)
-    else:
-        windowEnd = len(intervalList)
+diffInt = dict() # will be ID : diffStart, diffStop
+commonInt = dict() # will be chrom : list(start, stop)
 
-    while windowEnd-windowBegin > 0:
-        intervalO = intervalList[int((windowEnd + windowBegin)/2)]
-        if int(intervalO[0]) > int(intervalR[1]): # reduced start is smaller than original start
-            windowEnd = int((windowEnd + windowBegin)/2)
-        else: # reduced start bigger
-            if int(intervalO[1]) >= int(intervalR[2]): # is reduced end smaller than original ?
-                # you found it !!!
-                startSlide = int(intervalR[1]) - int(intervalO[0]) # feature starts later...
-                endSlide = int(intervalO[1]) - int(intervalR[2]) # or end earlier
-                if intervalO[5] == "+":
-                    start = int(intervalO[3]) + startSlide
-                    end = int(intervalO[4]) - endSlide
-                else:
-                    start = int(intervalO[3]) + endSlide
-                    end = int(intervalO[4]) - startSlide
+print("File " + originalS + " : getting common ints")
+for line in commonHandler:
+    line = line.strip().split("\t") # line is chr : start : stop : uselessID : . : strand
+    line[1:3] = [int(value) for value in line[1:3]]
+    if line[0] not in commonInt:
+        commonInt[line[0]] = list()
+    commonInt[line[0]].append((line[1], line[2]))
 
-                break # no way yo u can find 2 overlaping elements
-            else:
-                windowBegin = int((windowEnd + windowBegin)/2)
+for key in commonInt:
+    commonInt[key].sort(key = lambda x:x[0])
 
-    outputHandler.writelines(intervalO[2] + "\t" + str(start) + "\t" + str(end) + "\t.\t.\t" + intervalO[5] + "\n")
+print("File " + originalS + " : getting reductions")
+
+for line in humanHandler: # line is chr : start : stop : ID : . : strand
+    line = line.strip().split("\t")
+    line[1:3] = [int(value) for value in line[1:3]]
+
+    A = 0
+    B = len(commonInt[line[0]])
+    found = False
+    stop = False
+
+    while(found == False and stop == False):
+        index = int((A + B)/2)
+        inter = commonInt[line[0]][index] # is START : STOP
+        if inter[0] >= line[1]: # START smaller or equal to current
+            if inter[1] <= line[2]:
+                if line[3] in diffInt:
+                    print(line[3])
+                    raise Exception("IDs are not unique !!!")
+                diffInt[line[3]] = (inter[0] - line[1], line[2] - inter[1])
+                found = True
+            else: # START is smaller AND STOP is smaller
+                A = index
+        else: # START bigger than current
+            B = index
+        if not B-A > 1:
+            stop = True
+
+    # for inter in commonInt[line[0]]:
+    #     if inter[0] <= line[1]:
+    #         if inter[1] >= line[2]:
+    #             if line[3] in diffInt:
+    #                 raise("IDs are not unique !!!")
+    #             diffInt[line[3]] = (line[1] - inter[0], inter[1] - line[2])
+    #             break
+
+print("File " + originalS + " : reading diffs and writing results")
+for line in speciesHandler: # line is chr : start : stop : ID : . : strand
+    line = line.strip().split("\t")
+    line[1:3] = [int(value) for value in line[1:3]]
+    if line[3] in diffInt:
+        if line[5] == "+":
+            print(diffInt[line[3]])
+            start = int(line[1]) + diffInt[line[3]][0]
+            end = int(line[2]) - diffInt[line[3]][1]
+        else:
+            start = int(line[1]) + diffInt[line[3]][1]
+            end = int(line[2]) - diffInt[line[3]][0]
+        outputHandler.write(line[0] + "\t" + str(start) + "\t" + str(end) + "\t" + line[3] + "\t" + "\t".join(line[-2:]) + "\n")

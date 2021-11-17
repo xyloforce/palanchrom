@@ -19,31 +19,48 @@ def getCorrectFile(wildcards):
 def correctWildcard(wildcards):
     return wildcards.species[0].upper() + wildcards.species[1:]
 
-rule getDatFiles:
+# rule getDatFiles:
+#     shadow: "shallow"
+#     output:
+#         path = directory("data/{species}"),
+#         interesting_stuff = directory("data/{species}/Non_Overlapping_regions/")
+#     params:
+#         speciesA = config["speciesA"],
+#         currentSp = correctWildcard
+#     shell:
+#         """
+#         wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
+#         python3 scripts/getDatFiles.py -i {params.speciesA}To{params.currentSp}.over.chain.gz -o {output.path}
+#         """
+
+# rule convert:
+#     input:
+#         folder = "data/{species}/Non_Overlapping_regions/"
+#     output:
+#         "data/" + config["speciesA"] + "Lift{species}.bed"
+#     shell:
+#         "python3 scripts/datToBed.py {input} {output}"
+
+rule getNonOverlapInt:
     shadow: "shallow"
     output:
-        path = directory("data/{species}"),
-        interesting_stuff = directory("data/{species}/Non_Overlapping_regions/")
+        bedHO = "data/{ref}.lift.{species}.{ref}.overlap.bed",
+        bedHNO = "data/{ref}.lift.{species}.{ref}.nonOverlap.bed",
+        bedS = "data/{ref}.lift.{species}.{species}.bed"
     params:
         speciesA = config["speciesA"],
         currentSp = correctWildcard
     shell:
         """
         wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
-        python3 scripts/getDatFiles.py -i {params.speciesA}To{params.currentSp}.over.chain.gz -o {output.path}
+        python3 scripts/convertToBed.py {params.speciesA}To{params.currentSp}.over.chain.gz tmp.{params.speciesA}.bed {output.bedS}
+        bedtools intersect -c -a {output.bedS} -b {output.bedS} > tmp.overlaps.bed
+        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.speciesA}.bed {output.bedHNO} {output.bedHO}
         """
-
-rule convert:
-    input:
-        folder = "data/{species}/Non_Overlapping_regions/"
-    output:
-        "data/" + config["speciesA"] + "Lift{species}.bed"
-    shell:
-        "python3 scripts/datToBed.py {input} {output}"
 
 rule sort:
     input:
-        "data/{ref}Lift{species}.bed"
+        "data/{ref}.lift.{species}.{ref}.nonOverlap.bed"
     output:
         "data/{ref}Lift{species}.sorted.bed"
     shell:
@@ -72,11 +89,12 @@ rule intersect:
 rule updateInterval:
     input:
         bed = "data/intersected.bed",
-        folder = "data/{species}/Non_Overlapping_regions/"
+        originalH = "data/{ref}.lift.{species}.{ref}.nonOverlap.bed",
+        originalS = "data/{ref}.lift.{species}.{species}.bed"
     output:
-        "data/common" + config["speciesA"] + "Lift{species}.bed"
+        "data/common{ref}Lift{species}.bed"
     shell:
-        "python3 scripts/updateInterval.py {input.folder} {input.bed} {output}"
+        "python3 scripts/updateInterval.py {input.originalH} {input.originalS} {input.bed} {output}"
 
 rule getFastas:
     output:
@@ -88,7 +106,6 @@ rule getFastas:
     shell:
         """
         wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz' -P data/
-        wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.chrom.sizes' -P data/
         gunzip data/{wildcards.species}.fa.gz
         """
 
