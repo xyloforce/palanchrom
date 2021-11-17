@@ -98,8 +98,7 @@ rule updateInterval:
 
 rule getFastas:
     output:
-        "data/{species}.fa",
-        "data/{species}.chrom.sizes"
+        "data/{species}.fa"
     wildcard_constraints:
         species="[A-Za-z\d]+"
     shadow: "shallow"
