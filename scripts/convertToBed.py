@@ -128,4 +128,3 @@ outputH = sys.argv[2]
 outputS = sys.argv[3]
 
 writeIntervals(outputH, outputS, load_regions(inputFile))
-print("Conversion finished. Checking overlaps...")
