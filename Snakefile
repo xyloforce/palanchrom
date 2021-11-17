@@ -131,8 +131,7 @@ rule getAncestralState:
     input:
         fasta = expand("data/commonSeqs_{outgroups}.fa", outgroups = config["outgroups"]),
         ref = "data/commonSeqs_{species}.fa",
-        check = ".checkCompleted",
-        chromSizes = "data/{species}.chrom.sizes"
+        check = ".checkCompleted"
     output:
         "data/{species}_ancestralBases.vcf"
     shell:
