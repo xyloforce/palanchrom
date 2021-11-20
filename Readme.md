@@ -1,59 +1,25 @@
-# Tips
+# Project goal
 
-- all scripts are in the `/Scripts` subfolder
+1. intersect liftOver results for different species, two being typically refs and others outgroups, in order to obtain common sections
+2. get ancestral genome for refs using outgroups
+3. analyse pattern of mutations in regions of interest, here NIEBs.
 
-# Convert dat files to bed containg human regions only
+# Dependencies
 
-Use `datToBed.py` for *each species*. Inputs : folder where dat files are, output name.
+- snakemake
+- bedtools
+- R
+- Python
 
-Outputs one bed containing human intervals.
+# Usage
 
-# Intersect all files to get human common regions
+Clone the git repo and then issue the snakemake command. You *must* specify number of cores to use through the `-nx` (with `x` being the quantity of cores) or `--cores x`. The pipeline has only like 8 steps that can be launched in parallel so no need to specify more (they won't be used).
 
-Use `intersectAll.sh` *one time*. Inputs : folder with outputs from previous scripts are, output folder.
+You can get to a particular step of the pipeline by calling its name or its output : for instance :
 
-Outputs multiple sorted bed and one intersected file.
+- if you want the bed with all the common regions between outgroups, you need to call `snakemake -n1 data/intersected.bed`
+- for the ancestral genomes just call the full pipeline.
 
-# Update species intervals according to human ones
+# Planned features
 
-Use `updateInterval.py` for *each species*. Inputs : folder where dat files are, intersected file from previous step, output name.
-
-Outputs one bed by species with all interval common accross species.
-
-# Filter barriers to keep ones separated by more than 1kb
-
-Use `filterInterNIEBS.R` *one time*. Inputs : interbarrier file, output name.
-
-Outputs bed with one line by valid barrier.
-
-# Intersect chimp intervals with barriers
-
-Just use bedtools *one time* :
-
-```
-bedtools intersect -sorted -a {previous file} -b <(sort -k1,1 -k2,2n {bed for chimp generated before}) > {output name}
-```
-
-**WARNING : will report incomplete barriers if they arent included in integrality in the alignement**
-
-# Get fasta seq for common intervals
-
-Get files on UCSC :
-```
-wget 'ftp://hgdownload.cse.ucsc.edu/goldenPath/hg38/bigZips/hg38.fa.gz'/ -P ../Data
-wget 'ftp://hgdownload.cse.ucsc.edu/goldenPath/panTro5/bigZips/panTro5.fa.gz' -P ../Data
-wget 'ftp://hgdownload.cse.ucsc.edu/goldenPath/gorGor4/bigZips/gorGor4.fa.gz' -P ../Data
-wget 'ftp://hgdownload.cse.ucsc.edu/goldenPath/ponAbe2/bigZips/ponAbe2.fa.gz' -P ../Data
-gunzip ../Data/*.fa.gz
-```
-
-Add file for hg38 from the disk bc it isnt available on ucsc (why ??)
-
-Then intersect for each species:
-```
-bedtools getfasta -fi {input fasta} -bed {common bed generated before} > {output name}
-```
-
-# Check sequence length
-
-
+Implement analysis of patterns of mutations listing differentially mutations in CpG and nCpG regions.
