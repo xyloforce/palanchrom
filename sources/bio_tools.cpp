@@ -28,7 +28,7 @@ char reverseComp(char base) {
 
 std::string toUpper(std::string lower) {
     std::string result = "";
-    for(int i(0); i<lower.size(); i++) {
+    for(unsigned int i(0); i<lower.size(); i++) {
         result += toupper(lower[i]);
     }
     return result;

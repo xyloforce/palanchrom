@@ -67,7 +67,6 @@ vcf_entry vcf::readVCFLine()
     std::string line;
     char tchar = '\0';
     int col = 1;
-    int index = 0;
     
     std::string chrom = "";
     std::string tpos = "";
