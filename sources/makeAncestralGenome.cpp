@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
         
         // entry2.editSeq(N, 0, entry2.getSize());
         
-        std::map <std::array <int, 3>, bed_entry> currentInt = intervals.getBedByID(entry.getChrom());
+        std::map <std::array <int, 3>, bed_entry, compareInts> currentInt = intervals.getBedByID(entry.getChrom());
         std::cout << "Checking int..." << currentInt.size() << " intervals left" << std::endl;
         int count = 0;
 
