@@ -5,6 +5,13 @@
 #include <fstream>
 #include <vector>
 
+struct _compareInts {
+    bool operator()(std::array <int, 3> a, std::array <int, 3> b) const {
+        return a[0] < b[0];
+    }
+};
+typedef struct _compareInts compareInts;
+
 class bed_entry {
 public:
     bed_entry(std::string chrom, int start, int stop, std::string name, int score, char strand);
@@ -30,7 +37,6 @@ public:
     bed();
     bed(std::string filename, bool read);
     bed_entry readBedLine();
-    bed_entry inInt(std::string chrom, int pos, int size);
     std::map <std::string, bed_entry> getBedByID(std::string id) const;
 protected:
     std::vector <bed_entry> m_content;
@@ -44,7 +50,8 @@ public:
     sorted_bed();
     sorted_bed(std::string filename);
     void readBed();
-    std::map <std::array <int, 3>, bed_entry> getBedByID(std::string id);
+    std::map <std::array <int, 3>, bed_entry, compareInts> getBedByID(std::string id);
+    std::vector <bed_entry> inInt ( std::string chrom, std::vector <std::array <int, 3>> pos, bool stranded );
 protected:
     std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
 };

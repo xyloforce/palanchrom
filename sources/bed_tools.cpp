@@ -28,16 +28,22 @@ bed_entry::bed_entry()
 int bed_entry::isInside(int pos, int size = 0) const
 {
     if(m_start >= pos + size) {
+    // case -<->-|-|-----
         return 0;
     } else if(m_start > pos && m_stop >= (pos + size)) {
+    // case -<---|>|-----
         return 1;
     } else if(m_start <= pos && m_stop > (pos + size)) {
+    // case -|---<>|-----
         return 2;
     } else if(m_start <= pos && m_stop > pos && m_stop <= (pos + size)) {
+    // case -|---<|>-----
         return 3;
     } else if(m_stop <= pos) {
+    // case -|---|<>-----
         return 4;
     } else if(m_start > pos && m_stop < (pos + size)) {
+    // case -<---||>-----
         return 5;
     } else {
         std::cout << "Int is " << m_start << ":" << m_stop << " and pos is " << pos << ":" << pos + size << std::endl;
@@ -99,7 +105,6 @@ bed_entry bed::readBedLine() {
     int start = 0;
     int stop = 0;
     int score = 0;
-    bool strandUndefined = true;
 
     while(tchar != '\n' && !m_input.eof()) {
         // file is chrom start stop name strand
@@ -154,39 +159,48 @@ bed_entry bed::readBedLine() {
     }
 }
 
-// bed_entry bed::inInt ( std::string chrom, int pos, int size = 0 )
-// {
-//     int current = 5;
-//     bed_entry inInt;
+std::vector <bed_entry> sorted_bed::inInt ( std::string chrom, std::vector <std::array <int, 3>> pos, bool stranded = false )
+{
+// match ints against pos
+// BEWARE : pos must be on the same chrom
+// BEWARE : actually CONSUMES the bed
+// fix it
+// works FOR NON OVERLAPING INTs only
+    std::map <std::array<int, 3>, bed_entry, compareInts> currentInts = getBedByID(chrom);
+    bed_entry output;
+    std::vector <bed_entry> output_array;
     
-//     for(auto it = m_content[chrom].cbegin(); it != m_content[chrom].cend();) {
-//         current = it -> second.isInside(pos, size);
-//         if(current == 0) { // pos + size is smaller than start of int in a sorted array : pos is out of range
-//             break;
-//         } else if(current == 2) { // pos in the right int
-//             inInt = it -> second;
-//             break;
-//         } else if(current == 1 || current == 5) {
-//             // overlap start = need to adjust start to correct size => set start to start int
-//             bed_entry overlapCorrected(chrom, it -> second.getStart(), pos + size);
-//             inInt = overlapCorrected;
-//             break;
-//         } else if(current == 3) {
-//             // same but for stop
-//             bed_entry overlapCorrected(chrom, pos, it -> second.getStop(), ".", 0, it -> second.getStrand());
-//             inInt = overlapCorrected;
-//             break;
-//         } else if(current == 4) {
-//             it = m_content[chrom].erase(it); // since we're only incrementing no need to keep past int
-//         }
-//     }
-    
-//     return inInt;
-//     // loop through key : if smaller than start : stop search
-//     // if bigger than stop : continue
-//     // if in it : stop
-    
-// }
+    for(int i(0); i < pos.size(); i++) {
+        std::array<int, 3> currentPos = pos[i];
+        if(!stranded) {
+            for(const auto &pair : currentInts) {
+                int start(pos[i][0]);
+                int size(pos[i][1]);
+                int result = pair.second.isInside(start, size);
+                if(result == 0) {
+                    break; // smaller than smaller element : stop search
+                } else if (result == 1) {
+                    output = bed_entry(chrom, pair.second.getStart(), start+size); // overlap is between start of the bed int and the stop of the seeked int
+                    break;
+                } else if (result == 2) {
+                    output = bed_entry(chrom, start, start + size); // int is IN the current int
+                    break;
+                } else if (result == 3) {
+                    output = bed_entry(chrom, start, pair.second.getStop()); // stop is bigger than the current int
+                    break;
+                } else if (result == 4) {
+                // bigger than this int : next
+                } else if (result == 5) {
+                // current int is inside the int
+                    output = bed_entry(chrom, pair.second.getStart(), pair.second.getStop());
+                    break;
+                }
+            }
+            output_array.push_back(output);
+        }
+    }
+    return output_array;
+}
 
 std::map<std::string, bed_entry> bed::getBedByID ( std::string id ) const
 {
@@ -221,8 +235,8 @@ sorted_bed::sorted_bed(std::string filename) {
     std::cout << std::endl;
 }
 
-std::map <std::array <int, 3>, bed_entry> sorted_bed::getBedByID(std::string id) {
-    std::map <std::array <int, 3>, bed_entry> output;
+std::map <std::array <int, 3>, bed_entry, compareInts> sorted_bed::getBedByID(std::string id) {
+    std::map <std::array <int, 3>, bed_entry, compareInts> output;
     for (const auto &pair : m_indexes[id]) {
         output[pair.first] = m_content[pair.second];
     }
