@@ -5,3 +5,5 @@
 /.snakemake/*
 /data/*
 /scripts/.snakemake/*
+/build/*
+.Rproj.user

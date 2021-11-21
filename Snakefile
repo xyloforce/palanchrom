@@ -46,17 +46,25 @@ rule getNonOverlapInt:
     output:
         bedHO = "data/{ref}.lift.{species}.{ref}.overlap.bed",
         bedHNO = "data/{ref}.lift.{species}.{ref}.nonOverlap.bed",
-        bedS = "data/{ref}.lift.{species}.{species}.bed"
+        bedSO = "data/{ref}.lift.{species}.{species}.overlap.bed",
+        bedSNO = "data/{ref}.lift.{species}.{species}.nonOverlap.bed"
     params:
         speciesA = config["speciesA"],
         currentSp = correctWildcard
     shell:
         """
         wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
-        python3 scripts/convertToBed.py {params.speciesA}To{params.currentSp}.over.chain.gz tmp.{params.speciesA}.bed {output.bedS}
-        echo "Conversion finished, checking overlaps..."
-        bedtools intersect -c -a {output.bedS} -b {output.bedS} > tmp.overlaps.bed
-        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.speciesA}.bed {output.bedHNO} {output.bedHO}
+        python3 scripts/convertToBed.py {params.speciesA}To{params.currentSp}.over.chain.gz tmp.{params.speciesA}.bed tmp.{params.currentSp}.bed
+        
+        echo Checking overlaps for ref
+        bedtools intersect -c -a tmp.{params.speciesA}.bed -b tmp.{params.speciesA}.bed > tmp.overlaps.bed
+        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.speciesA}.bed tmp.{params.speciesA}.NOH.bed tmp.{params.speciesA}.OH.bed
+        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.currentSp}.bed tmp.{params.currentSp}.NOH.bed tmp.{params.currentSp}.OH.bed
+        
+        echo Checking overlaps for species
+        bedtools intersect -c -a tmp.{params.currentSp}.NOH.bed -b tmp.{params.currentSp}.NOH.bed > tmp.overlaps.bed
+        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.speciesA}.NOH.bed {output.bedHO} {output.bedHNO}
+        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.currentSp}.NOH.bed {output.bedSO} {output.bedSNO}
         """
 
 rule sort:
@@ -91,7 +99,7 @@ rule updateInterval:
     input:
         bed = "data/intersected.bed",
         originalH = "data/{ref}.lift.{species}.{ref}.nonOverlap.bed",
-        originalS = "data/{ref}.lift.{species}.{species}.bed"
+        originalS = "data/{ref}.lift.{species}.{species}.nonOverlap.bed"
     output:
         "data/common{ref}Lift{species}.bed"
     shell:
@@ -158,31 +166,31 @@ rule getAncestralGenomeRef:
     shell:
         "./bin/makeAncestralGenome.bin {input} {output}"
 
-#rule getSortCPG:
-    #input:
-        #"data/ancestralBases.fmna"
-    #output:
-        #cpg = "data/ancestralBasesCPG.diff",
-        #ncpg = "data/ancestralBasesNCPG.diff"
-    #shell:
-        #"./bin/sortCPG.bin {input} {output.cpg} {output.ncpg}"
+rule getSortCPG:
+    input:
+        "data/{species}_ancestralGenome.fasta",
+    output:
+        cpg = "data/{species}_Ancestral_CPG.fa",
+        ncpg = "data/{species}_Ancestral_CPG.fa"
+    shell:
+        "./bin/sortCPG.bin {input} {output.cpg} {output.ncpg}"
 
-#rule filterBarriers:
-    #input:
-        #config["barriers"]
-    #output:
-        #"data/barriersAOE.tsv"
-    #shell:
-        #"Rscript scripts/filterInterNIEBs.R {input} {output}"
+rule filterBarriers:
+    input:
+        config["barriers"]
+    output:
+        "data/barriersAOE.tsv"
+    shell:
+        "Rscript scripts/filterInterNIEBs.R {input} {output}"
         
-#rule countMuts:
-    #input:
-        #"data/barriersAOE.tsv",
-        #"data/ancestralBases{type}.diff"
-    #output:
-        #"data/countBases{type}.tsv"
-    #shell:
-        #"./bin/countMuts.bin {input} {output}"
+rule countMuts:
+    input:
+        "data/barriersAOE.tsv",
+        "data/ancestralBases{type}.diff"
+    output:
+        "data/countBases{type}.tsv"
+    shell:
+        "./bin/countMuts.bin {input} {output}"
 
 #rule intersectChimpBarriers:
     #input:

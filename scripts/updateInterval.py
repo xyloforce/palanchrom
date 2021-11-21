@@ -15,16 +15,6 @@ commonHandler = open(intersected)
 
 outputHandler = open(outputFile, "w")
 
-# commonDict = dict()
-# old_file = ""
-
-# TODO !!!ATTENTION!!! "-" : intervalle dans un sens sur l'humain & dans l'autre sur le chimpanzé : corriger problèmes
-# if - : startH = stopS // stopH = startS
-
-### INVERT ###
-
-## FIRST : LOAD ORIGINAL INTs ##
-
 originalInt = dict() # will be dict of lists
 print("File " + originalS + " : getting original ints")
 
@@ -34,8 +24,6 @@ for line in humanHandler:
     if line[0] not in originalInt:
         originalInt[line[0]] = list()
     originalInt[line[0]].append((line[1], line[2], line[3]))
-
-## SECOND : FIND DIFF BY COMPARING TO MODIFIED INTs
 
 diffInt = dict() # will be ID : diffStart, diffStop
 count = 0
@@ -72,8 +60,6 @@ for line in commonHandler: # line is chr : start : stop : . : . : strand
         if (B-A) < 0:
             stop = True
 
-### INVERTED ###
-
 originalInt = dict()
 lines = list()
 print("File " + originalS + " : getting species int")
@@ -97,6 +83,6 @@ for key in diffInt:
         end = int(line[2]) - diffInt[key][0]
     lines.append((line[0] + "\t" + str(start) + "\t" + str(end) + "\t" + key + "\t" + "\t".join(line[-2:]) + "\n", diffInt[key][2]))
 
-lines.sort(key = lambda x:x[1]) # sort following line order in commonbed
+lines.sort(key = lambda x: x[1]) # sort following line order in commonbed
 lines = [value[0] for value in lines] # delete line index now that the line is sorted
 outputHandler.writelines(lines)
