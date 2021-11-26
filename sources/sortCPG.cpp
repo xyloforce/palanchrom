@@ -4,6 +4,8 @@
 
 #include "fasta_tools.h"
 
+// change it : create CPG bed then search vcf pos in it
+
 int main(int argc, char* argv[]) {
     if(argc < 4) {
         throw std::domain_error("Unsufficient number of args");

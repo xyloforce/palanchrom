@@ -5,25 +5,26 @@
 #include <fstream>
 #include <vector>
 
-struct _compareInts {
-    bool operator()(std::array <int, 3> a, std::array <int, 3> b) const {
-        return a[0] < b[0];
-    }
-};
-typedef struct _compareInts compareInts;
 
 class bed_entry {
 public:
     bed_entry(std::string chrom, int start, int stop, std::string name, int score, char strand);
+    bed_entry ( std::string chrom, int start, int stop);
     int isInside(int pos, int size) const;
+    int isInside(bed_entry entry) const;
     bed_entry();
     int getStart() const;
     int getStop() const;
     bool operator == (const bed_entry& entry) const;
+    bool operator > (const bed_entry& entry) const;
+    bool operator < (const bed_entry& entry) const;
+    bool operator >= (const bed_entry& entry) const;
+    bool operator <= (const bed_entry& entry) const;
     char getStrand() const;
     std::string getIDFull() const;
     std::string getID() const;
-private:
+    std::string getStringEntry() const;
+protected:
     std::string m_chrom;
     int m_start;
     int m_stop;
@@ -32,12 +33,23 @@ private:
     char m_strand;
 };
 
+class AOE_entry: public bed_entry {
+public:
+    AOE_entry(std::string chrom, int start, int stop, char type, int zero);
+    AOE_entry();
+    int getRelativePos(int pos) const;
+private:
+    int m_zero;
+    char m_type;
+};
+
 class bed {
 public:
     bed();
     bed(std::string filename, bool read);
     bed_entry readBedLine();
     std::map <std::string, bed_entry> getBedByID(std::string id) const;
+    void writeBedLine(bed_entry entry);
 protected:
     std::vector <bed_entry> m_content;
     bool m_isInit;
@@ -50,8 +62,9 @@ public:
     sorted_bed();
     sorted_bed(std::string filename);
     void readBed();
-    std::map <std::array <int, 3>, bed_entry, compareInts> getBedByID(std::string id);
-    std::vector <bed_entry> inInt ( std::string chrom, std::vector <std::array <int, 3>> pos, bool stranded );
+    std::vector <bed_entry> getBedByID(std::string id);
+    bool isInside(bed_entry entry);
+    std::map <bed_entry, std::vector<bed_entry>> getOverlap ( std::string chrom, std::vector <bed_entry> pos);
 protected:
     std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
 };
@@ -64,6 +77,17 @@ class minimal_sorted_bed: public sorted_bed {
     std::map <std::array <int, 3>, bed_entry> getBedByID(std::string id);
     private:
     std::vector <int> m_content;
+};
+
+class AOEbed: public sorted_bed {
+public:
+	AOEbed(std::string filename);
+	AOE_entry readAOEline();
+  std::map <bed_entry, std::vector<AOE_entry>> getOverlap(std::string chrom, std::vector <bed_entry> pos);
+  std::vector <AOE_entry> getBedByID(std::string id);
+private:
+	std::vector <AOE_entry> m_content;
+	std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;
 };
 
 #endif

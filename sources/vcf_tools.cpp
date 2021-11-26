@@ -28,6 +28,10 @@ vcf_entry::vcf_entry()
     m_info = ".";
 }
 
+bool vcf_entry::operator == (const vcf_entry& entry) const
+{
+    return (m_pos == entry.getPos() && m_ref == entry.getRef() && m_alt == entry.getAlternate());
+}
 
 char vcf_entry::getAlternate() const
 {
@@ -189,4 +193,12 @@ std::vector<vcf_entry> vcf::getVCFByID(std::string id)
         results.push_back(m_content[pair.second]);
     }
     return results;
+}
+
+std::vector <vcf_entry> vcf::getVCFEntries() const {
+    return m_content;
+}
+
+bool vcf::isEOF() const {
+    return m_input.eof();
 }

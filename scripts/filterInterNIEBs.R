@@ -1,8 +1,9 @@
+### OUTPUT SPECIAL BED-LIKE FORMAT
 library(readr)
 
 
-args = commandArgs(trailingOnly=TRUE) # input, output
-#args = c("/home/fabien/Documents/Projets/Reprise_Sara/Data/20200228_interSmallNFR.dat", "test_output.pouet")
+# args = commandArgs(trailingOnly=TRUE) # input, output
+args = c("/home/fabien/Documents/20200228_interSmallNFR.dat", "test_output.pouet")
 data = read_tsv(args[1], col_names = FALSE)
 
 # data = read_tsv("../Data/20200228_interSmallNFR.dat", col_names = FALSE)
@@ -16,5 +17,11 @@ Right = data.frame("chrom" = data$X1, "Begin" = data$middle, "Zero" = data$X4, "
 
 output = rbind(Left, Right)
 output = output[order(output$chrom, output$Begin),]
+
+## put it in bed form
+output$name = "."
+output$score = "."
+
+output = output[,c(1, 2, 4, 6, 7, 5, 3)]
 
 write_tsv(output, args[2], col_names = FALSE)

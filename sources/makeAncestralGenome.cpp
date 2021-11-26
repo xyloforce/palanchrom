@@ -41,15 +41,15 @@ int main(int argc, char* argv[]) {
         
         // entry2.editSeq(N, 0, entry2.getSize());
         
-        std::map <std::array <int, 3>, bed_entry, compareInts> currentInt = intervals.getBedByID(entry.getChrom());
+        std::vector <bed_entry> currentInt = intervals.getBedByID(entry.getChrom());
         std::cout << "Checking int..." << currentInt.size() << " intervals left" << std::endl;
         int count = 0;
 
-        for(const auto &pair : currentInt) {
+        for(const auto &line : currentInt) {
             count ++;
-            int size(pair.second.getStop()-pair.second.getStart());
+            int size(line.getStop()-line.getStart());
             // first arg is POS of char so it's zero based
-            sequence.replace(pair.second.getStart(), size, entry.subsetEntry(pair.second.getStart(), pair.second.getStop()).getSequence());
+            sequence.replace(line.getStart(), size, entry.subsetEntry(line.getStart(), line.getStop()).getSequence());
 
             if(count % 1000 == 0) {
                 std::cout << count << "         \r";

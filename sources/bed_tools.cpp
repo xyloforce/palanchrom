@@ -4,7 +4,7 @@
 #include <regex>
 #include <iostream>
 
-bed_entry::bed_entry ( std::string chrom, int start, int stop, std::string name = ".", int score = 0, char strand = '.' )
+bed_entry::bed_entry ( std::string chrom, int start, int stop, std::string name, int score, char strand)
 {
     m_chrom = chrom;
     m_start = start;
@@ -12,6 +12,16 @@ bed_entry::bed_entry ( std::string chrom, int start, int stop, std::string name 
     m_name = name;
     m_score = score;
     m_strand = strand;
+}
+
+bed_entry::bed_entry ( std::string chrom, int start, int stop)
+{
+    m_chrom = chrom;
+    m_start = start;
+    m_stop = stop;
+    m_name = ".";
+    m_score = 0;
+    m_strand = '.';
 }
 
 bed_entry::bed_entry()
@@ -25,24 +35,53 @@ bed_entry::bed_entry()
 }
 
 
-int bed_entry::isInside(int pos, int size = 0) const
+int bed_entry::isInside(int pos, int size = 1) const
 {
-    if(m_start >= pos + size) {
+// BEWARE : we don't count last base as being in the int so a seq of pos & size 1 is only pos
+    if(m_start > pos + size) {
     // case -<->-|-|-----
         return 0;
     } else if(m_start > pos && m_stop >= (pos + size)) {
     // case -<---|>|-----
         return 1;
-    } else if(m_start <= pos && m_stop > (pos + size)) {
+    } else if(m_start <= pos && m_stop >= (pos + size)) {
     // case -|---<>|-----
         return 2;
-    } else if(m_start <= pos && m_stop > pos && m_stop <= (pos + size)) {
+    } else if(m_start <= pos && m_stop > pos && m_stop < (pos + size)) {
     // case -|---<|>-----
         return 3;
     } else if(m_stop <= pos) {
     // case -|---|<>-----
         return 4;
-    } else if(m_start > pos && m_stop < (pos + size)) {
+    } else if(m_start > pos && m_stop <= (pos + size)) {
+    // case -<---||>-----
+        return 5;
+    } else {
+        std::cout << "Int is " << m_start << ":" << m_stop << " and pos is " << pos << ":" << pos + size << std::endl;
+        throw std::logic_error("Impossible combination of values");
+    }
+}
+
+int bed_entry::isInside(bed_entry entry) const {
+    int pos(entry.getStart());
+    int size(entry.getStop() - entry.getStart());
+    // BEWARE : we don't count last base as being in the int so a seq of pos & size 1 is only pos
+    if(m_start > pos + size) {
+    // case -<->-|-|-----
+        return 0;
+    } else if(m_start > pos && m_stop >= (pos + size)) {
+    // case -<---|>|-----
+        return 1;
+    } else if(m_start <= pos && m_stop >= (pos + size)) {
+    // case -|---<>|-----
+        return 2;
+    } else if(m_start <= pos && m_stop > pos && m_stop < (pos + size)) {
+    // case -|---<|>-----
+        return 3;
+    } else if(m_stop <= pos) {
+    // case -|---|<>-----
+        return 4;
+    } else if(m_start > pos && m_stop <= (pos + size)) {
     // case -<---||>-----
         return 5;
     } else {
@@ -71,6 +110,26 @@ bool bed_entry::operator == (const bed_entry& entry) const
     return (m_start == entry.getStart() && m_stop == entry.getStop());
 }
 
+bool bed_entry::operator > (const bed_entry& entry) const
+{
+    return (m_start > entry.getStart());
+}
+
+bool bed_entry::operator < (const bed_entry& entry) const
+{
+    return (m_start < entry.getStart());
+}
+
+bool bed_entry::operator >= (const bed_entry& entry) const
+{
+    return (m_start >= entry.getStart());
+}
+
+bool bed_entry::operator <= (const bed_entry& entry) const
+{
+    return (m_start <= entry.getStart());
+}
+
 std::string bed_entry::getIDFull() const {
     std::string ID = std::to_string(m_start) + " " + std::to_string(m_stop) + " " + m_strand;
     return ID;
@@ -80,7 +139,38 @@ std::string bed_entry::getID() const {
     return m_chrom;
 }
 
-bed::bed() {}
+std::string bed_entry::getStringEntry() const {
+    return m_chrom + '\t' + std::to_string(m_start) + '\t' + std::to_string(m_stop) + '\t' + m_name + '\t' + std::to_string(m_score) + '\t' + m_strand;
+}
+
+AOE_entry::AOE_entry(std::string chrom, int start, int stop, char type, int zero) {
+    m_chrom = chrom;
+    m_start = start;
+    m_stop = stop;
+    m_type = type;
+    m_zero = zero;
+}
+
+AOE_entry::AOE_entry() {
+    m_chrom = "";
+    m_start = 0;
+    m_stop = 0;
+    m_type = '\0';
+    m_zero = 0;
+}
+
+int AOE_entry::getRelativePos(int pos) const {
+    int relativePos = m_zero - pos;
+    if(m_type == 'L') {
+        // its a left int so reverse pos
+        relativePos = relativePos * -1;
+    }
+    return relativePos;
+}
+
+bed::bed() {
+
+}
 
 bed::bed ( std::string filename, bool read )
 {
@@ -90,6 +180,8 @@ bed::bed ( std::string filename, bool read )
         // file is chrom start stop name strand
             m_content.push_back(readBedLine());
         }
+    } else {
+        m_output = std::ofstream(filename);
     }
 }
 
@@ -159,47 +251,85 @@ bed_entry bed::readBedLine() {
     }
 }
 
-std::vector <bed_entry> sorted_bed::inInt ( std::string chrom, std::vector <std::array <int, 3>> pos, bool stranded = false )
+void bed::writeBedLine(bed_entry entry) {
+    m_output << entry.getStringEntry() << '\n';
+}
+
+std::map <bed_entry, std::vector<bed_entry>> sorted_bed::getOverlap ( std::string chrom, std::vector <bed_entry> pos)
 {
-// match ints against pos
-// BEWARE : pos must be on the same chrom
-// BEWARE : actually CONSUMES the bed
-// fix it
-// works FOR NON OVERLAPING INTs only
-    std::map <std::array<int, 3>, bed_entry, compareInts> currentInts = getBedByID(chrom);
-    bed_entry output;
-    std::vector <bed_entry> output_array;
-    
-    for(int i(0); i < pos.size(); i++) {
-        std::array<int, 3> currentPos = pos[i];
-        if(!stranded) {
-            for(const auto &pair : currentInts) {
-                int start(pos[i][0]);
-                int size(pos[i][1]);
-                int result = pair.second.isInside(start, size);
-                if(result == 0) {
-                    break; // smaller than smaller element : stop search
-                } else if (result == 1) {
-                    output = bed_entry(chrom, pair.second.getStart(), start+size); // overlap is between start of the bed int and the stop of the seeked int
-                    break;
-                } else if (result == 2) {
-                    output = bed_entry(chrom, start, start + size); // int is IN the current int
-                    break;
-                } else if (result == 3) {
-                    output = bed_entry(chrom, start, pair.second.getStop()); // stop is bigger than the current int
-                    break;
-                } else if (result == 4) {
-                // bigger than this int : next
-                } else if (result == 5) {
-                // current int is inside the int
-                    output = bed_entry(chrom, pair.second.getStart(), pair.second.getStop());
-                    break;
+    //objective : for a list of pos, return for each pos all ints that overlaps with it
+    std::vector <bed_entry> currentInts = getBedByID(chrom);
+    std::map <bed_entry, std::vector<bed_entry>> matchs;
+    //dichotomic search on map
+    //find matching int quickly
+    //TODO A : change return type of getBedByID to vector ; B change all its uses to match change
+    //TODO C : then use dichotomic search !!!!!!
+    int A(0), B(currentInts.size());
+    bool found = false;
+
+    for(const auto &entry : pos) {
+        while(A <= B && !found) {
+            unsigned int index((A+B)/2);
+            bed_entry current = currentInts[index];
+            int status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
+            if(status == 0) {
+                B = index - 1;
+            } else if(status == 4) {
+                A = index + 1;
+            } else {
+                // got an overlap
+                matchs[entry].push_back(current);
+                unsigned int indexA(index);
+                unsigned int indexB(index);
+                while(indexA > 0) {
+                    indexA --;
+                    bed_entry current(currentInts[index]);
+                    status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
+                    if(status != 0 && status != 4) {
+                        matchs[entry].push_back(current);
+                    } else {
+                        break;
+                    }
                 }
+                while(indexB < currentInts.size()) {
+                    indexB ++;
+                    bed_entry current = currentInts[index];
+                    status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
+                    if(status != 0 && status != 4) {
+                        matchs[entry].push_back(current);
+                    } else {
+                        break;
+                    }
+                }
+                found = true;
             }
-            output_array.push_back(output);
         }
     }
-    return output_array;
+
+    return matchs;
+}
+
+bool sorted_bed::isInside(bed_entry entry) {
+// usable with pos only
+    std::vector <bed_entry> currentInts = getBedByID(entry.getID());
+    int A(0), B(currentInts.size() - 1);
+    bool found = false;
+
+    while(A <= B && !found) {
+        int index ((A+B) / 2);
+        bed_entry selected(currentInts[index]);
+        int val(selected.isInside(entry));
+        if(val == 2) {
+            found = true;
+        } else if(val == 4) {
+            A = index + 1;
+        } else if(val == 0) {
+            B = index - 1;
+        } else {
+            throw std::logic_error("Unexpected overlap");
+        }
+    }
+    return found;
 }
 
 std::map<std::string, bed_entry> bed::getBedByID ( std::string id ) const
@@ -235,11 +365,12 @@ sorted_bed::sorted_bed(std::string filename) {
     std::cout << std::endl;
 }
 
-std::map <std::array <int, 3>, bed_entry, compareInts> sorted_bed::getBedByID(std::string id) {
-    std::map <std::array <int, 3>, bed_entry, compareInts> output;
+std::vector <bed_entry> sorted_bed::getBedByID(std::string id) {
+    std::vector <bed_entry> output;
     for (const auto &pair : m_indexes[id]) {
-        output[pair.first] = m_content[pair.second];
+        output.push_back(m_content[pair.second]);
     }
+    std::sort(output.begin(), output.end());
     return output;
 }
 
@@ -333,6 +464,145 @@ std::map <std::array <int, 3>, bed_entry> minimal_sorted_bed::getBedByID(std::st
     }
     return output;
 }
+
+AOEbed::AOEbed(std::string filename) {
+    m_input = std::ifstream(filename);
+    int index(0);
+    while(!m_input.eof()) {
+        AOE_entry entry = readAOEline();
+        if(!(entry == AOE_entry())) {
+            m_content.push_back(entry);
+            std::array <int, 2> pos;
+            pos[0] = entry.getStart();
+            pos[1] = entry.getStop();
+            m_indexes[entry.getID()][pos] = index;
+            index ++;
+        }
+    }
+}
+
+AOE_entry AOEbed::readAOEline() {
+    char tchar = '\0';
+    std::string tstart = "";
+    std::string tstop = "";
+    std::string chrom = "";
+    int col = 1;
+    std::string name = "";
+    std::string tscore = "";
+    char strand = '\0';
+    int start = 0;
+    int stop = 0;
+    std::string tZero = "";
+    int zero = 0;
+
+    while(tchar != '\n' && !m_input.eof()) {
+        // file is chrom start stop name strand
+        m_input.get(tchar);
+
+        if(tchar != '\t' && tchar != '\n') {
+            switch(col) {
+                case 1:
+                    chrom += tchar;
+                    break;
+                case 2:
+                    tstart += tchar;
+                    break;
+                case 3:
+                    tstop += tchar;
+                    break;
+                case 4:
+                    name += tchar;
+                    break;
+                case 5:
+                    tscore += tchar;
+                    break;
+                case 6:
+                    strand = tchar;
+                    break;
+                case 7:
+                    tZero += tchar;
+                    break;
+                default:
+                    std::cout << "Skipping chars" << std::endl;
+                    break;
+            }
+        } else if(tchar == '\t') {
+            col ++;
+        }
+    }
+    try {
+        start = stoi(tstart);
+        stop = stoi(tstop);
+        zero = stoi(tZero);
+    } catch (std::invalid_argument exception) {
+        std::cout << "Catched exception, creating empty line" << std::endl;
+    }
+    return AOE_entry(chrom, start, stop, strand, zero);
+}
+
+std::vector <AOE_entry> AOEbed::getBedByID(std::string id) {
+    std::vector <AOE_entry> output;
+    for (const auto &pair : m_indexes[id]) {
+        output.push_back(m_content[pair.second]);
+    }
+    std::sort(output.begin(), output.end());
+    return output;
+}
+
+
+std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (std::string chrom, std::vector <bed_entry> pos) {
+    //objective : for a list of pos, return for each pos all ints that overlaps with it
+    std::vector <AOE_entry> currentInts = getBedByID(chrom);
+    std::map <bed_entry, std::vector<AOE_entry>> matchs;
+    //dichotomic search on map
+    //find matching int quickly
+    //TODO A : change return type of getBedByID to vector ; B change all its uses to match change
+    //TODO C : then use dichotomic search !!!!!!
+    int A(0), B(currentInts.size());
+    bool found = false;
+
+    for(const auto &entry : pos) {
+        while(A <= B && !found) {
+            unsigned int index((A+B)/2);
+            AOE_entry current = currentInts[index];
+            int status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
+            if(status == 0) {
+                B = index - 1;
+            } else if(status == 4) {
+                A = index + 1;
+            } else {
+                // got an overlap
+                matchs[entry].push_back(current);
+                unsigned int indexA(index);
+                unsigned int indexB(index);
+                while(int (indexA) - 1 > 0) {
+                    indexA --;
+                    AOE_entry current(currentInts[indexA]);
+                    status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
+                    if(status != 0 && status != 4) {
+                        matchs[entry].push_back(current);
+                    } else {
+                        break;
+                    }
+                }
+                while(int(indexB) + 1 < currentInts.size()) {
+                    indexB ++;
+                    AOE_entry current = currentInts[indexB];
+                    status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
+                    if(status != 0 && status != 4) {
+                        matchs[entry].push_back(current);
+                    } else {
+                        break;
+                    }
+                }
+                found = true;
+            }
+        }
+    }
+
+    return matchs;
+}
+
 
 // future alg is : for pos in fasta seq :
 // if were in interval

@@ -18,6 +18,8 @@ public:
     std::string getChrom() const;
     int getPos() const;
     void vcf_writeline(std::ofstream& output) const;
+    bool operator == (const vcf_entry& entry) const;
+
 private:
     std::string m_chrom;
     long m_pos;
@@ -37,9 +39,11 @@ public:
     vcf_entry readVCFLine();
     // std::string isMuted(std::string chrom, int pos, std::string ref_bases);
     std::vector <vcf_entry> getVCFByID(std::string id);
+    std::vector <vcf_entry> getVCFEntries() const;
+    bool isEOF() const;
 private:
     std::vector<vcf_entry> m_content;
-    std::map <std::string, std::map <std::tuple <int, std::string, char>, int>> m_indexes; 
+    std::map <std::string, std::map <std::tuple <int, std::string, char>, int>> m_indexes;
     bool m_isInit;
     std::ifstream m_input;
     std::ofstream m_output;

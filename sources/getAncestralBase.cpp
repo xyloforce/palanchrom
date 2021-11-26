@@ -33,9 +33,9 @@ int main(int argc, char* argv[])
         // then you need to check if first one is ok or not
         std::string consensus = entries[1].getSequence();
         std::string tstring;
-        for(int i(1); i < argc - 2; i++) {
+        for(unsigned int i(1); i < argc - 2; i++) {
             tstring = entries[i].getSequence();
-            for (long j(0); j < tstring.size(); j++) {
+            for (unsigned long j(0); j < tstring.size(); j++) {
                 if(toupper(tstring[j]) != toupper(consensus[j])) {
                     consensus[j] = 'N';
                 }
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
         }
         // now we have a string with "N" if not common
         std::string ref = entries[0].getSequence();
-        for(long i(0); i<ref.size(); i++) {
+        for(unsigned long i(0); i<ref.size(); i++) {
             if(toupper(consensus[i]) != toupper(ref[i]) && toupper(ref[i]) != 'N') { // no need to consider N on the ref side bc there already muted
                 // write mutation in file
                 std::string refS = "";
@@ -54,11 +54,7 @@ int main(int argc, char* argv[])
                 } else {
                     refS += ref[i];
                 }
-                if(entries[0].getPos(i) == 222264770) {
-                    for(int entry(0); entry < argc -2; entry ++) {
-                        std::cout << entries[entry].getHeader() << std::endl;
-                    }
-                }
+
                 outputFile.vcf_writeline(vcf_entry(entries[0].getChrom(), entries[0].getPos(i), ".", refS, commonBase));
             }
         }
