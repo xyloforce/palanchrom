@@ -4,8 +4,8 @@ wildcard_constraints:
 
 rule all:
     input:
-        "data/hg38_ancestralGenome.fasta",
-        "data/panTro5_ancestralGenome.fasta"
+        "panTro5_CPG_muts.tsv",
+        "hg38_CPG_muts.tsv"
 
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
@@ -166,14 +166,13 @@ rule getAncestralGenomeRef:
     shell:
         "./bin/makeAncestralGenome.bin {input} {output}"
 
-rule getSortCPG:
+rule getCPGInt:
     input:
         "data/{species}_ancestralGenome.fasta",
     output:
-        cpg = "data/{species}_Ancestral_CPG.fa",
-        ncpg = "data/{species}_Ancestral_CPG.fa"
+        "data/{species}_CPG_ints.bed"
     shell:
-        "./bin/sortCPG.bin {input} {output.cpg} {output.ncpg}"
+        "./bin/getCPGInt.bin {input} {output}"
 
 rule filterBarriers:
     input:
@@ -185,10 +184,12 @@ rule filterBarriers:
         
 rule countMuts:
     input:
+        "data/{species}_ancestralBases.vcf",
+        "data/{species}_CPG_ints.bed",
         "data/barriersAOE.tsv",
-        "data/ancestralBases{type}.diff"
     output:
-        "data/countBases{type}.tsv"
+        "{species}_CPG_muts.tsv",
+        "{species}_notCPG_muts.tsv"
     shell:
         "./bin/countMuts.bin {input} {output}"
 
