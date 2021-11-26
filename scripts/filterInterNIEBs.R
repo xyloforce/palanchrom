@@ -2,8 +2,8 @@
 library(readr)
 
 
-# args = commandArgs(trailingOnly=TRUE) # input, output
-args = c("/home/fabien/Documents/20200228_interSmallNFR.dat", "test_output.pouet")
+args = commandArgs(trailingOnly=TRUE) # input, output
+# args = c("/home/fabien/Documents/20200228_interSmallNFR.dat", "test_output.pouet")
 data = read_tsv(args[1], col_names = FALSE)
 
 # data = read_tsv("../Data/20200228_interSmallNFR.dat", col_names = FALSE)
