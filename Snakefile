@@ -19,6 +19,9 @@ def getCorrectFile(wildcards):
 def correctWildcard(wildcards):
     return wildcards.species[0].upper() + wildcards.species[1:]
 
+def getBarrierFile(wildcards):
+    return config["barriers"][wildcards.ref]
+
 # rule getDatFiles:
 #     shadow: "shallow"
 #     output:
@@ -176,9 +179,9 @@ rule getCPGInt:
 
 rule filterBarriers:
     input:
-        config["barriers"]
+        getBarrierFile
     output:
-        "data/barriersAOE.tsv"
+        "data/barriersAOE_{ref}.tsv"
     shell:
         "Rscript scripts/filterInterNIEBs.R {input} {output}"
         
@@ -186,7 +189,7 @@ rule countMuts:
     input:
         "data/{species}_ancestralBases.vcf",
         "data/{species}_CPG_ints.bed",
-        "data/barriersAOE.tsv",
+        "data/barriersAOE_{species}.tsv"
     output:
         "{species}_CPG_muts.tsv",
         "{species}_notCPG_muts.tsv"
