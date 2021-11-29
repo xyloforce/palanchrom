@@ -4,7 +4,7 @@
 #include "vcf_tools.h"
 
 int baseToIndex(char base) {
-    switch(base) {
+    switch(toupper(base)) {
         case 'A':
             return 0;
         case 'C':
