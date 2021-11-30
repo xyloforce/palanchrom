@@ -21,6 +21,8 @@ public:
     bool operator >= (const bed_entry& entry) const;
     bool operator <= (const bed_entry& entry) const;
     char getStrand() const;
+    void setName(std::string name);
+    std::string getName() const;
     std::string getIDFull() const;
     std::string getID() const;
     std::string getStringEntry() const;
@@ -37,7 +39,9 @@ class AOE_entry: public bed_entry {
 public:
     AOE_entry(std::string chrom, int start, int stop, char type, int zero);
     AOE_entry();
+    AOE_entry(bed_entry entry, int zero);
     int getRelativePos(int pos) const;
+    int getZero() const;
 private:
     int m_zero;
     char m_type;
@@ -64,19 +68,10 @@ public:
     void readBed();
     std::vector <bed_entry> getBedByID(std::string id);
     bool isInside(bed_entry entry);
+    std::map <bed_entry, std::vector<bed_entry>> overlap ( std::vector <bed_entry> currentInts, std::vector <bed_entry> pos);
     std::map <bed_entry, std::vector<bed_entry>> getOverlap ( std::string chrom, std::vector <bed_entry> pos);
 protected:
     std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
-};
-
-class minimal_sorted_bed: public sorted_bed {
-    public:
-    minimal_sorted_bed(std::string filename);
-    void readBed();
-    std::tuple <int, std::string, int, int, char> readBedLine();
-    std::map <std::array <int, 3>, bed_entry> getBedByID(std::string id);
-    private:
-    std::vector <int> m_content;
 };
 
 class AOEbed: public sorted_bed {

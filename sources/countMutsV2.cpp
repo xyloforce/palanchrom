@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
             if(matching_AOEs[convert].size() == 1) {
                 AOE_entry result = matching_AOEs[convert][0];
                 int posAOE(result.getRelativePos(entry.getPos()));
-                ACGTbyType[i][posAOE][entry.getRef()[0]][baseToIndex(entry.getAlternate())] ++;
+                ACGTbyType[i][posAOE][entry.getAlternate()][baseToIndex(entry.getRef()[0])] ++;
             } else if (matching_AOEs[convert].size() > 1) {
                 std::cout<< matching_AOEs[convert][0].getStringEntry() << std::endl;
                 std::cout<< matching_AOEs[convert][1].getStringEntry() << std::endl;

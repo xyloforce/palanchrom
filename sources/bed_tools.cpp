@@ -121,6 +121,14 @@ std::string bed_entry::getStringEntry() const {
     return m_chrom + '\t' + std::to_string(m_start) + '\t' + std::to_string(m_stop) + '\t' + m_name + '\t' + std::to_string(m_score) + '\t' + m_strand;
 }
 
+void bed_entry::setName(std::string name) {
+    m_name = name;
+}
+
+std::string bed_entry::getName() const {
+    return m_name;
+}
+
 AOE_entry::AOE_entry(std::string chrom, int start, int stop, char type, int zero) {
     m_chrom = chrom;
     m_start = start;
@@ -137,6 +145,14 @@ AOE_entry::AOE_entry() {
     m_zero = 0;
 }
 
+AOE_entry::AOE_entry(bed_entry entry, int zero) {
+    m_chrom = entry.getID();
+    m_start = entry.getStart();
+    m_stop = entry.getStop();
+    m_type = entry.getStrand();
+    m_zero = zero;
+}
+
 int AOE_entry::getRelativePos(int pos) const {
     int relativePos = m_zero - pos;
     if(m_type == 'L') {
@@ -146,9 +162,11 @@ int AOE_entry::getRelativePos(int pos) const {
     return relativePos;
 }
 
-bed::bed() {
-
+int AOE_entry::getZero() const {
+    return m_zero;
 }
+
+bed::bed() {}
 
 bed::bed ( std::string filename, bool read )
 {
@@ -233,15 +251,9 @@ void bed::writeBedLine(bed_entry entry) {
     m_output << entry.getStringEntry() << '\n';
 }
 
-std::map <bed_entry, std::vector<bed_entry>> sorted_bed::getOverlap ( std::string chrom, std::vector <bed_entry> pos)
+std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <bed_entry> currentInts, std::vector <bed_entry> pos)
 {
-    //objective : for a list of pos, return for each pos all ints that overlaps with it
-    std::vector <bed_entry> currentInts = getBedByID(chrom);
     std::map <bed_entry, std::vector<bed_entry>> matchs;
-    //dichotomic search on map
-    //find matching int quickly
-    //TODO A : change return type of getBedByID to vector ; B change all its uses to match change
-    //TODO C : then use dichotomic search !!!!!!
     int A(0), B(currentInts.size());
     bool found = false;
 
@@ -259,9 +271,9 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::getOverlap ( std::strin
                 matchs[entry].push_back(current);
                 unsigned int indexA(index);
                 unsigned int indexB(index);
-                while(indexA > 0) {
+                while((int)indexA - 1 > 0) {
                     indexA --;
-                    bed_entry current(currentInts[index]);
+                    bed_entry current(currentInts[indexA]);
                     status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
                     if(status != 0 && status != 4) {
                         matchs[entry].push_back(current);
@@ -269,9 +281,9 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::getOverlap ( std::strin
                         break;
                     }
                 }
-                while(indexB < currentInts.size()) {
+                while(indexB + 1 < currentInts.size()) {
                     indexB ++;
-                    bed_entry current = currentInts[index];
+                    bed_entry current = currentInts[indexB];
                     status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
                     if(status != 0 && status != 4) {
                         matchs[entry].push_back(current);
@@ -285,6 +297,12 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::getOverlap ( std::strin
     }
 
     return matchs;
+}
+
+std::map <bed_entry, std::vector<bed_entry>> sorted_bed::getOverlap ( std::string chrom, std::vector <bed_entry> pos)
+{
+    std::vector <bed_entry> currentInts = getBedByID(chrom);
+    return overlap(currentInts, pos);
 }
 
 bool sorted_bed::isInside(bed_entry entry) {
@@ -352,97 +370,6 @@ std::vector <bed_entry> sorted_bed::getBedByID(std::string id) {
         output.push_back(m_content[pair.second]);
     }
     std::sort(output.begin(), output.end());
-    return output;
-}
-
-minimal_sorted_bed::minimal_sorted_bed(std::string filename) {
-    m_input = std::ifstream(filename);
-    int index = 0;
-    while(!m_input.eof()) {
-        std::tuple <int, std::string, int, int, char> inputLine = readBedLine();
-        m_content.push_back(std::get <0>(inputLine));
-        std::array <int, 3> key;
-        key[0] = std::get <2>(inputLine);
-        key[1] = std::get <3>(inputLine);
-        key[3] = std::get <4>(inputLine);
-        m_indexes[std::get <1>(inputLine)][key] = index;
-        index ++;
-
-        if(index % 100 == 0) {
-            std::cout << index << "         \r";
-        }
-    }
-    std::cout << "Finished loading file" << std::endl;
-}
-
-std::tuple <int, std::string, int, int, char> minimal_sorted_bed::readBedLine() {
-    std::tuple <int, std::string, int, int, char> output;
-    std::get <0>(output) = m_input.tellg();
-    int col = 1;
-    char tchar = '\0';
-    char strand;
-    std::string chrom = "";
-    std::string tstart(""), tstop("");
-
-    while(tchar != '\n' && !m_input.eof()) {
-        // file is chrom start stop name strand
-        m_input.get(tchar);
-        
-        if(tchar != '\t' && tchar != '\n') {
-            switch(col) {
-                case 1:
-                    chrom += tchar;
-                    break;
-                case 2:
-                    tstart += tchar;
-                    break;
-                case 3:
-                    tstop += tchar;
-                    break;
-                case 4:
-                    break;
-                case 5:
-                    break;
-                case 6:
-                    strand = tchar;
-                    col ++;
-                    break;
-                default:
-                    std::cout << "Skipping chars" << std::endl;
-                    break;
-            }
-        } else if(tchar == '\t') {
-            col ++;
-        }
-    }
-    if (col == 3) {
-        std::get<1>(output) = chrom;
-        std::get<2>(output) = stoi(tstart);
-        std::get<3>(output) = stoi(tstop);
-        std::get<4>(output) = '+';
-    } else if (col < 3) {
-        std::cout << "Empty line, returning empty entry" << std::endl;
-        std::get<1>(output) = "";
-        std::get<2>(output) = 0;
-        std::get<3>(output) = 0;
-        std::get<4>(output) = '+';
-    } else {
-        std::get<1>(output) = chrom;
-        std::get<2>(output) = stoi(tstart);
-        std::get<3>(output) = stoi(tstop);
-        std::get<4>(output) = strand;
-    }
-    return output;
-}
-
-std::map <std::array <int, 3>, bed_entry> minimal_sorted_bed::getBedByID(std::string id) {
-    std::map <std::array <int, 3>, bed_entry> output;
-    for (const auto &pair : m_indexes[id]) {
-        int posLine = m_content[pair.second];
-        m_input.seekg(posLine, std::ios::beg);
-        bed_entry line = bed::readBedLine();
-        output[pair.first] = line;
-    }
     return output;
 }
 
@@ -535,52 +462,18 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (std::string chr
     //objective : for a list of pos, return for each pos all ints that overlaps with it
     std::vector <AOE_entry> currentInts = getBedByID(chrom);
     std::map <bed_entry, std::vector<AOE_entry>> matchs;
-    //dichotomic search on map
-    //find matching int quickly
-    //TODO A : change return type of getBedByID to vector ; B change all its uses to match change
-    //TODO C : then use dichotomic search !!!!!!
-    int A(0), B(currentInts.size());
-    bool found = false;
-
-    for(const auto &entry : pos) {
-        while(A <= B && !found) {
-            unsigned int index((A+B)/2);
-            AOE_entry current = currentInts[index];
-            int status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
-            if(status == 0) {
-                B = index - 1;
-            } else if(status == 4) {
-                A = index + 1;
-            } else {
-                // got an overlap
-                matchs[entry].push_back(current);
-                unsigned int indexA(index);
-                unsigned int indexB(index);
-                while(int (indexA) - 1 > 0) {
-                    indexA --;
-                    AOE_entry current(currentInts[indexA]);
-                    status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
-                    if(status != 0 && status != 4) {
-                        matchs[entry].push_back(current);
-                    } else {
-                        break;
-                    }
-                }
-                while(indexB + 1 < currentInts.size()) {
-                    indexB ++;
-                    AOE_entry current = currentInts[indexB];
-                    status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
-                    if(status != 0 && status != 4) {
-                        matchs[entry].push_back(current);
-                    } else {
-                        break;
-                    }
-                }
-                found = true;
-            }
+    // need to convert AOE entries to bed and back ??
+    std::vector <bed_entry> currentConv;
+    for(auto entry: currentInts) {
+        entry.setName(std::to_string(entry.getZero()));
+        currentConv.push_back(entry);
+    }
+    std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(currentConv, pos);
+    for(const auto entry: tmp_matchs) {
+        for(const auto entry2: entry.second) {
+            matchs[entry.first].push_back(AOE_entry(entry2, std::stoi(entry2.getName())));
         }
     }
-
     return matchs;
 }
 
