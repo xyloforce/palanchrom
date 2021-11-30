@@ -37,23 +37,25 @@ bed_entry::bed_entry()
 
 int bed_entry::isInside(int pos, int size = 1) const
 {
+    int start(pos);
+    int stop(pos + size);
 // BEWARE : we don't count last base as being in the int so a seq of pos & size 1 is only pos
-    if(m_start >= pos + size) {
+    if(start < m_start && stop <= m_start && start < m_stop && stop < m_stop) {
     // case -<->-|-|-----
         return 0;
-    } else if(m_start > pos && m_start < pos + size && m_stop >= (pos + size)) {
+    } else if(start < m_start && stop > m_start && start < m_stop && stop <= m_stop) {
     // case -<---|>|-----
         return 1;
-    } else if(m_start <= pos && m_stop >= (pos + size)) {
+    } else if(start >= m_start && stop > m_start && start < m_stop && stop <= m_stop) {
     // case -|---<>|-----
         return 2;
-    } else if(m_start <= pos && m_stop > pos && m_stop < (pos + size)) {
+    } else if(start >= m_start && stop > m_start && start < m_stop && stop > m_stop) {
     // case -|---<|>-----
         return 3;
-    } else if(m_stop <= pos) {
+    } else if(start > m_start && stop > m_start && start >= m_stop && stop > m_stop) {
     // case -|---|<>-----
         return 4;
-    } else if(m_start > pos && m_stop <= (pos + size)) {
+    } else if(start <= m_start && stop > m_start && start < m_stop && stop >= m_stop) {
     // case -<---||>-----
         return 5;
     } else {

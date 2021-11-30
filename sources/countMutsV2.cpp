@@ -41,11 +41,16 @@ int main(int argc, char* argv[]) {
 
     // 1 find pos that match with CG entries
     std::cout << "Starting analysis" << std::endl;
+    int count(0);
     for(const auto &entry: muts.getVCFEntries()) {
         if(CGints.isInside(bed_entry(entry.getChrom(), entry.getPos(), entry.getPos() + 1))) {
             mutsByType[0].push_back(entry);
         } else if (!(entry == vcf_entry())) {
             mutsByType[1].push_back(entry);
+        }
+        count ++;
+        if(count / muts.getVCFEntries().size() * 100 % 10 == 0) {
+            std::cout << count << "            \r";
         }
     }
 
@@ -54,7 +59,7 @@ int main(int argc, char* argv[]) {
 
     // 2 for the two lists of pos find matching AOE & translate pos relative to AOE
     for(unsigned int i(0); i < mutsByType.size(); i++) {
-        int count(0);
+        count = 0;
         for(const auto &entry : mutsByType[i]) {
             std::vector <bed_entry> convertedInts;
             bed_entry convert(entry.getChrom(), entry.getPos()-1, entry.getPos());
@@ -70,6 +75,7 @@ int main(int argc, char* argv[]) {
                 throw std::domain_error("Overlapping ints in AOE file");
             }
             count ++;
+            std::cout << count << std::endl;
             if(count % 1000 == 0) {
                 std::cout << count << "                \r";
             }
