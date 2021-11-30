@@ -271,11 +271,13 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
             } else {
                 // got an overlap
                 matchs[entry].push_back(current);
+                std::cout << "Searching for more overlaps" << std::endl;
                 unsigned int indexA(index);
                 unsigned int indexB(index);
                 while((int)indexA - 1 > 0) {
                     indexA --;
                     bed_entry current(currentInts[indexA]);
+                    std::cout << current.getStringEntry() << std::endl;
                     status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
                     if(status != 0 && status != 4) {
                         matchs[entry].push_back(current);
@@ -286,6 +288,7 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
                 while(indexB + 1 < currentInts.size()) {
                     indexB ++;
                     bed_entry current = currentInts[indexB];
+                    std::cout << current.getStringEntry() << std::endl;
                     status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
                     if(status != 0 && status != 4) {
                         matchs[entry].push_back(current);
@@ -306,6 +309,9 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::getOverlap ( std::strin
     std::vector <bed_entry> currentInts = getBedByID(chrom);
     return overlap(currentInts, pos);
 }
+
+// TODO create sorted_bed::isInsideSorted which takes vector of pos, sort it
+// and keep last index to speed up search
 
 bool sorted_bed::isInside(bed_entry entry) {
 // usable with pos only

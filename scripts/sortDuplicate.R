@@ -4,8 +4,8 @@ library("readr")
 args = commandArgs(trailingOnly = TRUE)
 
 print("Filtering overlaps...")
-overlaps = read_tsv(args[1], col_names = FALSE, show_col_types = FALSE)
-source = read_tsv(args[2], col_names = FALSE, show_col_types = FALSE)
+overlaps = read_tsv(args[1], col_names = FALSE)
+source = read_tsv(args[2], col_names = FALSE)
 
 not_overlaping = overlaps[overlaps$X7 < 2,]
 not_overlaping = not_overlaping$X4

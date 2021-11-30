@@ -24,7 +24,7 @@ int baseToIndex(char base) {
 int main(int argc, char* argv[]) {
 // in each CG is first and not CG second
     std::array<std::map <int, std::map<char, std::array<int, 5>>>, 2> ACGTbyType;
-    std::array<std::vector <vcf_entry>, 2> mutsByType;
+    std::array<std::vector <int>, 2> mutsByType;
 
     // files
     if(argc < 6) {
@@ -42,11 +42,12 @@ int main(int argc, char* argv[]) {
     // 1 find pos that match with CG entries
     std::cout << "Starting analysis" << std::endl;
     int count(0);
+    std::cout << "Counting CGs..." << std::endl;
     for(const auto &entry: muts.getVCFEntries()) {
         if(CGints.isInside(bed_entry(entry.getChrom(), entry.getPos(), entry.getPos() + 1))) {
-            mutsByType[0].push_back(entry);
+            mutsByType[0].push_back(count);
         } else if (!(entry == vcf_entry())) {
-            mutsByType[1].push_back(entry);
+            mutsByType[1].push_back(count);
         }
         count ++;
         if(count / muts.getVCFEntries().size() * 100 % 10 == 0) {
@@ -60,7 +61,8 @@ int main(int argc, char* argv[]) {
     // 2 for the two lists of pos find matching AOE & translate pos relative to AOE
     for(unsigned int i(0); i < mutsByType.size(); i++) {
         count = 0;
-        for(const auto &entry : mutsByType[i]) {
+        for(int j(0); j < mutsByType[i].size(); j ++) {
+            vcf_entry entry = muts.getVCFEntries()[mutsByType[i][j]];
             std::vector <bed_entry> convertedInts;
             bed_entry convert(entry.getChrom(), entry.getPos()-1, entry.getPos());
             convertedInts.push_back(convert);
