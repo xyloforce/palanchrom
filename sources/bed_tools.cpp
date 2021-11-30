@@ -38,10 +38,10 @@ bed_entry::bed_entry()
 int bed_entry::isInside(int pos, int size = 1) const
 {
 // BEWARE : we don't count last base as being in the int so a seq of pos & size 1 is only pos
-    if(m_start > pos + size) {
+    if(m_start >= pos + size) {
     // case -<->-|-|-----
         return 0;
-    } else if(m_start > pos && m_stop >= (pos + size)) {
+    } else if(m_start > pos && m_start < pos + size && m_stop >= (pos + size)) {
     // case -<---|>|-----
         return 1;
     } else if(m_start <= pos && m_stop >= (pos + size)) {
@@ -65,29 +65,7 @@ int bed_entry::isInside(int pos, int size = 1) const
 int bed_entry::isInside(bed_entry entry) const {
     int pos(entry.getStart());
     int size(entry.getStop() - entry.getStart());
-    // BEWARE : we don't count last base as being in the int so a seq of pos & size 1 is only pos
-    if(m_start > pos + size) {
-    // case -<->-|-|-----
-        return 0;
-    } else if(m_start > pos && m_stop >= (pos + size)) {
-    // case -<---|>|-----
-        return 1;
-    } else if(m_start <= pos && m_stop >= (pos + size)) {
-    // case -|---<>|-----
-        return 2;
-    } else if(m_start <= pos && m_stop > pos && m_stop < (pos + size)) {
-    // case -|---<|>-----
-        return 3;
-    } else if(m_stop <= pos) {
-    // case -|---|<>-----
-        return 4;
-    } else if(m_start > pos && m_stop <= (pos + size)) {
-    // case -<---||>-----
-        return 5;
-    } else {
-        std::cout << "Int is " << m_start << ":" << m_stop << " and pos is " << pos << ":" << pos + size << std::endl;
-        throw std::logic_error("Impossible combination of values");
-    }
+    return isInside(pos, size);
 }
 
 int bed_entry::getStart() const
@@ -326,6 +304,7 @@ bool sorted_bed::isInside(bed_entry entry) {
         } else if(val == 0) {
             B = index - 1;
         } else {
+            std::cout << "Val is : " << val << std::endl;
             throw std::logic_error("Unexpected overlap");
         }
     }
@@ -350,13 +329,15 @@ sorted_bed::sorted_bed(std::string filename) {
     int index = 0;
     while(!m_input.eof()) {
         bed_entry entry = readBedLine();
-        std::array <int, 3> key;
-        key[0] = entry.getStart();
-        key[1] = entry.getStop() - entry.getStart();
-        key[2] = entry.getStrand();
-        m_indexes[entry.getID()][key] = index;
-        m_content.push_back(entry);
-        index ++;
+        if(!(entry == bed_entry())) {
+            std::array <int, 3> key;
+            key[0] = entry.getStart();
+            key[1] = entry.getStop() - entry.getStart();
+            key[2] = entry.getStrand();
+            m_indexes[entry.getID()][key] = index;
+            m_content.push_back(entry);
+            index ++;
+        }
 
         if(index % 1000 == 0) {
             std::cout << index << "         \r";
@@ -585,7 +566,7 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (std::string chr
                         break;
                     }
                 }
-                while(int(indexB) + 1 < currentInts.size()) {
+                while(indexB + 1 < currentInts.size()) {
                     indexB ++;
                     AOE_entry current = currentInts[indexB];
                     status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
