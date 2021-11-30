@@ -4,5 +4,5 @@ outgroups:
 - ponAbe2
 - gorGor4
 barriers:
-	hg38: /home/fabien/Documents/Projets/Reprise_Sara/Data/hg38_20200228_interSmallNFR.dat
-	panTro5: /home/fabien/Documents/Projets/Reprise_Sara/Data/panTro5_20200228_interSmallNFR.dat
+ hg38: /home/fabien/Documents/Projets/Reprise_Sara/Data/hg38_20200228_interSmallNFR.dat
+ panTro5: /home/fabien/Documents/Projets/Reprise_Sara/Data/panTro5_20200228_interSmallNFR.dat
