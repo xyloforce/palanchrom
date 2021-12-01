@@ -66,8 +66,8 @@ rule getNonOverlapInt:
         
         echo Checking overlaps for species
         bedtools intersect -c -a tmp.{params.currentSp}.NOH.bed -b tmp.{params.currentSp}.NOH.bed > tmp.overlaps.bed
-        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.speciesA}.NOH.bed {output.bedHO} {output.bedHNO}
-        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.currentSp}.NOH.bed {output.bedSO} {output.bedSNO}
+        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.speciesA}.NOH.bed {output.bedHNO} {output.bedHO}
+        Rscript scripts/sortDuplicate.R tmp.overlaps.bed tmp.{params.currentSp}.NOH.bed {output.bedSNO} {output.bedSO}
         """
 
 rule sort:
