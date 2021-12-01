@@ -43,15 +43,16 @@ int main(int argc, char* argv[]) {
     std::cout << "Starting analysis" << std::endl;
     int count(0);
     std::cout << "Counting CGs..." << std::endl;
+    std::vector <bed_entry> convertedInts;
     for(const auto &entry: muts.getVCFEntries()) {
-        if(CGints.isInside(bed_entry(entry.getChrom(), entry.getPos(), entry.getPos() + 1))) {
+        std::cout << entry.getChrom() << std::endl ;
+        convertedInts.push_back(bed_entry(entry));
+    }
+    for(const auto &result: CGints.areInside(convertedInts)) {
+        if(result) {
             mutsByType[0].push_back(count);
-        } else if (!(entry == vcf_entry())) {
-            mutsByType[1].push_back(count);
-        }
-        count ++;
-        if(count / muts.getVCFEntries().size() * 100 % 10 == 0) {
-            std::cout << count << "            \r";
+        } else {
+             mutsByType[1].push_back(count);
         }
     }
 
@@ -61,7 +62,7 @@ int main(int argc, char* argv[]) {
     // 2 for the two lists of pos find matching AOE & translate pos relative to AOE
     for(unsigned int i(0); i < mutsByType.size(); i++) {
         count = 0;
-        for(int j(0); j < mutsByType[i].size(); j ++) {
+        for(unsigned int j(0); j < mutsByType[i].size(); j ++) {
             vcf_entry entry = muts.getVCFEntries()[mutsByType[i][j]];
             std::vector <bed_entry> convertedInts;
             bed_entry convert(entry.getChrom(), entry.getPos()-1, entry.getPos());
@@ -77,7 +78,6 @@ int main(int argc, char* argv[]) {
                 throw std::domain_error("Overlapping ints in AOE file");
             }
             count ++;
-            std::cout << count << std::endl;
             if(count % 1000 == 0) {
                 std::cout << count << "                \r";
             }

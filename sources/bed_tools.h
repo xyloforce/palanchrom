@@ -1,31 +1,41 @@
 #ifndef DEF_BED
 #define DEF_BED
+#include "vcf_tools.h"
 #include <string>
-#include <map>
 #include <fstream>
-#include <vector>
-
+#include <regex>
+#include <iostream>
 
 class bed_entry {
 public:
     bed_entry(std::string chrom, int start, int stop, std::string name, int score, char strand);
     bed_entry ( std::string chrom, int start, int stop);
+    bed_entry();
+    bed_entry(vcf_entry entry);
+
+  // functions
     int isInside(int pos, int size) const;
     int isInside(bed_entry entry) const;
-    bed_entry();
+
+  // getters
     int getStart() const;
     int getStop() const;
+    std::string getName() const;
+    std::string getIDFull() const;
+    std::string getID() const;
+    std::string getStringEntry() const;
+    char getStrand() const;
+
+  // setters
+    void setName(std::string name);
+
+  // operators
     bool operator == (const bed_entry& entry) const;
     bool operator > (const bed_entry& entry) const;
     bool operator < (const bed_entry& entry) const;
     bool operator >= (const bed_entry& entry) const;
     bool operator <= (const bed_entry& entry) const;
-    char getStrand() const;
-    void setName(std::string name);
-    std::string getName() const;
-    std::string getIDFull() const;
-    std::string getID() const;
-    std::string getStringEntry() const;
+
 protected:
     std::string m_chrom;
     int m_start;
@@ -70,6 +80,7 @@ public:
     bool isInside(bed_entry entry);
     std::map <bed_entry, std::vector<bed_entry>> overlap ( std::vector <bed_entry> currentInts, std::vector <bed_entry> pos);
     std::map <bed_entry, std::vector<bed_entry>> getOverlap ( std::string chrom, std::vector <bed_entry> pos);
+    std::vector <bool> areInside (std::vector <bed_entry> entries);
 protected:
     std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
 };

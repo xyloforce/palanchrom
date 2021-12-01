@@ -1,6 +1,5 @@
 #ifndef DEF_PERS
 #define DEF_PERS
-
 #include <string>
 #include <map>
 #include <fstream>
@@ -13,6 +12,7 @@ public:
     vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual = 0, std::string filter = ".", std::string info = ".");
     vcf_entry();
     char getAlternate() const;
+    int getQual() const;
     std::string getRef() const;
     std::string getAttributeString() const;
     std::string getChrom() const;

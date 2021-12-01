@@ -65,6 +65,10 @@ int vcf_entry::getPos() const
     return m_pos;
 }
 
+int vcf_entry::getQual() const {
+    return m_qual;
+}
+
 
 vcf_entry vcf::readVCFLine()
 {
@@ -146,12 +150,14 @@ vcf::vcf(std::string filename, bool read) {
         m_input = std::ifstream(filename);
         while(!m_input.eof()) {
             vcf_entry entry = readVCFLine();
-            m_content.push_back(entry);
-            std::tuple <int, std::string, char> description(entry.getPos(), entry.getRef(), entry.getAlternate());
-            m_indexes[entry.getChrom()][description] = index;
-            index ++;
-            if(index % 1000 == 0) {
-                std::cout << index << "           \r";
+            if(!(entry == vcf_entry())) {
+                m_content.push_back(entry);
+                std::tuple <int, std::string, char> description(entry.getPos(), entry.getRef(), entry.getAlternate());
+                m_indexes[entry.getChrom()][description] = index;
+                index ++;
+                if(index % 1000 == 0) {
+                    std::cout << index << "           \r";
+                }
             }
         }
         std::cout << std::endl;

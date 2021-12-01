@@ -1,8 +1,5 @@
 #include "bed_tools.h"
-#include <string>
-#include <fstream>
-#include <regex>
-#include <iostream>
+#include "vcf_tools.h"
 
 bed_entry::bed_entry ( std::string chrom, int start, int stop, std::string name, int score, char strand)
 {
@@ -32,6 +29,15 @@ bed_entry::bed_entry()
     m_name = ".";
     m_score = 0;
     m_strand = '.';
+}
+
+bed_entry::bed_entry(vcf_entry entry) {
+    m_chrom = entry.getChrom();
+    m_start = entry.getPos() - 1; // one-based vcf
+    m_stop = entry.getPos(); // half open int
+    m_name = entry.getRef() + entry.getAlternate();
+    m_score = entry.getQual();
+    m_strand = '+';
 }
 
 
@@ -87,27 +93,43 @@ char bed_entry::getStrand() const
 
 bool bed_entry::operator == (const bed_entry& entry) const
 {
-    return (m_start == entry.getStart() && m_stop == entry.getStop());
+    return (m_start == entry.getStart() && m_stop == entry.getStop() && m_chrom == entry.getID());
 }
 
 bool bed_entry::operator > (const bed_entry& entry) const
 {
-    return (m_start > entry.getStart());
+    if(m_chrom == entry.getID()) {
+        return (m_start > entry.getStart());
+    } else {
+        return (m_chrom > entry.getID());
+    }
 }
 
 bool bed_entry::operator < (const bed_entry& entry) const
 {
-    return (m_start < entry.getStart());
+    if(m_chrom == entry.getID()) {
+        return (m_start < entry.getStart());
+    } else {
+        return (m_chrom < entry.getID());
+    }
 }
 
 bool bed_entry::operator >= (const bed_entry& entry) const
 {
-    return (m_start >= entry.getStart());
+    if(m_chrom == entry.getID()) {
+        return (m_start >= entry.getStart());
+    } else {
+        return (m_chrom >= entry.getID());
+    }
 }
 
 bool bed_entry::operator <= (const bed_entry& entry) const
 {
-    return (m_start <= entry.getStart());
+    if(m_chrom == entry.getID()) {
+        return (m_start <= entry.getStart());
+    } else {
+        return (m_chrom <= entry.getID());
+    }
 }
 
 std::string bed_entry::getIDFull() const {
@@ -277,7 +299,6 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
                 while((int)indexA - 1 > 0) {
                     indexA --;
                     bed_entry current(currentInts[indexA]);
-                    std::cout << current.getStringEntry() << std::endl;
                     status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
                     if(status != 0 && status != 4) {
                         matchs[entry].push_back(current);
@@ -288,7 +309,6 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
                 while(indexB + 1 < currentInts.size()) {
                     indexB ++;
                     bed_entry current = currentInts[indexB];
-                    std::cout << current.getStringEntry() << std::endl;
                     status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
                     if(status != 0 && status != 4) {
                         matchs[entry].push_back(current);
@@ -310,8 +330,41 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::getOverlap ( std::strin
     return overlap(currentInts, pos);
 }
 
-// TODO create sorted_bed::isInsideSorted which takes vector of pos, sort it
-// and keep last index to speed up search
+std::vector <bool> sorted_bed::areInside (std::vector <bed_entry> entries) {
+    std::vector <bool> matchs;
+    std::sort(entries.begin(), entries.end());
+    std::string lastChrom = "";
+    std::vector <bed_entry> currentInts;
+    int A(0);
+
+    for(const auto &entry: entries) {
+        if(lastChrom != entry.getID()) {
+            currentInts = getBedByID(entry.getID());
+            A = 0;
+            lastChrom = entry.getID();
+        }
+        int B(currentInts.size() - 1); // impossible to access the size element : 0-based
+        bool found = false;
+        while(A <= B && !found) {
+            int index ((A+B) / 2);
+            bed_entry selected(currentInts[index]);
+            // FIXME plante toujours avec basic_string error
+            int val(selected.isInside(entry));
+            if(val == 2) {
+                found = true;
+            } else if(val == 4) {
+                A = index + 1;
+            } else if(val == 0) {
+                B = index - 1;
+            } else {
+                std::cout << "Val is : " << val << std::endl;
+                throw std::logic_error("Unexpected overlap");
+            }
+        }
+        matchs.push_back(found);
+    }
+    return matchs;
+}
 
 bool sorted_bed::isInside(bed_entry entry) {
 // usable with pos only
@@ -477,8 +530,8 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (std::string chr
         currentConv.push_back(entry);
     }
     std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(currentConv, pos);
-    for(const auto entry: tmp_matchs) {
-        for(const auto entry2: entry.second) {
+    for(const auto &entry: tmp_matchs) {
+        for(const auto &entry2: entry.second) {
             matchs[entry.first].push_back(AOE_entry(entry2, std::stoi(entry2.getName())));
         }
     }
