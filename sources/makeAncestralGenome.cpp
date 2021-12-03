@@ -41,7 +41,6 @@ int main(int argc, char* argv[]) {
         // entry2.editSeq(N, 0, entry2.getSize());
         
         std::vector <bed_entry> currentInt = intervals.getBedByID(entry.getChrom());
-        std::cout << "Checking int..." << currentInt.size() << " intervals left" << std::endl;
         int count = 0;
 
         for(const auto &line : currentInt) {
@@ -57,7 +56,6 @@ int main(int argc, char* argv[]) {
         std::cout << std::endl;
         count = 0;
         std::vector <vcf_entry> currentVCF = mutations.getVCFByID(entry.getChrom());
-        std::cout << "Checking mutations..." << currentVCF.size() << " mutations left" << std::endl;
         for(const auto &VCFentry : currentVCF) {
             temp = "";
             count ++;

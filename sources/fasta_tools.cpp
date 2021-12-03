@@ -175,7 +175,6 @@ void fasta_entry::write_fasta_entry(std::ofstream& outputFile, bool bedtools_typ
     } else {
         outputFile << ">" << m_header.getID() << '\n';
     }
-    outputFile << ">" << m_header.getID() << ":" << m_header.getStart() << "-" << m_header.getEnd() << "(" << m_header.getStrand() << ")" << '\n';
     outputFile << m_sequence.getSequence() << '\n';
 }
 

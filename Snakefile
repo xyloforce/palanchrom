@@ -193,6 +193,8 @@ rule countMuts:
     output:
         "{species}_CPG_muts.tsv",
         "{species}_notCPG_muts.tsv"
+    resources:
+        mem_cons = 50
     shell:
         "./bin/countMuts.bin {input} {output}"
 
