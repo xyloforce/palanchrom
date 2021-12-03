@@ -168,8 +168,13 @@ void fasta_entry::trimSequence(int size, int end)
     }
 }
 
-void fasta_entry::write_fasta_entry(std::ofstream& outputFile)
+void fasta_entry::write_fasta_entry(std::ofstream& outputFile, bool bedtools_type)
 {
+    if(bedtools_type) {
+        outputFile << ">" << m_header.getID() << ":" << m_header.getStart() << "-" << m_header.getEnd() << "(" << m_header.getStrand() << ")" << '\n';
+    } else {
+        outputFile << ">" << m_header.getID() << '\n';
+    }
     outputFile << ">" << m_header.getID() << ":" << m_header.getStart() << "-" << m_header.getEnd() << "(" << m_header.getStrand() << ")" << '\n';
     outputFile << m_sequence.getSequence() << '\n';
 }
@@ -322,7 +327,7 @@ fasta_entry fasta::read_fasta_line()
 
 void fasta::write_fasta_entry(fasta_entry entry)
 {
-    entry.write_fasta_entry(m_output);
+    entry.write_fasta_entry(m_output, m_bedtools_type);
 }
 
 bool fasta::isEOF() const

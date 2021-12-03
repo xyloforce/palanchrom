@@ -52,7 +52,7 @@ public:
     std::string getChrom();
     char getStrand();
     void trimSequence(int size, int end);
-    void write_fasta_entry(std::ofstream& outputFile);
+    void write_fasta_entry(std::ofstream& outputFile, bool bedtools_type);
     long getPos(long pos_sequence);
     fasta_entry subsetEntry(int begin, int end);
     int getSize();
