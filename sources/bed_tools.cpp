@@ -277,11 +277,13 @@ void bed::writeBedLine(bed_entry entry) {
 
 std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <bed_entry> currentInts, std::vector <bed_entry> pos)
 {
+    std::sort(pos.begin(), pos.end());
     std::map <bed_entry, std::vector<bed_entry>> matchs;
-    int A(0), B(currentInts.size());
+    int A(0);
     bool found = false;
 
     for(const auto &entry : pos) {
+        int B(currentInts.size());
         while(A <= B && !found) {
             unsigned int index((A+B)/2);
             bed_entry current = currentInts[index];
@@ -293,7 +295,6 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
             } else {
                 // got an overlap
                 matchs[entry].push_back(current);
-                std::cout << "Searching for more overlaps" << std::endl;
                 unsigned int indexA(index);
                 unsigned int indexB(index);
                 while((int)indexA - 1 > 0) {
@@ -479,14 +480,19 @@ AOE_entry AOEbed::readAOEline() {
                 case 3:
                     tstop += tchar;
                     break;
-                case 4:
+                case  4:
                     name += tchar;
                     break;
                 case 5:
                     tscore += tchar;
                     break;
                 case 6:
-                    strand = tchar;
+                    if(tchar == 'R' || tchar == 'L') {
+                        strand = tchar;
+                    } else {
+                        std::cout << "Expected R or L, got " << tchar << std::endl;
+                        throw std::domain_error("malformed file, incorrect type definition");
+                    }
                     break;
                 case 7:
                     tZero += tchar;

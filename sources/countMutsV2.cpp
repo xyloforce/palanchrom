@@ -45,15 +45,15 @@ int main(int argc, char* argv[]) {
     std::cout << "Counting CGs..." << std::endl;
     std::vector <bed_entry> convertedInts;
     for(const auto &entry: muts.getVCFEntries()) {
-        std::cout << entry.getChrom() << std::endl ;
         convertedInts.push_back(bed_entry(entry));
     }
     for(const auto &result: CGints.areInside(convertedInts)) {
         if(result) {
             mutsByType[0].push_back(count);
         } else {
-             mutsByType[1].push_back(count);
+            mutsByType[1].push_back(count);
         }
+        count ++;
     }
 
     std::cout << "Found " << mutsByType[0].size() << " mutations in CPG zones" << std::endl;
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
             std::map <bed_entry, std::vector <AOE_entry>> matching_AOEs = AOEs.getOverlap(entry.getChrom(), convertedInts);
             if(matching_AOEs[convert].size() == 1) {
                 AOE_entry result = matching_AOEs[convert][0];
-                int posAOE(result.getRelativePos(entry.getPos()));
+                int posAOE(result.getRelativePos(entry.getPos()-1)); // one based vs zero based
                 ACGTbyType[i][posAOE][entry.getAlternate()][baseToIndex(entry.getRef()[0])] ++;
             } else if (matching_AOEs[convert].size() > 1) {
                 std::cout<< matching_AOEs[convert][0].getStringEntry() << std::endl;

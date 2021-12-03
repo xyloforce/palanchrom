@@ -24,11 +24,11 @@ int main(int argc, char *argv[])
     while (!inputFile.isEOF())
     {
         fasta_entry entry(inputFile.read_fasta_line());
-        int startCG = 0;
-        int stopCG = 0;
+        int startCG = '\0';
+        int stopCG = '\0';
 
         std::string sequenceData(entry.getSequence());
-        for (int i(0); i < sequenceData.size(); i++)
+        for (int i(0); i < (int)sequenceData.size(); i++)
         {
             if (sequenceData[i] == 'C')
             {
@@ -41,6 +41,10 @@ int main(int argc, char *argv[])
                         startCG = i;
                         stopCG = i; // new int
                     }
+                }
+                else if(i + 1 < sequenceData.size() && sequenceData.substr(i, 2) == "CG") {
+                    startCG = i;
+                    stopCG = i; // new int
                 }
             }
             else if (sequenceData[i] == 'G')
@@ -56,29 +60,12 @@ int main(int argc, char *argv[])
                         stopCG = i + 1;
                         outputFile.writeBedLine(bed_entry(entry.getChrom(), startCG, stopCG, ".", 0, '+'));
                     } // end of an int
+                } else if(i - 1 > -1 && sequenceData.substr(i-1, 2) == "CG") {
+                    stopCG = i + 1 ;
+                    outputFile.writeBedLine(bed_entry(entry.getChrom(), startCG, stopCG, ".", 0, '+'));
                 }
             }
-            else
-            {
-            }
         }
-        // char lastChar('\0');
-        // for(int i(0); i<sequenceData.size(); i++) {
-        //     if(lastChar != '\0') {
-        //         if(toupper(lastChar) == 'C' && toupper(sequenceData[i]) == 'G') {
-        //             cpg = cpg + lastChar + sequenceData[i];
-        //             no_cpg += "--";
-        //             lastChar = '\0';
-        //         } else {
-        //             cpg += "--";
-        //             no_cpg = no_cpg + lastChar + sequenceData[i];
-        //             lastChar = '\0';
-        //         }
-        //     } else if((i+1) > sequenceData.size()) {
-        //         no_cpg += sequenceData[i];
-        //     } else {
-        //         lastChar = sequenceData[i];
-        //     }
         count++;
         if (count % 10 == 0)
         {

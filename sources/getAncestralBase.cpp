@@ -8,6 +8,9 @@
 
 int main(int argc, char* argv[])
 {
+    if(argc < 4) {
+        throw std::domain_error("Need at last three args : fasta1, fasta2, vcf output");
+    }
     // defines array of fasta objects
     fasta files[argc -2];
     // defines array of fasta entries objects

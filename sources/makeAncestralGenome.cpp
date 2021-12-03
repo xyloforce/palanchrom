@@ -26,7 +26,6 @@ int main(int argc, char* argv[]) {
     
     while(!inputFasta.isEOF()) {
         entry = inputFasta.read_fasta_line();
-        std::cout << entry.getHeader() << " " << entry.getSize() << std::endl;
         // for each entry in bed
         // subset entry accordingly
         // get seq
