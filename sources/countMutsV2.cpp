@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
         for(unsigned int j(0); j < mutsByType[i].size(); j ++) {
             vcf_entry entry = muts.getVCFEntries()[mutsByType[i][j]];
             std::vector <bed_entry> convertedInts;
-            bed_entry convert(entry.getChrom(), entry.getPos()-1, entry.getPos());
+            bed_entry convert(entry);
             convertedInts.push_back(convert);
             std::map <bed_entry, std::vector <AOE_entry>> matching_AOEs = AOEs.getOverlap(entry.getChrom(), convertedInts);
             if(matching_AOEs[convert].size() == 1) {

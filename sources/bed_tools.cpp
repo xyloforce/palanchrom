@@ -349,7 +349,6 @@ std::vector <bool> sorted_bed::areInside (std::vector <bed_entry> entries) {
         while(A <= B && !found) {
             int index ((A+B) / 2);
             bed_entry selected(currentInts[index]);
-            // FIXME plante toujours avec basic_string error
             int val(selected.isInside(entry));
             if(val == 2) {
                 found = true;
@@ -419,7 +418,7 @@ sorted_bed::sorted_bed(std::string filename) {
             index ++;
         }
 
-        if(index % 1000 == 0) {
+        if(index % 10000 == 0) {
             std::cout << index << "         \r";
         }
     }
