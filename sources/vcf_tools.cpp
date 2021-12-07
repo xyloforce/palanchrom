@@ -205,6 +205,10 @@ std::vector <vcf_entry> vcf::getVCFEntries() const {
     return m_content;
 }
 
+vcf_entry vcf::getVCFEntry(int index) {
+    return m_content[index];
+}
+
 bool vcf::isEOF() const {
     return m_input.eof();
 }

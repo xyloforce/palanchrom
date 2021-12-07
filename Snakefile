@@ -185,9 +185,17 @@ rule filterBarriers:
     shell:
         "Rscript scripts/filterInterNIEBs.R {input} {output}"
         
+rule filterVCF:
+    input:
+        "data/{species}_ancestralBases.vcf"
+    output:
+        "data/{species}.filtered_ancestralBases.vcf"
+    shell:
+        "Rscript filterVCF.R {input} {output}"
+
 rule countMuts:
     input:
-        "data/{species}_ancestralBases.vcf",
+        "data/{species}.filtered_ancestralBases.vcf",
         "data/{species}_CPG_ints.bed",
         "data/barriersAOE_{species}.tsv"
     output:

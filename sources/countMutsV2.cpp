@@ -24,7 +24,7 @@ int baseToIndex(char base) {
 int main(int argc, char* argv[]) {
 // in each CG is first and not CG second
     std::array<std::map <int, std::map<char, std::array<int, 5>>>, 2> ACGTbyType;
-    std::array<std::vector <int>, 2> mutsByType;
+    std::array<std::map <std::string, std::vector <int>>, 2> mutsByType;
 
     // files
     if(argc < 6) {
@@ -40,49 +40,57 @@ int main(int argc, char* argv[]) {
     AOEbed AOEs (argv[3]);
 
     // 1 find pos that match with CG entries
+    std::cout << std::endl;
     std::cout << "Starting analysis" << std::endl;
     int count(0);
-    std::cout << "Counting CGs..." << std::endl;
+    std::cout << "Searching muts in CGs ..." << std::endl;
     std::vector <bed_entry> convertedInts;
     for(const auto &entry: muts.getVCFEntries()) {
         convertedInts.push_back(bed_entry(entry));
     }
-    for(const auto &result: CGints.areInside(convertedInts)) {
-        if(result) {
-            mutsByType[0].push_back(count);
+    std::vector <bool> areInside = CGints.areInside(convertedInts);
+    std::cout << "Finished searching, sorting" << std::endl;
+    int nCPG(0), CPG(0);
+    for(unsigned int i(0); i < areInside.size(); i ++) {
+        if(areInside[i]) {
+            mutsByType[0][muts.getVCFEntry(i).getChrom()].push_back(i);
+            CPG ++;
         } else {
-            mutsByType[1].push_back(count);
+            mutsByType[1][muts.getVCFEntry(i).getChrom()].push_back(i);
+            nCPG ++;
         }
-        count ++;
     }
-
-    std::cout << "Found " << mutsByType[0].size() << " mutations in CPG zones" << std::endl;
-    std::cout << "Found " << mutsByType[1].size() << " mutations in nCPG zones" << std::endl;
+    std::cout << "Found " << CPG << " mutations in CPG zones" << std::endl;
+    std::cout << "Found " << nCPG << " mutations in nCPG zones" << std::endl;
+    std::cout << std::endl;
 
     // 2 for the two lists of pos find matching AOE & translate pos relative to AOE
     for(unsigned int i(0); i < mutsByType.size(); i++) {
         count = 0;
-        for(unsigned int j(0); j < mutsByType[i].size(); j ++) {
-            vcf_entry entry = muts.getVCFEntries()[mutsByType[i][j]];
+        for(const auto &chromIndex: mutsByType[i]) { // chromIndex is std::string : std::vector <int>
             std::vector <bed_entry> convertedInts;
-            bed_entry convert(entry);
-            convertedInts.push_back(convert);
-            std::map <bed_entry, std::vector <AOE_entry>> matching_AOEs = AOEs.getOverlap(entry.getChrom(), convertedInts);
-            if(matching_AOEs[convert].size() == 1) {
-                AOE_entry result = matching_AOEs[convert][0];
-                int posAOE(result.getRelativePos(entry.getPos()-1)); // one based vs zero based
+            for(const auto &index : chromIndex.second) { // index is on muts.getVCFentries
+                bed_entry tmp(muts.getVCFEntry(index));
+                tmp.setName(std::to_string(index));
+                convertedInts.push_back(tmp); // convert vcf to bed and put it in vector
+            }
+            std::map <bed_entry, std::vector <AOE_entry>> matching_AOEs = AOEs.getOverlap(chromIndex.first, convertedInts);
+            for(const auto &result: matching_AOEs) { // bed_entry : one AOE_entry normally
+                if(result.second.size() > 1) {
+                    std::cout<< result.second[0].getStringEntry() << std::endl;
+                    std::cout<< result.second[1].getStringEntry() << std::endl;
+                    throw std::domain_error("Overlapping ints in AOE file");
+                }
+                vcf_entry entry = muts.getVCFEntry(stoi(result.first.getName()));
+                int posAOE(result.second[0].getRelativePos(entry.getPos()-1)); // one based vs zero based
                 ACGTbyType[i][posAOE][entry.getAlternate()][baseToIndex(entry.getRef()[0])] ++;
-            } else if (matching_AOEs[convert].size() > 1) {
-                std::cout<< matching_AOEs[convert][0].getStringEntry() << std::endl;
-                std::cout<< matching_AOEs[convert][1].getStringEntry() << std::endl;
-                throw std::domain_error("Overlapping ints in AOE file");
             }
             count ++;
-            if(count % 1000 == 0) {
-                std::cout << count << "                \r";
-            }
+            std::cout << "Treated " << count << "chromosomes                 \r";
         }
     }
+    std::cout << std::endl;
+    std::cout << "Writing results to file" << std::endl;
 
     // 3 output in the right file
     std::array<std::ofstream, 2> files;

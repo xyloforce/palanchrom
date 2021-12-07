@@ -40,6 +40,7 @@ public:
     // std::string isMuted(std::string chrom, int pos, std::string ref_bases);
     std::vector <vcf_entry> getVCFByID(std::string id);
     std::vector <vcf_entry> getVCFEntries() const;
+    vcf_entry getVCFEntry(int index);
     bool isEOF() const;
 private:
     std::vector<vcf_entry> m_content;

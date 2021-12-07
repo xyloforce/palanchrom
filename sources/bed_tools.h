@@ -64,6 +64,7 @@ public:
     bed_entry readBedLine();
     std::map <std::string, bed_entry> getBedByID(std::string id) const;
     void writeBedLine(bed_entry entry);
+    bed_entry getBedEntry(int index);
 protected:
     std::vector <bed_entry> m_content;
     bool m_isInit;

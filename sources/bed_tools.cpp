@@ -46,21 +46,22 @@ int bed_entry::isInside(int pos, int size = 1) const
     int start(pos);
     int stop(pos + size);
 // BEWARE : we don't count last base as being in the int so a seq of pos & size 1 is only pos
-    if(start < m_start && stop <= m_start && start < m_stop && stop < m_stop) {
+
+    if(stop <= m_start) {
     // case -<->-|-|-----
         return 0;
-    } else if(start < m_start && stop > m_start && start < m_stop && stop <= m_stop) {
-    // case -<---|>|-----
-        return 1;
-    } else if(start >= m_start && stop > m_start && start < m_stop && stop <= m_stop) {
-    // case -|---<>|-----
-        return 2;
-    } else if(start >= m_start && stop > m_start && start < m_stop && stop > m_stop) {
-    // case -|---<|>-----
-        return 3;
-    } else if(start > m_start && stop > m_start && start >= m_stop && stop > m_stop) {
+    } else if(start >= m_stop) {
     // case -|---|<>-----
         return 4;
+    } else if(start >= m_start && stop <= m_stop) {
+    // case -|---<>|-----
+        return 2;
+    } else if(start >= m_start && start < m_stop && stop > m_stop) {
+    // case -|---<|>-----
+        return 3;
+    } else if(start < m_start && stop > m_start && stop <= m_stop) {
+    // case -<---|>|-----
+        return 1;
     } else if(start <= m_start && stop > m_start && start < m_stop && stop >= m_stop) {
     // case -<---||>-----
         return 5;
@@ -245,7 +246,6 @@ bed_entry bed::readBedLine() {
                     break;
                 default:
                     std::cout << "Skipping chars" << std::endl;
-                    break;
             }
         } else if(tchar == '\t') {
             col ++;
@@ -275,49 +275,56 @@ void bed::writeBedLine(bed_entry entry) {
     m_output << entry.getStringEntry() << '\n';
 }
 
+bed_entry bed::getBedEntry(int index) {
+    return m_content[index];
+}
+
 std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <bed_entry> currentInts, std::vector <bed_entry> pos)
 {
     std::sort(pos.begin(), pos.end());
     std::map <bed_entry, std::vector<bed_entry>> matchs;
     int A(0);
-    bool found = false;
 
     for(const auto &entry : pos) {
+        bool found = false;
         int B(currentInts.size());
         while(A <= B && !found) {
             unsigned int index((A+B)/2);
-            bed_entry current = currentInts[index];
-            int status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
-            if(status == 0) {
-                B = index - 1;
-            } else if(status == 4) {
-                A = index + 1;
-            } else {
-                // got an overlap
-                matchs[entry].push_back(current);
-                unsigned int indexA(index);
-                unsigned int indexB(index);
-                while((int)indexA - 1 > 0) {
-                    indexA --;
-                    bed_entry current(currentInts[indexA]);
-                    status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
-                    if(status != 0 && status != 4) {
-                        matchs[entry].push_back(current);
-                    } else {
-                        break;
+            int status = currentInts[index].isInside(entry.getStart(), entry.getStop() - entry.getStart());
+            switch(status) {
+                case 0:
+                    B = index - 1;
+                    break;
+                case 4:
+                    A = index + 1;
+                    break;
+                default:
+                    // got an overlap
+                    if(matchs.find(entry) != matchs.end()) {
+                        throw std::logic_error("unexpected multiple entry");
                     }
-                }
-                while(indexB + 1 < currentInts.size()) {
-                    indexB ++;
-                    bed_entry current = currentInts[indexB];
-                    status = current.isInside(entry.getStart(), entry.getStop() - entry.getStart());
-                    if(status != 0 && status != 4) {
-                        matchs[entry].push_back(current);
-                    } else {
-                        break;
+                    matchs[entry].push_back(currentInts[index]);
+                    unsigned int indexA(index);
+                    unsigned int indexB(index);
+                    while((int)indexA - 1 > 0) {
+                        indexA --;
+                        status = currentInts[indexA].isInside(entry.getStart(), entry.getStop() - entry.getStart());
+                        if(status != 0 && status != 4) {
+                            matchs[entry].push_back(currentInts[indexA]);
+                        } else {
+                            break;
+                        }
                     }
-                }
-                found = true;
+                    while(indexB + 1 < currentInts.size()) {
+                        indexB ++;
+                        status = currentInts[indexB].isInside(entry.getStart(), entry.getStop() - entry.getStart());
+                        if(status != 0 && status != 4) {
+                            matchs[entry].push_back(currentInts[indexB]);
+                        } else {
+                            break;
+                        }
+                    }
+                    found = true;
             }
         }
     }
@@ -348,8 +355,7 @@ std::vector <bool> sorted_bed::areInside (std::vector <bed_entry> entries) {
         bool found = false;
         while(A <= B && !found) {
             int index ((A+B) / 2);
-            bed_entry selected(currentInts[index]);
-            int val(selected.isInside(entry));
+            int val(currentInts[index].isInside(entry));
             if(val == 2) {
                 found = true;
             } else if(val == 4) {
@@ -498,7 +504,6 @@ AOE_entry AOEbed::readAOEline() {
                     break;
                 default:
                     std::cout << "Skipping chars" << std::endl;
-                    break;
             }
         } else if(tchar == '\t') {
             col ++;
