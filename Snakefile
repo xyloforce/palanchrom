@@ -191,7 +191,7 @@ rule filterVCF:
     output:
         "data/{species}.filtered_ancestralBases.vcf"
     shell:
-        "Rscript filterVCF.R {input} {output}"
+        "Rscript scripts/filterVCF.R {input} {output}"
 
 rule countMuts:
     input:
