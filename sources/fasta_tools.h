@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <map>
+#include "bed_tools.h"
 
 class header {
 private:
@@ -30,10 +32,10 @@ public:
     sequence(std::string sequence);
     sequence();
     std::string getReverseComplement();
-    std::string getSequence();
+    std::string getSequence() const;
     void setSequence(std::string sequence);
     sequence subsetSequence(int begin, int end);
-    int getSize();
+    int getSize() const;
 };
 
 class fasta_entry {
@@ -46,22 +48,24 @@ public:
     fasta_entry();
     fasta_entry(sequence seq, header head, bool bedtools_type);
     std::string getHeader() const;
-    std::string getSequence();
+    std::string getSequence() const;
     std::string getPluStrand();
     std::string getMinusStrand();
     std::string getChrom();
     char getStrand();
     void trimSequence(int size, int end);
     void write_fasta_entry(std::ofstream& outputFile, bool bedtools_type);
-    long getPos(long pos_sequence);
+    long getPos(long pos_sequence) const;
     fasta_entry subsetEntry(int begin, int end);
-    int getSize();
+    int getSize() const;
     void editSeq(std::string edit, int start, int end);
+    fasta_entry getSubset(bed_entry entry);
 };
 
 class fasta {
 private:
     std::vector <fasta_entry> m_content;
+    std::map <std::string, int> m_indexes;
     std::ifstream m_input;
     std::ofstream m_output;
     bool m_bedtools_type;
@@ -70,9 +74,12 @@ private:
 public:
     fasta(std::string filename, std::string read, bool bedtools_type);
     fasta();
-    fasta_entry read_fasta_line();
+    fasta_entry readFastaLine();
     void write_fasta_entry(fasta_entry entry);
     bool isEOF() const;
+    fasta_entry getFastaById(std::string id);
+    fasta_entry getSubset(bed_entry entry);
+    std::vector <fasta_entry> getSeqFromInts (std::vector <bed_entry> intsOfInterest);
 };
 
 #endif

@@ -33,3 +33,31 @@ std::string toUpper(std::string lower) {
     }
     return result;
 }
+
+std::array <int, 5> countBasesInSequence(fasta_entry entry) {
+    std::array <int, 5> results;
+    std::string seq = entry.getSequence();
+    for(const auto &chara : seq) {
+        switch(toupper(chara)) {
+            case 'A':
+                results[0] ++;
+                break;
+            case 'C':
+                results[1] ++;
+                break;
+            case 'G':
+                results[2] ++;
+                break;
+            case 'T':
+                results[3] ++;
+                break;
+            case 'N':
+                results[4] ++;
+                break;
+            default:
+                std::cout << chara << std::endl;
+                throw std::logic_error("Unexpected base");
+        }
+    }
+    return results;
+}

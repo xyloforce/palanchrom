@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     while(!files[0].isEOF()) {
         // read one fasta entry for each file
         for(int i(0); i < argc -2; i ++) {
-            entries[i] = files[i].read_fasta_line();
+            entries[i] = files[i].readFastaLine();
         }
         // now you need to compare each base of sequences
         // for this you need to know if outgroups is defined

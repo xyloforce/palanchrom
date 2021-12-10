@@ -22,8 +22,9 @@ public:
     int getStop() const;
     std::string getName() const;
     std::string getIDFull() const;
-    std::string getID() const;
+    std::string getChrom() const;
     std::string getStringEntry() const;
+    int getScore() const;
     char getStrand() const;
 
   // setters
@@ -52,6 +53,7 @@ public:
     AOE_entry(bed_entry entry, int zero);
     int getRelativePos(int pos) const;
     int getZero() const;
+    char getType() const;
 private:
     int m_zero;
     char m_type;
@@ -65,6 +67,7 @@ public:
     std::map <std::string, bed_entry> getBedByID(std::string id) const;
     void writeBedLine(bed_entry entry);
     bed_entry getBedEntry(int index);
+    std::vector <bed_entry> getEntries() const;
 protected:
     std::vector <bed_entry> m_content;
     bool m_isInit;
@@ -76,22 +79,37 @@ class sorted_bed: public bed {
 public:
     sorted_bed();
     sorted_bed(std::string filename);
+    sorted_bed(std::vector <bed_entry> content);
+
+  // functions
     void readBed();
-    std::vector <bed_entry> getBedByID(std::string id);
     bool isInside(bed_entry entry);
-    std::map <bed_entry, std::vector<bed_entry>> overlap ( std::vector <bed_entry> currentInts, std::vector <bed_entry> pos);
-    std::map <bed_entry, std::vector<bed_entry>> getOverlap ( std::string chrom, std::vector <bed_entry> pos);
     std::vector <bool> areInside (std::vector <bed_entry> entries);
+    std::map <bed_entry, std::vector<bed_entry>> getOverlap ( std::string chrom, std::vector <bed_entry> pos);
+    std::map <bed_entry, std::vector <bed_entry>> getOverlap (sorted_bed& toOverlap);
+
+  // getters
+    std::vector <bed_entry> getBedByID(std::string id);
+    std::vector <std::string> getChroms();
+
 protected:
     std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
+
+  // internal functions
+    std::map <bed_entry, std::vector<bed_entry>> overlap ( std::vector <bed_entry> currentInts, std::vector <bed_entry> pos);
+    std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect);
 };
 
 class AOEbed: public sorted_bed {
 public:
 	AOEbed(std::string filename);
 	AOE_entry readAOEline();
-  std::map <bed_entry, std::vector<AOE_entry>> getOverlap(std::string chrom, std::vector <bed_entry> pos);
+  std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
+  std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);
   std::vector <AOE_entry> getBedByID(std::string id);
+  std::vector <AOE_entry> getIntersects(sorted_bed& inputFile);
+  std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source);
+  std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);
 private:
 	std::vector <AOE_entry> m_content;
 	std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;

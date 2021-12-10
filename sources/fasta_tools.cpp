@@ -63,12 +63,12 @@ std::string sequence::getReverseComplement()
     return result;
 }
 
-std::string sequence::getSequence()
+std::string sequence::getSequence() const
 {
     return m_sequence;
 }
 
-int sequence::getSize()
+int sequence::getSize() const
 {
     return m_sequence.size();
 }
@@ -135,7 +135,7 @@ std::string fasta_entry::getPluStrand()
     }
 }
 
-std::string fasta_entry::getSequence()
+std::string fasta_entry::getSequence() const
 {
     return m_sequence.getSequence();
 }
@@ -178,7 +178,7 @@ void fasta_entry::write_fasta_entry(std::ofstream& outputFile, bool bedtools_typ
     outputFile << m_sequence.getSequence() << '\n';
 }
 
-long fasta_entry::getPos(long pos_sequence)
+long fasta_entry::getPos(long pos_sequence) const
 {
     // beware : were 0-based and need to return 1-based pos
     // for negative strand its ok bc the last pos is not included so it's like zero
@@ -211,7 +211,7 @@ fasta_entry fasta_entry::subsetEntry(int begin, int end)
     return tEntry;
 }
 
-int fasta_entry::getSize()
+int fasta_entry::getSize() const
 {
     return m_sequence.getSize();
 }
@@ -245,11 +245,16 @@ fasta::fasta()
 
 fasta::fasta(std::string filename, std::string read, bool bedtools_type)
 {
+    int index(0);
     m_bedtools_type = bedtools_type;
     if(read == "read") {
         m_input = std::ifstream(filename);
         while(!m_input.eof()) {
-            m_content.push_back(read_fasta_line());
+            fasta_entry entry = readFastaLine();
+            m_content.push_back(entry);
+            m_indexes[entry.getChrom()] = index;
+            index ++;
+            std::cout << index << "     \r" << std::flush;
         }
     } else if(read == "read_line") {
         m_input = std::ifstream(filename);
@@ -258,7 +263,20 @@ fasta::fasta(std::string filename, std::string read, bool bedtools_type)
     }
 }
 
-fasta_entry fasta::read_fasta_line()
+fasta_entry fasta::getFastaById(std::string id) {
+    return m_content[m_indexes[id]];
+}
+
+fasta_entry fasta::getSubset(bed_entry entry) {
+    fasta_entry entryF = getFastaById(entry.getChrom());
+    return entryF.getSubset(entry);
+}
+
+fasta_entry fasta_entry::getSubset(bed_entry entry) {
+    return subsetEntry(entry.getStart(), entry.getStop());
+}
+
+fasta_entry fasta::readFastaLine()
 {
     char tchar = '\0';
     std::string headerF = "";
@@ -334,3 +352,17 @@ bool fasta::isEOF() const
     return m_input.eof();
 }
 
+std::vector <fasta_entry> fasta::getSeqFromInts (std::vector <bed_entry> intsOfInterest) {
+    std::sort(intsOfInterest.begin(), intsOfInterest.end());
+    std::string lastChrom = "";
+    fasta_entry entryF;
+    std::vector <fasta_entry> results;
+    for(const auto &entryB: intsOfInterest) {
+        if(lastChrom != entryB.getChrom()) {
+            entryF = getFastaById(entryB.getChrom());
+            lastChrom = entryB.getChrom();
+        }
+        results.push_back(entryF.getSubset(entryB));
+    }
+    return results;
+}

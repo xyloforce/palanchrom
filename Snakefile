@@ -189,23 +189,31 @@ rule filterVCF:
     input:
         "data/{species}_ancestralBases.vcf"
     output:
-        "data/{species}.filtered_ancestralBases.vcf"
+        temp("data/{species}.filtered_ancestralBases.vcf")
     shell:
         "Rscript scripts/filterVCF.R {input} {output}"
 
 rule countMuts:
     input:
-        "data/{species}.filtered_ancestralBases.vcf",
+        "data/barriersAOE_{species}.tsv",
         "data/{species}_CPG_ints.bed",
-        "data/barriersAOE_{species}.tsv"
+        "data/{species}.filtered_ancestralBases.vcf"
     output:
-        "{species}_CPG_muts.tsv",
-        "{species}_notCPG_muts.tsv"
+        "data/{species}_CPG_muts.tsv"
     resources:
         mem_cons = 50
     shell:
         "./bin/countMuts.bin {input} {output}"
 
+rule countBases:
+    input:
+        "data/{ref}.fa",
+        "data/barriersAOE_{species}.tsv",
+        "data/{species}_CPG_ints.bed"
+    output:
+        "data/{species}_CPG_bases.tsv"
+    shell:
+        "./bin/countBases.bin {input} {output}"
 #rule intersectChimpBarriers:
     #input:
         #"filteredBarriersFile",

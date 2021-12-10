@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
     while (!inputFile.isEOF())
     {
-        fasta_entry entry(inputFile.read_fasta_line());
+        fasta_entry entry(inputFile.readFastaLine());
         int startCG = '\0';
         int stopCG = '\0';
 

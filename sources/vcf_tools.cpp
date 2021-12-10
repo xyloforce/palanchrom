@@ -1,8 +1,5 @@
 #include "vcf_tools.h"
-#include <fstream>
-#include <regex>
-#include <string>
-#include <iostream>
+#include "bed_tools.h"
 
 vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual, std::string filter, std::string info)
 {
@@ -28,9 +25,29 @@ vcf_entry::vcf_entry()
     m_info = ".";
 }
 
+vcf_entry::vcf_entry(bed_entry entry) {
+    m_chrom = entry.getChrom();
+    m_pos = entry.getStart() + 1;
+    m_id = ".";
+    std::string name = entry.getName();
+    m_ref = name.substr(0, name.size() - 1);
+    m_alt = name[name.size()-1];
+    m_qual = entry.getScore();
+    m_info = ".";
+}
+
 bool vcf_entry::operator == (const vcf_entry& entry) const
 {
     return (m_pos == entry.getPos() && m_ref == entry.getRef() && m_alt == entry.getAlternate());
+}
+
+bool vcf_entry::operator < (const vcf_entry& entry) const
+{
+    if(m_chrom != entry.getChrom()) {
+        return m_chrom < entry.getChrom();
+    } else {
+        return m_pos < entry.getPos();
+    }
 }
 
 char vcf_entry::getAlternate() const
@@ -167,26 +184,6 @@ vcf::vcf(std::string filename, bool read) {
         m_output <<"#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n";
     }
 }
- 
-// std::string vcf::isMuted ( std::string chrom, int pos, std::string ref_bases )
-// {
-//     if (m_content.find(chrom) != m_content.end()) {
-//         if (m_content[chrom].find(pos) != m_content[chrom].end()) {
-//             if(m_content[chrom][pos].getRef() == toUpper(ref_bases)) {
-//                 std::string tstring = "";
-//                 tstring += m_content[chrom][pos].getAlternate();
-//                 return tstring;
-//             } else {
-//                 std::cout<<"Pos : "<< pos << " base is "<< ref_bases << " and expected is " << m_content[chrom][pos].getRef() << std::endl;
-//                 throw std::logic_error("ref doesnt match current base");
-//             }
-//         } else {
-//             return ref_bases;
-//         }
-//     } else {
-//         return ref_bases;
-//     }
-// }
 
 void vcf::vcf_writeline(vcf_entry entry_vcf) {
     entry_vcf.vcf_writeline(m_output);
@@ -211,4 +208,28 @@ vcf_entry vcf::getVCFEntry(int index) {
 
 bool vcf::isEOF() const {
     return m_input.eof();
+}
+
+std::vector <bed_entry> vcf::convertToBed(std::vector <vcf_entry> entries) {
+    std::vector <bed_entry> converted;
+    for(const auto &entry: entries) {
+        converted.push_back(bed_entry(entry));
+    }
+    return converted;
+}
+
+std::vector <bed_entry> vcf::convertToBed() {
+    std::vector <bed_entry> converted;
+    for(const auto &entry: m_content) {
+        converted.push_back(bed_entry(entry));
+    }
+    return converted;
+}
+
+std::vector <std::string> vcf::getChroms() const {
+    std::vector <std::string> results;
+    for(const auto &pair: m_indexes) {
+        results.push_back(pair.first);
+    }
+    return results;
 }

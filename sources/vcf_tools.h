@@ -1,5 +1,5 @@
-#ifndef DEF_PERS
-#define DEF_PERS
+#ifndef DEF_VCF
+#define DEF_VCF
 #include <string>
 #include <map>
 #include <fstream>
@@ -7,10 +7,14 @@
 
 std::string toUpper(std::string lower);
 
+class bed;
+class bed_entry;
+
 class vcf_entry {
 public:
     vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual = 0, std::string filter = ".", std::string info = ".");
     vcf_entry();
+    vcf_entry(bed_entry entry);
     char getAlternate() const;
     int getQual() const;
     std::string getRef() const;
@@ -19,6 +23,7 @@ public:
     int getPos() const;
     void vcf_writeline(std::ofstream& output) const;
     bool operator == (const vcf_entry& entry) const;
+    bool operator < (const vcf_entry& entry) const;
 
 private:
     std::string m_chrom;
@@ -40,8 +45,11 @@ public:
     // std::string isMuted(std::string chrom, int pos, std::string ref_bases);
     std::vector <vcf_entry> getVCFByID(std::string id);
     std::vector <vcf_entry> getVCFEntries() const;
+    std::vector <std::string> getChroms() const;
     vcf_entry getVCFEntry(int index);
     bool isEOF() const;
+    std::vector <bed_entry> convertToBed(std::vector <vcf_entry> entries);
+    std::vector <bed_entry> convertToBed();
 private:
     std::vector<vcf_entry> m_content;
     std::map <std::string, std::map <std::tuple <int, std::string, char>, int>> m_indexes;
