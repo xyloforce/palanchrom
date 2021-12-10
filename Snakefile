@@ -4,8 +4,10 @@ wildcard_constraints:
 
 rule all:
     input:
-        "panTro5_CPG_muts.tsv",
-        "hg38_CPG_muts.tsv"
+        "data/panTro5_CPG_bases.tsv",
+        "data/hg38_CPG_bases.tsv",
+        "data/panTro5_CPG_muts.tsv",
+        "data/hg38_CPG_muts.tsv"
 
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
@@ -207,7 +209,7 @@ rule countMuts:
 
 rule countBases:
     input:
-        "data/{ref}.fa",
+        "data/{species}.fa",
         "data/barriersAOE_{species}.tsv",
         "data/{species}_CPG_ints.bed"
     output:
