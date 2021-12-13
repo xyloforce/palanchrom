@@ -155,6 +155,10 @@ void bed_entry::setName(std::string name) {
     m_name = name;
 }
 
+void bed_entry::setStrand(char strand) {
+    m_strand = strand;
+}
+
 std::string bed_entry::getName() const {
     return m_name;
 }
@@ -184,7 +188,7 @@ AOE_entry::AOE_entry(bed_entry entry, int zero) {
 }
 
 int AOE_entry::getRelativePos(int pos) const {
-    int relativePos = m_zero - pos;
+    int relativePos = pos - m_zero;
     if(m_type == 'R') {
         // ------[--{--]---|---[--}--]-----
         // {--]---| is left int : before ] it's "-"
@@ -662,6 +666,7 @@ std::vector <bed_entry> AOEbed::convertToBed(std::vector <AOE_entry> source) {
     std::vector <bed_entry> currentConv;
     for(auto entry: source) {
         entry.setName(std::to_string(entry.getZero()));
+        entry.setStrand(entry.getType());
         currentConv.push_back(entry);
     }
     return currentConv;

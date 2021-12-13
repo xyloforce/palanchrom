@@ -29,6 +29,7 @@ public:
 
   // setters
     void setName(std::string name);
+    void setStrand(char strand);
 
   // operators
     bool operator == (const bed_entry& entry) const;
