@@ -61,3 +61,38 @@ std::array <int, 5> countBasesInSequence(fasta_entry entry) {
     }
     return results;
 }
+
+std::vector <bed_entry> matchPattern(std::string pattern, fasta_entry entry) {
+    std::vector <bed_entry> values;
+    int size(pattern.size());
+    int wait(0);
+    int endPos(size);
+    for(int i(0); i<entry.getSize(); i++) {
+        if(wait == 0) {
+            std::cout << "*****" << std::endl;
+            std::cout << entry.subsetEntry(i, i + size).getSequence() << std::endl;
+            if(entry.subsetEntry(i, i + size).getSequence() == pattern) {
+                endPos = i + size -1;
+                for(int j(1); j*size<entry.getSize(); j++) {
+                    if(entry.subsetEntry(i + (size*(j-1)), i + (size*j)).getSequence() != pattern) {
+                        break;
+                    } else {
+                        std::cout << j << std::endl;
+                        endPos = i+size*j;
+                    }
+                }
+                values.push_back(bed_entry(entry.getChrom(), i, endPos));
+                i = endPos - size;
+            } else {
+                endPos = i + size;
+            }
+            wait = entry.searchChar(pattern[0], endPos - size + 1); // -2 bc pattern begin
+            std::cout << i << " : " << endPos << " : " << wait << std::endl;
+        }
+        wait --;
+        // obvious solution : take substring for each pos and check
+        // but safer : take substring -> check -> then search first letter of pattern -> skip search until finding it again
+
+    }
+    return values;
+}

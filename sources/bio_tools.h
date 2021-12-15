@@ -3,9 +3,11 @@
 
 #include <string>
 #include "fasta_tools.h"
+#include "bed_tools.h"
 
 char reverseComp(char base);
 std::string toUpper(std::string lower);
 std::array <int, 5> countBasesInSequence(fasta_entry entry);
+std::vector <bed_entry> matchPattern(std::string pattern, fasta_entry entry);
 
 #endif

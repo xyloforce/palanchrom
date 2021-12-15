@@ -36,6 +36,9 @@ int main(int argc, char* argv[]) {
         std::string str_mut("");
         str_mut += toupper(entry.getAlternate());
         str_mut += toupper(entry.getRef()[0]);
+        if(str_mut == "AT") {
+            std::cout << entry.getPos() << std::endl;
+        }
         counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
     }
 

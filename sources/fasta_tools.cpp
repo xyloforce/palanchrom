@@ -366,3 +366,16 @@ std::vector <fasta_entry> fasta::getSeqFromInts (std::vector <bed_entry> intsOfI
     }
     return results;
 }
+
+int sequence::searchChar(char searched, int pos) const {
+    for(int i(pos); i<m_sequence.size(); i++) {
+        if(m_sequence[i] == searched) {
+            return i - pos + 1; // bc wait will be decremented post-settings
+        }
+    }
+    return m_sequence.size();
+}
+
+int fasta_entry::searchChar(char searched, int pos) const {
+    return m_sequence.searchChar(searched, pos);
+}

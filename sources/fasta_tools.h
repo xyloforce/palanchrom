@@ -36,6 +36,7 @@ public:
     void setSequence(std::string sequence);
     sequence subsetSequence(int begin, int end);
     int getSize() const;
+    int searchChar(char searched, int pos) const;
 };
 
 class fasta_entry {
@@ -59,6 +60,7 @@ public:
     fasta_entry subsetEntry(int begin, int end);
     int getSize() const;
     void editSeq(std::string edit, int start, int end);
+    int searchChar(char searched, int pos) const;
     fasta_entry getSubset(bed_entry entry);
 };
 
