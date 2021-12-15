@@ -75,7 +75,6 @@ std::vector <bed_entry> matchPattern(std::string pattern, fasta_entry entry) {
                     if(entry.subsetEntry(i + (size*(j-1)), i + (size*j)).getSequence() != pattern) {
                         break;
                     } else {
-                        std::cout << j << std::endl;
                         endPos = i+size*j;
                     }
                 }
