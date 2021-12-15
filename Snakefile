@@ -177,7 +177,7 @@ rule getCPGInt:
     output:
         "data/{species}_CPG_ints.bed"
     shell:
-        "./bin/getCPGInt.bin {input} {output}"
+        "./bin/getCPGInt.bin CG {input} {output}"
 
 rule filterBarriers:
     input:
