@@ -486,6 +486,8 @@ sorted_bed::sorted_bed(std::vector <bed_entry> content) {
     }
 }
 
+
+
 std::vector <bed_entry> sorted_bed::getBedByID(std::string id) {
     std::vector <bed_entry> output;
     for (const auto &pair : m_indexes[id]) {
@@ -508,6 +510,19 @@ AOEbed::AOEbed(std::string filename) {
             m_indexes[entry.getChrom()][pos] = index;
             index ++;
         }
+    }
+}
+
+AOEbed::AOEbed(std::vector <AOE_entry> content) {
+    int index(0);
+    m_content = std::vector <AOE_entry>();
+    for(const auto &entry: content) {
+        m_content.push_back(entry);
+        std::array <int, 2> pos;
+        pos[0] = entry.getStart();
+        pos[1] = entry.getStop();
+        m_indexes[entry.getChrom()][pos] = index;
+        index ++;
     }
 }
 

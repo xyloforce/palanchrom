@@ -104,6 +104,7 @@ protected:
 class AOEbed: public sorted_bed {
 public:
 	AOEbed(std::string filename);
+  AOEbed(std::vector <AOE_entry> content);
 	AOE_entry readAOEline();
   std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
   std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);

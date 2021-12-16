@@ -17,14 +17,13 @@ int main(int argc, char* argv[]) {
     sorted_bed mask(argv[2]);
     
     std::cout << "Intersecting ints..." << std::endl;
-    std::vector <AOE_entry> toCount = intsOfInterest.getIntersects(mask);
-    std::sort(toCount.begin(), toCount.end());
+    AOEbed virtualF(intsOfInterest.getIntersects(mask));
     
     std::cout << "Loading mutations..." << std::endl;
     vcf muts(argv[3], "read");
     
     std::cout << "Getting muts in ints" << std::endl;
-    std::map <bed_entry, std::vector <AOE_entry>> overlaps = intsOfInterest.getOverlap(muts);
+    std::map <bed_entry, std::vector <AOE_entry>> overlaps = virtualF.getOverlap(muts);
 
     std::cout << "Getting muts by pos" << std::endl;
     for(const auto &pair: overlaps) {
@@ -37,7 +36,8 @@ int main(int argc, char* argv[]) {
         str_mut += toupper(entry.getAlternate());
         str_mut += toupper(entry.getRef()[0]);
         if(str_mut == "AT") {
-            std::cout << entry.getPos() << std::endl;
+            std::cout << pair.second[0].getStringEntry() << std::endl;
+            std::cout << entry.getAttributeString() << std::endl;
         }
         counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
     }
