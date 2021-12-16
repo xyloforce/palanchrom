@@ -92,3 +92,34 @@ std::vector <bed_entry> matchPattern(std::string pattern, fasta_entry entry) {
     }
     return values;
 }
+
+std::vector <std::string> addN(std::string toAdd) {
+    std::vector <std::string> addedN;
+    for(int i(0); i < toAdd.size(); i++) {
+        std::string tmp(toAdd);
+        if(tmp[i] != 'N') {
+            tmp[i] = 'N';
+            addedN.push_back(tmp);
+        }
+    }
+    return addedN;
+}
+
+std::vector <std::string> addNEachPos(std::string toAdd) {
+    std::vector <std::string> results;
+    std::vector <std::string> tmp (1, toAdd);
+    std::vector <std::string> tmp2;
+    std::string allN;
+    for(int i(0); i < toAdd.size(); i++) {
+        allN += 'N';
+    }
+    for(int j(0); j < tmp.size(); j++) {
+        if(tmp[j] == allN) {
+            break;
+        }
+        tmp2 = addN(tmp[j]);
+        results.insert(results.end(), tmp2.begin(), tmp2.end());
+        tmp.insert(tmp.end(), tmp2.begin(), tmp2.end());
+    }
+    return results;
+}
