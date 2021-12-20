@@ -7,7 +7,11 @@ rule all:
         "data/panTro5_CPG_bases.tsv",
         "data/hg38_CPG_bases.tsv",
         "data/panTro5_CPG_muts.tsv",
-        "data/hg38_CPG_muts.tsv"
+        "data/hg38_CPG_muts.tsv",
+        "data/panTro5_nCPG_bases.tsv",
+        "data/hg38_nCPG_bases.tsv",
+        "data/panTro5_nCPG_muts.tsv",
+        "data/hg38_nCPG_muts.tsv"
 
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
@@ -175,9 +179,10 @@ rule getCPGInt:
     input:
         "data/{species}_ancestralGenome.fasta",
     output:
-        "data/{species}_CPG_ints.bed"
+        "data/{species}_CPG_ints.bed",
+        "data/{species}_nCPG_ints.bed"
     shell:
-        "./bin/getCPGInt.bin CG {input} {output}"
+        "./bin/getPattern.bin CG {input} {output}"
 
 rule filterBarriers:
     input:
@@ -198,10 +203,10 @@ rule filterVCF:
 rule countMuts:
     input:
         "data/barriersAOE_{species}.tsv",
-        "data/{species}_CPG_ints.bed",
+        "data/{species}_{type}_ints.bed",
         "data/{species}.filtered_ancestralBases.vcf"
     output:
-        "data/{species}_CPG_muts.tsv"
+        "data/{species}_{type}_muts.tsv"
     resources:
         mem_cons = 50
     shell:
@@ -211,14 +216,8 @@ rule countBases:
     input:
         "data/{species}.fa",
         "data/barriersAOE_{species}.tsv",
-        "data/{species}_CPG_ints.bed"
+        "data/{species}_{type}_ints.bed"
     output:
-        "data/{species}_CPG_bases.tsv"
+        "data/{species}_{type}_bases.tsv"
     shell:
         "./bin/countBases.bin {input} {output}"
-#rule intersectChimpBarriers:
-    #input:
-        #"filteredBarriersFile",
-        #"commonLiftSpeciesChimp" # ATTENTION need to allow for a change in reference
-    #output:
-        #"barriersInCommonLifts"

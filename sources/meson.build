@@ -32,10 +32,10 @@ executable('getAncestralBase.bin',
 	install: true,
 	link_with : [bed_tools, fasta_tools, vcf_tools])
 
-getCPGInt_sources = ['getCPGInt.cpp']
+getPattern_sources = ['getPattern.cpp']
 
-executable('getCPGInt.bin',
-	getCPGInt_sources,
+executable('getPattern.bin',
+	getPattern_sources,
 	install: true,
 	link_with : [bed_tools, fasta_tools, bio_tools])
 
@@ -52,10 +52,3 @@ executable('countBases.bin',
 	countBases_sources,
 	install: true,
 	link_with: [bed_tools, fasta_tools, bio_tools])
-
-getNonPattern_sources = ['getNonPattern.cpp']
-
-executable('testNonPattern.bin',
-	getNonPattern_sources,
-	install: true,
-	link_with: [bio_tools])

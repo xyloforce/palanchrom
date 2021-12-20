@@ -8,12 +8,12 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc < 4)
+    if (argc < 5)
     {
         throw std::domain_error("Unsufficient number of args : need pattern, source fasta and name of bed output");
     }
     std::string pattern(argv[1]);
-    std::string regex = constructRegex(addNEachPos);
+    std::string regex = constructRegex(addNEachPos(pattern));
 
     std::cout << "Reading input..." << std::endl;
     fasta inputFile(argv[2], "read_line", false);
