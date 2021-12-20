@@ -2,6 +2,7 @@
 #include "bio_tools.h"
 #include <iostream>
 #include <fstream>
+#include <regex>
 
 header::header(std::string chrom, int start = 0, int stop = 0, char strand = 'U')
 {
@@ -78,12 +79,16 @@ void sequence::setSequence(std::string sequence) {
     m_sequence = sequence;
 }
 
-sequence sequence::subsetSequence ( int begin, int end )
+sequence sequence::subsetSequence ( int begin, int end ) const
 {
     std::string tString;
     tString = m_sequence.substr(begin, end - begin);
     sequence tSeq(tString);
     return tSeq;
+}
+
+char sequence::getChar(int index) const {
+    return m_sequence[index];
 }
 
 fasta_entry::fasta_entry(std::string inputSeq, std::string id, int start = 0, int stop = 0, char strand = 'U', bool bedtools_type = false)
@@ -200,7 +205,7 @@ std::string fasta_entry::getChrom()
     return m_header.getID();
 }
 
-fasta_entry fasta_entry::subsetEntry(int begin, int end)
+fasta_entry fasta_entry::subsetEntry(int begin, int end) const
 {
     sequence tSequence = m_sequence.subsetSequence(begin, end);
     header tHeader = m_header;
@@ -378,4 +383,76 @@ int sequence::searchChar(char searched, int pos) const {
 
 int fasta_entry::searchChar(char searched, int pos) const {
     return m_sequence.searchChar(searched, pos);
+}
+
+std::vector <bed_entry> fasta_entry::matchPattern(std::string pattern) const {
+    std::vector <bed_entry> values;
+    int size(pattern.size());
+    int wait(0);
+    int endPos(size);
+    for(int i(0); i< m_sequence.getSize(); i++) {
+        if(wait == 0) {
+            if(subsetEntry(i, i + size).getSequence() == pattern) {
+                endPos = i + size -1;
+                for(int j(1); j*size<m_sequence.getSize(); j++) {
+                    if(subsetEntry(i + (size*(j-1)), i + (size*j)).getSequence() != pattern) {
+                        break;
+                    } else {
+                        endPos = i+size*j;
+                    }
+                }
+                values.push_back(bed_entry(m_header.getID(), i, endPos));
+                i = endPos - size;
+            } else {
+                endPos = i + size;
+            }
+            wait = m_sequence.searchChar(pattern[0], endPos - size + 1); // -2 bc pattern begin
+        }
+        wait --;
+        // obvious solution : take substring for each pos and check
+        // but safer : take substring -> check -> then search first letter of pattern -> skip search until finding it again
+
+    }
+    return values;
+}
+
+std::vector <bed_entry> fasta_entry::matchPatterns(std::string pattern) const {
+    std::string sequence(m_sequence.getSequence());
+    std::regex regex(pattern);
+    std::vector <bed_entry> results;
+
+    std::regex_iterator <std::string::iterator> rit (sequence.begin(), sequence.end(), regex);
+    std::regex_iterator <std::string::iterator> rend;
+
+    while(rit != rend) {
+        int position = rit -> position();
+        std::string match = rit -> str();
+        int length = position + match.size();
+        bed_entry entry(m_header.getID(), position, length, match, 0, '.');
+        results.push_back(entry);
+        rit ++;
+    }
+
+    return results;
+}
+
+std::vector <bed_entry> fasta_entry::reverseInts (std::vector <bed_entry> ints) const {
+    std::sort(ints.begin(), ints.end());
+    std::vector <bed_entry> results;
+    for(int i(0); i < ints.size(); i++) {
+        if(i == 0) {
+            if(ints[i].getStart() - m_header.getStart() > 0) {
+                results.push_back(bed_entry(m_header.getID(), m_header.getStart(), ints[i].getStart()));
+            }
+        } else if(i+1 == ints.size()) {
+            if(m_header.getEnd() - ints[i].getStop() > 0) {
+                results.push_back(bed_entry(m_header.getID(), ints[i].getStop(), m_header.getEnd()));
+            }
+        } else {
+            if(ints[i].getStart() - ints[i-1].getStop() > 0) {
+                results.push_back(bed_entry(m_header.getID(), ints[i-1].getStop(), ints[i].getStart()));
+            }
+        }
+    }
+    return results;
 }

@@ -62,37 +62,6 @@ std::array <int, 5> countBasesInSequence(fasta_entry entry) {
     return results;
 }
 
-std::vector <bed_entry> matchPattern(std::string pattern, fasta_entry entry) {
-    std::vector <bed_entry> values;
-    int size(pattern.size());
-    int wait(0);
-    int endPos(size);
-    for(int i(0); i<entry.getSize(); i++) {
-        if(wait == 0) {
-            if(entry.subsetEntry(i, i + size).getSequence() == pattern) {
-                endPos = i + size -1;
-                for(int j(1); j*size<entry.getSize(); j++) {
-                    if(entry.subsetEntry(i + (size*(j-1)), i + (size*j)).getSequence() != pattern) {
-                        break;
-                    } else {
-                        endPos = i+size*j;
-                    }
-                }
-                values.push_back(bed_entry(entry.getChrom(), i, endPos));
-                i = endPos - size;
-            } else {
-                endPos = i + size;
-            }
-            wait = entry.searchChar(pattern[0], endPos - size + 1); // -2 bc pattern begin
-        }
-        wait --;
-        // obvious solution : take substring for each pos and check
-        // but safer : take substring -> check -> then search first letter of pattern -> skip search until finding it again
-
-    }
-    return values;
-}
-
 std::vector <std::string> addN(std::string toAdd) {
     std::vector <std::string> addedN;
     for(int i(0); i < toAdd.size(); i++) {
@@ -121,5 +90,18 @@ std::vector <std::string> addNEachPos(std::string toAdd) {
         results.insert(results.end(), tmp2.begin(), tmp2.end());
         tmp.insert(tmp.end(), tmp2.begin(), tmp2.end());
     }
+    results.resize(std::distance(results.begin(), std::unique(results.begin(), results.end())));
+    results.push_back(toAdd);
     return results;
+}
+
+std::string constructRegex(std::vector <std::string> patterns) {
+    std::string finalRegex = "";
+    for(int i(0); i < patterns.size(); i++) {
+        finalRegex += patterns[i];
+        if(i + 1 != patterns.size()) {
+            finalRegex += "|";
+        }
+    }
+    return finalRegex;
 }

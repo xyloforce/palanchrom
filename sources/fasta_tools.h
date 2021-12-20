@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <map>
+#include <unordered_set>
 #include "bed_tools.h"
 
 class header {
@@ -33,8 +34,9 @@ public:
     sequence();
     std::string getReverseComplement();
     std::string getSequence() const;
+    char getChar(int index) const;
     void setSequence(std::string sequence);
-    sequence subsetSequence(int begin, int end);
+    sequence subsetSequence(int begin, int end) const;
     int getSize() const;
     int searchChar(char searched, int pos) const;
 };
@@ -57,11 +59,14 @@ public:
     void trimSequence(int size, int end);
     void write_fasta_entry(std::ofstream& outputFile, bool bedtools_type);
     long getPos(long pos_sequence) const;
-    fasta_entry subsetEntry(int begin, int end);
+    fasta_entry subsetEntry(int begin, int end) const;
     int getSize() const;
     void editSeq(std::string edit, int start, int end);
     int searchChar(char searched, int pos) const;
     fasta_entry getSubset(bed_entry entry);
+    std::vector <bed_entry> matchPattern(std::string pattern) const;
+    std::vector <bed_entry> matchPatterns(std::string pattern) const;
+    std::vector <bed_entry> reverseInts (std::vector <bed_entry> ints) const;
 };
 
 class fasta {

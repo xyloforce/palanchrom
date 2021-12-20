@@ -8,8 +8,8 @@
 char reverseComp(char base);
 std::string toUpper(std::string lower);
 std::array <int, 5> countBasesInSequence(fasta_entry entry);
-std::vector <bed_entry> matchPattern(std::string pattern, fasta_entry entry);
 std::vector <std::string> addNEachPos(std::string toAdd);
 std::vector <std::string> addN(std::string toAdd);
+std::string constructRegex(std::vector <std::string> patterns);
 
 #endif
