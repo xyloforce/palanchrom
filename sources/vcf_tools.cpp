@@ -1,7 +1,7 @@
 #include "vcf_tools.h"
 #include "bed_tools.h"
 
-vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual, std::string filter, std::string info)
+vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref, std::vector <std::string> alt, int qual, std::string filter, std::string info)
 {
     m_chrom = chrom;
     m_pos = pos;
@@ -19,7 +19,7 @@ vcf_entry::vcf_entry()
     m_pos = 0;
     m_id = ".";
     m_ref = ".";
-    m_alt = '.';
+    m_alt = std::vector <std::string>();
     m_qual = 0;
     m_filter = ".";
     m_info = ".";
@@ -30,8 +30,28 @@ vcf_entry::vcf_entry(bed_entry entry) {
     m_pos = entry.getStart() + 1;
     m_id = ".";
     std::string name = entry.getName();
-    m_ref = name.substr(0, name.size() - 1);
-    m_alt = name[name.size()-1];
+    bool isRef(0);
+    int item(0);
+    std::string ref;
+    std::vector <std::string> alt;
+    for(int i(0); i < name.size(); i++) {
+        if(name[i] == ':') {
+            isRef = false;
+        }
+        if(isRef) {
+            ref += name[i];
+        } else {
+            if(name[i] == ',') {
+                alt.push_back(std::string());
+                item ++;
+            } else {
+                alt[item] += name[i];
+            }
+        }
+    }
+
+    m_ref = ref;
+    m_alt = alt;
     m_qual = entry.getScore();
     m_info = ".";
 }
@@ -50,7 +70,7 @@ bool vcf_entry::operator < (const vcf_entry& entry) const
     }
 }
 
-char vcf_entry::getAlternate() const
+std::vector <std::string> vcf_entry::getAlternate() const
 {
     return m_alt;
 }
@@ -64,17 +84,21 @@ std::string vcf_entry::getChrom() const {
     return m_chrom;
 }
 
-std::string vcf_entry::getAttributeString() const
+std::string vcf_entry::to_string() const
 {
     std::string result;
-    result = m_chrom + "\t" + std::to_string(m_pos) + "\t" + m_id + "\t" + m_ref + "\t" + m_alt + "\t" + std::to_string(m_qual) + "\t" + m_filter + "\t" + m_info;
+    std::string alt;
+    for(int i(0); i < m_alt.size() ; i ++) {
+        alt += m_alt[i] + ",";
+    }
+    result = m_chrom + "\t" + std::to_string(m_pos) + "\t" + m_id + "\t" + m_ref + "\t" + alt + "\t" + std::to_string(m_qual) + "\t" + m_filter + "\t" + m_info;
     
     return result;
 }
 
 void vcf_entry::vcf_writeline(std::ofstream& output) const
 {
-    output << getAttributeString() << '\n';
+    output << to_string() << '\n';
 }
 
 int vcf_entry::getPos() const
@@ -98,7 +122,8 @@ vcf_entry vcf::readVCFLine()
     long int pos = 0;
     std::string id = "";
     std::string ref = "";
-    char alt;
+    std::vector <std::string> alt;
+    int item = 0;
     std::string tqual = "";
     int qual = 0;
     std::string filter = "";
@@ -123,7 +148,12 @@ vcf_entry vcf::readVCFLine()
                     ref += tchar;
                     break;
                 case 5:
-                    alt = tchar;
+                    if(tchar == ',') {
+                        item ++;
+                        alt.push_back(std::string());
+                    } else {
+                        alt[item] += tchar;
+                    }
                     break;
                 case 6:
                     tqual += tchar;
@@ -169,8 +199,7 @@ vcf::vcf(std::string filename, bool read) {
             vcf_entry entry = readVCFLine();
             if(!(entry == vcf_entry())) {
                 m_content.push_back(entry);
-                std::tuple <int, std::string, char> description(entry.getPos(), entry.getRef(), entry.getAlternate());
-                m_indexes[entry.getChrom()][description] = index;
+                m_indexes[entry.getChrom()].push_back(index);
                 index ++;
                 if(index % 10000 == 0) {
                     std::cout << index << "           \r";
@@ -189,11 +218,11 @@ void vcf::vcf_writeline(vcf_entry entry_vcf) {
     entry_vcf.vcf_writeline(m_output);
 }
 
-std::vector<vcf_entry> vcf::getVCFByID(std::string id)
+std::vector<vcf_entry> vcf::getVCFByChrom(std::string chrom)
 {
     std::vector <vcf_entry> results;
-    for (const auto &pair: m_indexes[id]) {
-        results.push_back(m_content[pair.second]);
+    for (const int &index: m_indexes[chrom]) {
+        results.push_back(m_content[index]);
     }
     return results;
 }

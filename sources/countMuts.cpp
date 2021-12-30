@@ -33,11 +33,11 @@ int main(int argc, char* argv[]) {
         }
         vcf_entry entry(pair.first);
         std::string str_mut("");
-        str_mut += toupper(entry.getAlternate());
+        str_mut += toupper(entry.getAlternate()[0][0]);
         str_mut += toupper(entry.getRef()[0]);
         if(str_mut == "AT") {
             std::cout << pair.second[0].getStringEntry() << std::endl;
-            std::cout << entry.getAttributeString() << std::endl;
+            std::cout << entry.to_string() << std::endl;
         }
         counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
     }

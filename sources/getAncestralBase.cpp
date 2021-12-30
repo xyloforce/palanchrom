@@ -51,6 +51,8 @@ int main(int argc, char* argv[])
                 // write mutation in file
                 std::string refS = "";
                 char commonBase = consensus[i];
+                std::vector <std::string> alternate(1);
+                alternate[0] += commonBase;
                 if(entries[0].getStrand() == '-') {
                     refS += reverseComp(ref[i]);
                     commonBase = reverseComp(commonBase);
@@ -58,7 +60,7 @@ int main(int argc, char* argv[])
                     refS += ref[i];
                 }
 
-                outputFile.vcf_writeline(vcf_entry(entries[0].getChrom(), entries[0].getPos(i), ".", refS, commonBase));
+                outputFile.vcf_writeline(vcf_entry(entries[0].getChrom(), entries[0].getPos(i), ".", refS, alternate));
             }
         }
         count ++;

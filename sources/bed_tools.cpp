@@ -35,7 +35,11 @@ bed_entry::bed_entry(vcf_entry entry) {
     m_chrom = entry.getChrom();
     m_start = entry.getPos() - 1; // one-based vcf
     m_stop = entry.getPos(); // half open int
-    m_name = entry.getRef() + entry.getAlternate();
+    std::string alt = "";
+    for (int i(0); i < entry.getAlternate().size(); i ++) {
+        alt += entry.getAlternate()[i];
+    }
+    m_name = entry.getRef() + alt;
     m_score = entry.getQual();
     m_strand = '+';
 }
@@ -619,7 +623,7 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (vcf& entries) {
     std::string lastChrom = "";
     std::map <bed_entry, std::vector<AOE_entry>> matchs;
     for(const std::string chrom: entries.getChroms()) {
-        std::vector <bed_entry> intsB = entries.convertToBed(entries.getVCFByID(chrom));
+        std::vector <bed_entry> intsB = entries.convertToBed(entries.getVCFByChrom(chrom));
         std::vector <AOE_entry> intsA = getBedByID(chrom);
         // need to convert AOE entries to bed and back ??
         std::vector <bed_entry> convertedA(convertToBed(intsA));

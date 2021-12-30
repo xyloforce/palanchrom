@@ -12,13 +12,13 @@ class bed_entry;
 
 class vcf_entry {
 public:
-    vcf_entry(std::string chrom, int pos, std::string id, std::string ref, char alt, int qual = 0, std::string filter = ".", std::string info = ".");
+    vcf_entry(std::string chrom, int pos, std::string id, std::string ref, std::vector <std::string> alt, int qual = 0, std::string filter = ".", std::string info = ".");
     vcf_entry();
     vcf_entry(bed_entry entry);
-    char getAlternate() const;
+    std::vector <std::string> getAlternate() const;
     int getQual() const;
     std::string getRef() const;
-    std::string getAttributeString() const;
+    std::string to_string() const;
     std::string getChrom() const;
     int getPos() const;
     void vcf_writeline(std::ofstream& output) const;
@@ -30,7 +30,7 @@ private:
     long m_pos;
     std::string m_id;
     std::string m_ref;
-    char m_alt;
+    std::vector <std::string> m_alt;
     int m_qual;
     std::string m_filter;
     std::string m_info;
@@ -43,7 +43,7 @@ public:
 //     void vcf_writelines(std::string filename);
     vcf_entry readVCFLine();
     // std::string isMuted(std::string chrom, int pos, std::string ref_bases);
-    std::vector <vcf_entry> getVCFByID(std::string id);
+    std::vector <vcf_entry> getVCFByChrom(std::string chrom);
     std::vector <vcf_entry> getVCFEntries() const;
     std::vector <std::string> getChroms() const;
     vcf_entry getVCFEntry(int index);
@@ -52,7 +52,7 @@ public:
     std::vector <bed_entry> convertToBed();
 private:
     std::vector<vcf_entry> m_content;
-    std::map <std::string, std::map <std::tuple <int, std::string, char>, int>> m_indexes;
+    std::map <std::string, std::vector<int>> m_indexes;
     bool m_isInit;
     std::ifstream m_input;
     std::ofstream m_output;

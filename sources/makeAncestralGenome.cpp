@@ -26,19 +26,10 @@ int main(int argc, char* argv[]) {
     
     while(!inputFasta.isEOF()) {
         entry = inputFasta.readFastaLine();
-        // for each entry in bed
-        // subset entry accordingly
-        // get seq
-        // fill seq
-        
         std::string sequence;
-        //fasta_entry entry2 = entry;
-        // std::string N = "";
         for(int i(0); i< entry.getSize(); i++) {
             sequence += 'n';
         }
-        
-        // entry2.editSeq(N, 0, entry2.getSize());
         
         std::vector <bed_entry> currentInt = intervals.getBedByID(entry.getChrom());
         int count = 0;
@@ -55,7 +46,7 @@ int main(int argc, char* argv[]) {
         }
         std::cout << std::endl;
         count = 0;
-        std::vector <vcf_entry> currentVCF = mutations.getVCFByID(entry.getChrom());
+        std::vector <vcf_entry> currentVCF = mutations.getVCFByChrom(entry.getChrom());
         for(const auto &VCFentry : currentVCF) {
             temp = "";
             count ++;
@@ -66,7 +57,7 @@ int main(int argc, char* argv[]) {
             strBase += sequence[posMut];
 
             if(toUpper(strBase) == toUpper(VCFentry.getRef())) {
-                sequence[posMut] = VCFentry.getAlternate();
+                sequence[posMut] = VCFentry.getAlternate()[0][0]; // get alternate is vector of string but in this case we can safely assume that it's only one mut by pos;
             } else {
                 std::cout << "Ref is : " << VCFentry.getRef() << " and current is : " << sequence.substr(posMut -2, 4) << " at pos : " << posMut << " or as in vcf " << VCFentry.getPos() << std::endl;
                 throw std::logic_error("Probable index issue");
