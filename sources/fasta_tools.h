@@ -34,6 +34,7 @@ public:
     sequence();
     std::string getReverseComplement();
     std::string getSequence() const;
+    std::string getUppercaseSequence() const;
     char getChar(int index) const;
     void setSequence(std::string sequence);
     sequence subsetSequence(int begin, int end) const;
@@ -52,6 +53,7 @@ public:
     fasta_entry(sequence seq, header head, bool bedtools_type);
     std::string getHeader() const;
     std::string getSequence() const;
+    std::string getUppercaseSequence() const;
     std::string getPluStrand();
     std::string getMinusStrand();
     std::string getChrom();

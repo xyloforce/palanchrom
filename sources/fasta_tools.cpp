@@ -145,6 +145,16 @@ std::string fasta_entry::getSequence() const
     return m_sequence.getSequence();
 }
 
+std::string sequence::getUppercaseSequence() const
+{
+    return toUpper(m_sequence);
+}
+
+std::string fasta_entry::getUppercaseSequence() const
+{
+    return m_sequence.getUppercaseSequence();
+}
+
 std::string fasta_entry::getHeader() const
 {
     return m_header.getID_full();
@@ -395,7 +405,7 @@ std::vector <bed_entry> fasta_entry::matchPattern(std::string pattern) const {
             if(subsetEntry(i, i + size).getSequence() == pattern) {
                 endPos = i + size -1;
                 for(int j(1); j*size<m_sequence.getSize(); j++) {
-                    if(subsetEntry(i + (size*(j-1)), i + (size*j)).getSequence() != pattern) {
+                    if(subsetEntry(i + (size*(j-1)), i + (size*j)).getUppercaseSequence() != pattern) {
                         break;
                     } else {
                         endPos = i+size*j;
@@ -417,7 +427,7 @@ std::vector <bed_entry> fasta_entry::matchPattern(std::string pattern) const {
 }
 
 std::vector <bed_entry> fasta_entry::matchPatterns(std::string pattern) const {
-    std::string sequence(m_sequence.getSequence());
+    std::string sequence(m_sequence.getUppercaseSequence());
     std::regex regex(pattern);
     std::vector <bed_entry> results;
 
