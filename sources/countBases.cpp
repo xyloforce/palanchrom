@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[]) {
     if(argc < 5) {
-        std::cout << "Doesnt have enough args, need fasta AOE bed and output names" << std::endl;
+        throw std::domain_error("Doesnt have enough args, need fasta AOE bed and output names");
     }
 
     std::cout << "Loading fasta... " << std::endl;
