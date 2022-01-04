@@ -30,10 +30,10 @@ vcf_entry::vcf_entry(bed_entry entry) {
     m_pos = entry.getStart() + 1;
     m_id = ".";
     std::string name = entry.getName();
-    bool isRef(0);
+    bool isRef(true);
     int item(0);
     std::string ref;
-    std::vector <std::string> alt;
+    std::vector <std::string> alt(1);
     for(int i(0); i < name.size(); i++) {
         if(name[i] == ':') {
             isRef = false;
@@ -44,7 +44,7 @@ vcf_entry::vcf_entry(bed_entry entry) {
             if(name[i] == ',') {
                 alt.push_back(std::string());
                 item ++;
-            } else {
+            } else if(name[i] != ':') {
                 alt[item] += name[i];
             }
         }
@@ -119,13 +119,13 @@ vcf_entry vcf::readVCFLine()
     
     std::string chrom = "";
     std::string tpos = "";
-    long int pos = 0;
+    long int pos(0);
     std::string id = "";
     std::string ref = "";
-    std::vector <std::string> alt;
-    int item = 0;
+    std::vector <std::string> alt(1);
+    int item(0);
     std::string tqual = "";
-    int qual = 0;
+    int qual(0);
     std::string filter = "";
     std::string info = "";
     

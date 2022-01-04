@@ -38,8 +38,10 @@ bed_entry::bed_entry(vcf_entry entry) {
     std::string alt = "";
     for (int i(0); i < entry.getAlternate().size(); i ++) {
         alt += entry.getAlternate()[i];
+        alt += ',';
     }
-    m_name = entry.getRef() + alt;
+    alt.pop_back();
+    m_name = entry.getRef() + ':' + alt;
     m_score = entry.getQual();
     m_strand = '+';
 }

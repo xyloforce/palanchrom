@@ -8,7 +8,6 @@ int main(int argc, char* argv[]) {
     if(argc < 4) {
         throw std::logic_error("Not enough args were given : needs AOE, bed, vcf, output file");
     }
-    
     std::map <int, std::map <std::string, std::map <char, int>>> counts;
 
     std::cout << "Loading AOEs..." << std::endl;
@@ -21,7 +20,7 @@ int main(int argc, char* argv[]) {
     
     std::cout << "Loading mutations..." << std::endl;
     vcf muts(argv[3], "read");
-    
+
     std::cout << "Getting muts in ints" << std::endl;
     std::map <bed_entry, std::vector <AOE_entry>> overlaps = virtualF.getOverlap(muts);
 
@@ -35,10 +34,6 @@ int main(int argc, char* argv[]) {
         std::string str_mut("");
         str_mut += toupper(entry.getAlternate()[0][0]);
         str_mut += toupper(entry.getRef()[0]);
-        if(str_mut == "AT") {
-            std::cout << pair.second[0].getStringEntry() << std::endl;
-            std::cout << entry.to_string() << std::endl;
-        }
         counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
     }
 
