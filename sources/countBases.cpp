@@ -26,12 +26,9 @@ int main(int argc, char* argv[]) {
     std::map <int, std::map<char, std::map <char, int>>> counts;
     std::cout << "Counting seqs..." << std::endl;
     for(int j(0); j < seqs.size(); j++) {
-        std::string sequence = seqs[j].getSequence();
+        std::string sequence = seqs[j].getUppercaseSequence();
         for(int i(0); i < sequence.size(); i++) {
-            char base = toupper(sequence[i]);
-            if(toCount[j].getType() == 'R') {
-                base = reverseComp(base);
-            }
+            char base = sequence[i];
             counts[toCount[j].getRelativePos(seqs[j].getPos(i))][base][toCount[j].getType()] ++;
         }
     }
