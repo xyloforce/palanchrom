@@ -4,14 +4,8 @@ wildcard_constraints:
 
 rule all:
     input:
-        "data/panTro5_CPG_bases.tsv",
-        "data/hg38_CPG_bases.tsv",
-        "data/panTro5_CPG_muts.tsv",
-        "data/hg38_CPG_muts.tsv",
-        "data/panTro5_nCPG_bases.tsv",
-        "data/hg38_nCPG_bases.tsv",
-        "data/panTro5_nCPG_muts.tsv",
-        "data/hg38_nCPG_muts.tsv"
+        "hg38_figures",
+        "panTro5_figures"
 
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
@@ -221,3 +215,14 @@ rule countBases:
         "data/{species}_{type}_bases.tsv"
     shell:
         "./bin/countBases.bin {input} {output}"
+
+rule prettyFigures:
+    input:
+        "data/{species}_CPG_bases.tsv",
+        "data/{species}_nCPG_bases.tsv",
+        "data/{species}_CPG_muts.tsv",
+        "data/{species}_nCPG_muts.tsv"
+    output:
+        folder("{species}_figures")
+    shell:
+        "Rscript scripts/createFigures.R {input} {output}"
