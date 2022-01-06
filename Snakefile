@@ -190,9 +190,9 @@ rule filterVCF:
     input:
         "data/{species}_ancestralBases.vcf"
     output:
-        temp("data/{species}.filtered_ancestralBases.vcf")
+        "data/{species}.filtered_ancestralBases.vcf"
     shell:
-        "Rscript scripts/filterVCF.R {input} {output}"
+        'grep -v -P "\tN,\t" {input} {output}'
 
 rule countMuts:
     input:
