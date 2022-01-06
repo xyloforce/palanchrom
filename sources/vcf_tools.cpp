@@ -129,9 +129,20 @@ vcf_entry vcf::readVCFLine()
     std::string filter = "";
     std::string info = "";
     
+    bool warn = false;
+    bool first = true;
+    bool comment = false;
+    
     while(tchar != '\n' && !m_input.eof()) {
         // file is chrom pos id ref alt qual filter info
         m_input.get(tchar);
+        
+        if(first) {
+            first = false;
+            if(tchar == '#') {
+                comment = true;
+            }
+        }
         
         if(tchar != '\n' && tchar != '\t' && tchar != '#') {
             switch(col) {
@@ -165,8 +176,7 @@ vcf_entry vcf::readVCFLine()
                     info += tchar;
                     break;
                 default:
-                    std::cout << tchar << std::endl;
-                    throw std::domain_error("incorrect number of cols");
+                    warn = true;
                     break;
             }
         } else if(tchar == '\t') {
@@ -185,9 +195,12 @@ vcf_entry vcf::readVCFLine()
             qual = 0;
         }
         return vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
-    } else {
+    } else if(!comment) {
         std::cout << "Incorrect nmber of cols : " << col << " , skipping empty line" << std::endl;
         return vcf_entry();
+    }
+    if(warn) {
+        std::cout << "VCF has more columns than default : " << col << std::endl;
     }
 }
 
