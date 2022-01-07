@@ -10,11 +10,17 @@ rule all:
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
 
-def getCorrectFile(wildcards):
+def getCorrectBed(wildcards):
     if wildcards.species == config["speciesA"]:
         return "data/intersected.bed"
     else:
         return "data/common" + config["speciesA"] + "Lift{species}.bed"
+
+def getCorrectFasta(wildcards):
+    if wildcards.species == config["speciesA"]:
+        return "data/commonSeqs_" + config["speciesB"] + ".fa"
+    else:
+        return "data/commonSeqs_" + config["speciesA"] + ".fa"
 
 def correctWildcard(wildcards):
     return wildcards.species[0].upper() + wildcards.species[1:]
@@ -123,7 +129,7 @@ rule getFastas:
 rule getSeqsFromInt:
     input:
         fa = "data/{species}.fa",
-        bed = getCorrectFile
+        bed = getCorrectBed
     output:
         fasta = "data/commonSeqs_{species}.fa"
     shell:
@@ -139,15 +145,15 @@ rule checkLength:
         "python3 scripts/checkLength.py {input}"
 
 rule getAncestralState:
-# will output file with headers and pos and seq set for the ref2 !!!
     input:
         fasta = expand("data/commonSeqs_{outgroups}.fa", outgroups = config["outgroups"]),
         ref = "data/commonSeqs_{species}.fa",
+        ref2 = getCorrectFasta,
         check = ".checkCompleted"
     output:
         "data/{species}_ancestralBases.vcf"
     shell:
-        "./bin/getAncestralBase.bin {input.ref} {input.fasta} {output}"
+        "./bin/getAncestralBase.bin {input.ref} {input.ref2} {input.fasta} {output}"
 
 rule getAncestralGenome:
     input:
@@ -192,7 +198,7 @@ rule filterVCF:
     output:
         "data/{species}.filtered_ancestralBases.vcf"
     shell:
-        'grep -v -P "\tN,\t" {input} {output}'
+        'grep -v -P "\tN,\t" {input} > {output}'
 
 rule countMuts:
     input:
@@ -223,6 +229,6 @@ rule prettyFigures:
         "data/{species}_CPG_muts.tsv",
         "data/{species}_nCPG_muts.tsv"
     output:
-        folder("{species}_figures")
+        directory("{species}_figures")
     shell:
         "Rscript scripts/createFigures.R {input} {output}"

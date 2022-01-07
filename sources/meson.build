@@ -52,3 +52,10 @@ executable('countBases.bin',
 	countBases_sources,
 	install: true,
 	link_with: [bed_tools, fasta_tools, bio_tools])
+
+getNonPattern_sources = ['getNonPattern.cpp']
+
+executable('getNonPattern.bin',
+	getNonPattern_sources,
+	install: true,
+	link_with : [bed_tools, fasta_tools, bio_tools])

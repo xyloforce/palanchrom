@@ -91,6 +91,7 @@ std::string vcf_entry::to_string() const
     for(int i(0); i < m_alt.size() ; i ++) {
         alt += m_alt[i] + ",";
     }
+    alt.pop_back();
     result = m_chrom + "\t" + std::to_string(m_pos) + "\t" + m_id + "\t" + m_ref + "\t" + alt + "\t" + std::to_string(m_qual) + "\t" + m_filter + "\t" + m_info;
     
     return result;
@@ -130,19 +131,10 @@ vcf_entry vcf::readVCFLine()
     std::string info = "";
     
     bool warn = false;
-    bool first = true;
-    bool comment = false;
     
     while(tchar != '\n' && !m_input.eof()) {
         // file is chrom pos id ref alt qual filter info
         m_input.get(tchar);
-        
-        if(first) {
-            first = false;
-            if(tchar == '#') {
-                comment = true;
-            }
-        }
         
         if(tchar != '\n' && tchar != '\t' && tchar != '#') {
             switch(col) {
@@ -194,13 +186,12 @@ vcf_entry vcf::readVCFLine()
         } else {
             qual = 0;
         }
+        if(warn) {
+            std::cout << "VCF has more columns than default : " << col << std::endl;
+        }
         return vcf_entry(chrom, pos, id, ref, alt, qual, filter, info);
-    } else if(!comment) {
-        std::cout << "Incorrect nmber of cols : " << col << " , skipping empty line" << std::endl;
+    } else {
         return vcf_entry();
-    }
-    if(warn) {
-        std::cout << "VCF has more columns than default : " << col << std::endl;
     }
 }
 

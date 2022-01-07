@@ -160,6 +160,13 @@ std::string fasta_entry::getHeader() const
     return m_header.getID_full();
 }
 
+std::string sequence::to_string() {
+    std::string return_string("");
+    for(int i(0); i < m_sequence.size()/80; i ++) {
+        return_string += m_sequence.substr(i*80,80) + '\n';
+    }
+    return return_string;
+}
 
 void fasta_entry::trimSequence(int size, int end)
 {
@@ -190,7 +197,7 @@ void fasta_entry::write_fasta_entry(std::ofstream& outputFile, bool bedtools_typ
     } else {
         outputFile << ">" << m_header.getID() << '\n';
     }
-    outputFile << m_sequence.getSequence() << '\n';
+    outputFile << m_sequence.to_string();
 }
 
 long fasta_entry::getPos(long pos_sequence) const

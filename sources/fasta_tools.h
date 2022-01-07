@@ -32,6 +32,7 @@ private:
 public:
     sequence(std::string sequence);
     sequence();
+    std::string to_string();
     std::string getReverseComplement();
     std::string getSequence() const;
     std::string getUppercaseSequence() const;
