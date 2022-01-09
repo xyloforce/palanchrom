@@ -198,7 +198,7 @@ rule filterVCF:
     output:
         "data/{species}.filtered_ancestralBases.vcf"
     shell:
-        'grep -v -P "\tN,\t" {input} > {output}'
+        'grep -v -P "\tN\t" {input} > {output}'
 
 rule countMuts:
     input:
@@ -229,6 +229,6 @@ rule prettyFigures:
         "data/{species}_CPG_muts.tsv",
         "data/{species}_nCPG_muts.tsv"
     output:
-        directory("{species}_figures")
+        directory("data/{species}_figures")
     shell:
         "Rscript scripts/createFigures.R {input} {output}"

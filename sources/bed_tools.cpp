@@ -310,7 +310,7 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
 
     for(const auto &entry : intsB) {
         bool found = false;
-        int B(intsA.size());
+        int B(intsA.size() - 1);
         while(A <= B && !found) {
             unsigned int index((A+B)/2);
             int status = intsA[index].isInside(entry.getStart(), entry.getStop() - entry.getStart());
