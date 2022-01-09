@@ -4,8 +4,8 @@ wildcard_constraints:
 
 rule all:
     input:
-        "hg38_figures",
-        "panTro5_figures"
+        "data/hg38_figures",
+        "data/panTro5_figures"
 
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
