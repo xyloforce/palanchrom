@@ -1,0 +1,6 @@
+dependencies:
+ - r
+ - r-ggplot2
+ - r-stringr
+ - r-readr
+ - r-cowplot

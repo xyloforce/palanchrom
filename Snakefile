@@ -228,6 +228,8 @@ rule prettyFigures:
         "data/{species}_nCPG_bases.tsv",
         "data/{species}_CPG_muts.tsv",
         "data/{species}_nCPG_muts.tsv"
+    conda:
+        "envs/R.yaml"
     output:
         directory("data/{species}_figures"),
         "data/{species}_figures/{species}.rda"
