@@ -4,7 +4,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        "data/pan_hg_figs/"
+        "data/panTro5_hg38_figs/"
 
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
@@ -218,8 +218,8 @@ rule commonFigs:
         "data/{species1}_figures/{species1}.rda",
         "data/{species2}_figures/{species2}.rda"
     output:
-        folder("data/{species1}_{species2}_figs/")
+        directory("data/{species1}_{species2}_figs/")
     conda:
         "envs/R.yaml"
     shell:
-        "Rscript scripts/commonFigs.R"
+        "Rscript scripts/commonFigs.R {input} {output}"

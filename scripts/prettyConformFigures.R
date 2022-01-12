@@ -14,15 +14,15 @@ basesNCPG = read_tsv(args[2], col_names = c("position", "base", "type", "comptag
 mutsCPG = read_tsv(args[3], col_names = c("position", "mutation", "type", "comptage"), na = character())
 mutsNCPG = read_tsv(args[4], col_names = c("position", "mutation", "type", "comptage"), na = character())
 
-# folder = args[5]
+folder = args[5]
 
-# if(file.exists(folder)) {
-# 	stop("Error : folder exists")
-# } else {
-# 	dir.create(folder)
-# }
+if(file.exists(folder)) {
+	stop("Error : folder exists")
+} else {
+	dir.create(folder)
+}
 
-# setwd(folder)
+setwd(folder)
 
 mutsCPG$source = "CPG"
 mutsNCPG$source = "NCPG"

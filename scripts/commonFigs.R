@@ -7,6 +7,16 @@ library(cowplot)
 args = commandArgs(trailingOnly=TRUE)
 #args = c("hg38.rda", "panTro5.rda")
 
+folder = args[3]
+
+if(file.exists(folder)) {
+	stop("Error : folder exists")
+} else {
+	dir.create(folder)
+}
+
+setwd(folder)
+
 load(args[1])
 
 muts_hg = muts
@@ -36,3 +46,5 @@ ggplot(data = muts, aes(x = position, y = mean10, color = species)) +
 	theme_linedraw() +
 	theme(panel.grid = element_blank(), plot.title = element_text(hjust = 0.5)) +
 	geom_vline(xintercept = c(0, 117, 270), color = "grey")
+
+ggsave("mutation_rate_by_species.png")
