@@ -4,8 +4,8 @@ library(ggplot2)
 library(stringr)
 library(cowplot)
 
-#args = commandArgs(trailingOnly=TRUE)
-args = c("data/hg38_CPG_bases.tsv", "data/hg38_nCPG_bases.tsv", "data/hg38_CPG_muts.tsv", "data/hg38_nCPG_muts.tsv", "results_temp", "hg38.rda")
+args = commandArgs(trailingOnly=TRUE)
+#args = c("data/hg38_CPG_bases.tsv", "data/hg38_nCPG_bases.tsv", "data/hg38_CPG_muts.tsv", "data/hg38_nCPG_muts.tsv", "results_temp", "hg38.rda")
 
 mean10pb <- function(x, n = 10){if(length(x) > 0) {return(filter(x, rep(1 / n, n), sides = 2, circular = FALSE))} else {return(NA)}}
 print("loading files")
