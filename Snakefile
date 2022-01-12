@@ -229,6 +229,7 @@ rule prettyFigures:
         "data/{species}_CPG_muts.tsv",
         "data/{species}_nCPG_muts.tsv"
     output:
-        directory("data/{species}_figures")
+        directory("data/{species}_figures"),
+        "data/{species}_figures/{species}.rda"
     shell:
-        "Rscript scripts/createFigures.R {input} {output}"
+        "Rscript scripts/prettyConformFigures.R {input} {output}"
