@@ -4,8 +4,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        "data/hg38_figures",
-        "data/panTro5_figures"
+        "data/pan_hg_figs/"
 
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
@@ -27,28 +26,6 @@ def correctWildcard(wildcards):
 
 def getBarrierFile(wildcards):
     return config["barriers"][wildcards.ref]
-
-# rule getDatFiles:
-#     shadow: "shallow"
-#     output:
-#         path = directory("data/{species}"),
-#         interesting_stuff = directory("data/{species}/Non_Overlapping_regions/")
-#     params:
-#         speciesA = config["speciesA"],
-#         currentSp = correctWildcard
-#     shell:
-#         """
-#         wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
-#         python3 scripts/getDatFiles.py -i {params.speciesA}To{params.currentSp}.over.chain.gz -o {output.path}
-#         """
-
-# rule convert:
-#     input:
-#         folder = "data/{species}/Non_Overlapping_regions/"
-#     output:
-#         "data/" + config["speciesA"] + "Lift{species}.bed"
-#     shell:
-#         "python3 scripts/datToBed.py {input} {output}"
 
 rule getNonOverlapInt:
     shadow: "shallow"
@@ -235,3 +212,14 @@ rule prettyFigures:
         "data/{species}_figures/{species}.rda"
     shell:
         "Rscript scripts/prettyConformFigures.R {input} {output}"
+
+rule commonFigs:
+    input:
+        "data/{species1}_figures/{species1}.rda",
+        "data/{species2}_figures/{species2}.rda"
+    output:
+        folder("data/{species1}_{species2}_figs/")
+    conda:
+        "envs/R.yaml"
+    shell:
+        "Rscript scripts/commonFigs.R"
