@@ -7,16 +7,6 @@ library(cowplot)
 args = commandArgs(trailingOnly=TRUE)
 #args = c("hg38.rda", "panTro5.rda")
 
-folder = args[3]
-
-if(file.exists(folder)) {
-	stop("Error : folder exists")
-} else {
-	dir.create(folder)
-}
-
-setwd(folder)
-
 load(args[1])
 
 muts_hg = muts
@@ -32,6 +22,16 @@ bases_pan = bases
 
 muts_pan$species = "panTro5"
 bases_pan$species = "panTro5"
+
+folder = args[3]
+
+if(file.exists(folder)) {
+	print("Folder exists")
+} else {
+	dir.create(folder)
+}
+
+setwd(folder)
 
 muts = rbind(muts_hg, muts_pan)
 muts = aggregate(muts$mean10, by = list(muts$position, muts$species), FUN = sum)

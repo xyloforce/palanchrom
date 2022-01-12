@@ -17,7 +17,7 @@ mutsNCPG = read_tsv(args[4], col_names = c("position", "mutation", "type", "comp
 folder = args[5]
 
 if(file.exists(folder)) {
-	stop("Error : folder exists")
+	print("Folder exists")
 } else {
 	dir.create(folder)
 }
