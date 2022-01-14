@@ -9,10 +9,10 @@ args = commandArgs(trailingOnly=TRUE)
 
 mean10pb <- function(x, n = 10){if(length(x) > 0) {return(filter(x, rep(1 / n, n), sides = 2, circular = FALSE))} else {return(NA)}}
 print("loading files")
-basesCPG = read_tsv(args[1], col_names = c("position", "base", "type", "comptage"), na = character())
-basesNCPG = read_tsv(args[2], col_names = c("position", "base", "type", "comptage"), na = character())
-mutsCPG = read_tsv(args[3], col_names = c("position", "mutation", "type", "comptage"), na = character())
-mutsNCPG = read_tsv(args[4], col_names = c("position", "mutation", "type", "comptage"), na = character())
+basesCPG = read_tsv(args[1], col_names = c("position", "base", "type", "comptage"), na = character(), show_col_types = FALSE)
+basesNCPG = read_tsv(args[2], col_names = c("position", "base", "type", "comptage"), na = character(), show_col_types = FALSE)
+mutsCPG = read_tsv(args[3], col_names = c("position", "mutation", "type", "comptage"), na = character(), show_col_types = FALSE)
+mutsNCPG = read_tsv(args[4], col_names = c("position", "mutation", "type", "comptage"), na = character(), show_col_types = FALSE)
 
 folder = args[5]
 
@@ -151,4 +151,7 @@ figure = plot_grid(plot1, plot2, labels = c("A", "B"), rel_widths = c(1, 0.3))
 figure
 ggsave("mutations rates by base and global.png", plot = figure, width = 15, height = 5)
 
-save(muts, bases, file = args[6])
+path = unlist(str_split(args[6], "/"))
+path = path[length(path)]
+print(path)
+save(muts, bases, file = path)

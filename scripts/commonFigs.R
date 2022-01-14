@@ -34,6 +34,7 @@ if(file.exists(folder)) {
 setwd(folder)
 
 muts = rbind(muts_hg, muts_pan)
+muts = muts[muts$source == "NCPG",]
 muts = aggregate(muts$mean10, by = list(muts$position, muts$species), FUN = sum)
 colnames(muts) = c("position", "species", "mean10")
 
