@@ -1,3 +1,4 @@
+import datetime
 configfile: "config.yaml"
 wildcard_constraints:
     species = "\w+"
@@ -198,6 +199,15 @@ rule countBases:
         "data/{species}_{type}_bases.tsv"
     shell:
         "./bin/countBases.bin {input} {output}"
+
+rule archivate:
+    input:
+        "data/{species}_{type}_bases.tsv",
+        "data/{species}_{type}_muts.tsv"
+    output:
+        directory("data/" + now.strftime("%Y%m%d%H%M") + "{species}_{type}_formatted/")
+    shell:
+        "Rscript {input} {output}"
 
 rule prettyFigures:
     input:
