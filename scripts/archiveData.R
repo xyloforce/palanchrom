@@ -16,7 +16,7 @@ muts = read_tsv(args[2], col_names = c("position", "mutation", "type", "comptage
 bases = bases[bases$position <= 5000,]
 muts = muts[muts$position <= 5000,]
 
-#################### FIRST : REVERSE TO DELETE TYPE INFO ####################
+#### FIRST : REVERSE TO DELETE TYPE INFO ##################################################################################
 
 reverseBase = function(x) {
 	return(switch(x[["base"]], "A"="T", "C"="G", "T"="A", "G"="C", "N"="N"))
@@ -27,6 +27,7 @@ reverseMutation = function(x) {
 	return(.result)
 }
 
+print("get all bases on one side")
 muts[muts$type == "R","mutation"] = unlist(apply(muts[muts$type == "R",], MARGIN = 1, FUN = reverseMutation))
 muts = aggregate(muts$comptage, by = list(muts$position, muts$mutation), FUN = sum)
 colnames(muts) = c("position", "mutation", "comptage")
@@ -34,8 +35,8 @@ bases[bases$type == "R","base"] = unlist(apply(bases[bases$type == "R",], MARGIN
 bases = aggregate(bases$comptage, by = list(bases$position, bases$base), FUN = sum)
 colnames(bases) = c("position", "base", "comptage")
 
-######################### MERGE TO CREATE TOTAL DF #########################
-
+#### MERGE TO CREATE TOTAL DF ##################################################################################
+print("creating total df")
 total = aggregate(bases$comptage, by = list(bases$position), FUN = sum)
 colnames(total) = c("position", "comptage")
 tmp = aggregate(muts$comptage, by = list(muts$position), FUN = sum)
@@ -55,8 +56,8 @@ total$relative = total$mutations/total$comptage
 total$mean10 = mean10pb(total$relative)
 write_tsv(total, paste(format(Sys.time(), "%Y%m%d%H%M"), "_total.tsv", sep = ""))
 
-######################### CREATE ONE DF BY TYPE OF MUT #########################
-
+#### CREATE ONE DF BY TYPE OF MUT ##################################################################################
+print("create one df by type of mut")
 muts = cbind(muts, str_split_fixed(muts$mutation, "", n=2))
 colnames(muts) = c("position", "mutation", "comptage", "ancestral", "reference")
 for(base in unique(muts$ancestral)) {
@@ -74,8 +75,8 @@ for(base in unique(muts$ancestral)) {
 	write_tsv(currentBDF, paste(format(Sys.time(), "%Y%m%d%H%M"), "_", base, "_mutations.tsv", sep = ""))
 }
 
-######################### CREATE ONE DF BY TYPE OF COMPL MUTS #########################
-
+#### CREATE ONE DF BY TYPE OF COMPL MUTS ##################################################################################
+print("create one df by type of complementary mut")
 muts$group = sapply(muts$mutation, FUN = function(x) switch(x, "AT" = 1, "TA" = 1, "AG" = 2, "TC" = 2, "AC" = 3, "TG" = 3, "GC" = 4, "CG" = 4, "GT" = 5, "CA" = 5, "GA" = 6, "CT" = 6))
 
 for(group in unique(muts$group)) {

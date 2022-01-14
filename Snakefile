@@ -153,14 +153,16 @@ rule getAncestralGenomeRef:
     shell:
         "./bin/makeAncestralGenome.bin {input} {output}"
 
-rule getCPGInt:
+rule getInt:
     input:
         "data/{species}_ancestralGenome.fasta",
     output:
-        "data/{species}_CPG_ints.bed",
-        "data/{species}_nCPG_ints.bed"
+        "data/{species}_{type}_ints.bed",
+        "data/{species}_n{type}_ints.bed"
+    params:
+        pattern = "{type}"
     shell:
-        "./bin/getPattern.bin CG {input} {output}"
+        "./bin/getPattern.bin {params} {input} {output}"
 
 rule filterBarriers:
     input:
@@ -204,17 +206,20 @@ rule archivate:
     input:
         "data/{species}_{type}_bases.tsv",
         "data/{species}_{type}_muts.tsv"
+    conda:
+        "envs/R.yaml"
     output:
-        directory("data/" + now.strftime("%Y%m%d%H%M") + "{species}_{type}_formatted/")
+        directory("data/" + datetime.datetime.now().strftime("%Y%m%d%H%M") + "{species}_{type}_formatted/"),
+        touch(".archived_{species}_{type}")
     shell:
-        "Rscript {input} {output}"
+        "Rscript scripts/archiveData.R {input} {output}"
 
 rule prettyFigures:
     input:
-        "data/{species}_CPG_bases.tsv",
-        "data/{species}_nCPG_bases.tsv",
-        "data/{species}_CPG_muts.tsv",
-        "data/{species}_nCPG_muts.tsv"
+        "data/{species}_CG_bases.tsv",
+        "data/{species}_nCG_bases.tsv",
+        "data/{species}_CG_muts.tsv",
+        "data/{species}_nCG_muts.tsv"
     conda:
         "envs/R.yaml"
     output:
