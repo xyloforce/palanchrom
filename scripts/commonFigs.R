@@ -10,7 +10,7 @@ theme_bob = theme(panel.grid.major = element_blank(),
                 axis.title.x = element_text(size = 16),
                 axis.title.y = element_text(size = 16),
                 strip.text.x = element_text(size = 16),
-                strip.text.y = element_text(size = 16)
+                strip.text.y = element_text(size = 16),
                 axis.text = element_text(size=14),
                 #plot.title = element_text(face = "bold"),
                 legend.title = element_text(size = 16),
