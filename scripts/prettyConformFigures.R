@@ -17,8 +17,8 @@ theme_bob = theme(panel.grid.major = element_blank(),
                 axis.text = element_text(size=14),
                 #plot.title = element_text(face = "bold"),
                 legend.title = element_text(size = 16),
-                legend.text = element_text(size = 14))
-                #, legend.position = c(0.8, 0.3)
+                legend.text = element_text(size = 14),
+                plot.title = element_text(size = 20, hjust = 0.5))
 
 #### PLOT SOURCE X DEST X CONTEXT ################################################################################################
 
@@ -49,7 +49,7 @@ colnames(df) = c("position", "mutation", "mean10")
 df = cbind(df, str_split_fixed(df$mutation, pattern ="", n=2))
 colnames(df) = c("position", "mutation", "mean10", "ancestral", "reference")
 
-df$group = sapply(df$mutation, FUN = function(x) switch(x, "AT" = 1, "TA" = 1, "AG" = 2, "TC" = 2, "AC" = 3, "TG" = 3, "GC" = 4, "CG" = 4, "GT" = 5, "CA" = 5, "GA" = 6, "CT" = 6))
+df$group = sapply(df$mutation, FUN = function(x) switch(x, "AT" = 2, "TA" = 2, "AG" = 1, "TC" = 1, "AC" = 3, "TG" = 3, "GC" = 6, "CG" = 6, "GT" = 5, "CA" = 5, "GA" = 4, "CT" = 4))
 
 correct_labels <- c("3" = "AC - TG (transversion)",
                     "2" = "AG - TC (transition)",
@@ -70,7 +70,9 @@ plot1 = ggplot(data = df[df$position %in% -50:500,], aes(y = mean10, x = positio
 	ggtitle("Les taux de transversion sont supérieurs aux taux de transition") +
 	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-	theme(strip.placement = "outside", panel.grid = element_blank(), plot.title = element_text(hjust = 0.5), legend.position = "none") + geom_vline(xintercept = c(0, 117, 270), color = "grey") +
+	geom_vline(xintercept = c(0, 117, 270), color = "grey") +
+	theme_linedraw() +
+	theme(strip.placement = "outside", legend.position = "none") +
 	theme_bob
 
 ## load data to add second plot of global muts
@@ -84,7 +86,8 @@ plot2 = ggplot(data = total[total$position %in% -50:500,], aes(x=position, y = m
 	ggtitle("Taux de mutation global") +
 	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-	theme(panel.grid = element_blank(), plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = c(0, 117, 270), color = "grey") +
+	geom_vline(xintercept = c(0, 117, 270), color = "grey") +
+	theme_linedraw() +
 	theme_bob
 
 figure = plot_grid(plot1, plot2, labels = c("A", "B"), rel_widths = c(0.6, 0.3))
