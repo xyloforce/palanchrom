@@ -5,7 +5,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        "." + datetime.datetime.now().strftime("%Y%m%d%H%M") + ".panTro5.hg38.CG.nCG"
+        "." + datetime.datetime.now().strftime("%Y_%m_%d") + ".panTro5.hg38.CG.nCG"
 
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
@@ -260,4 +260,4 @@ rule sendToPhystorage:
     output:
         touch(".{datetime}.{species1}.{species2}.{type1}.{type2}")
     shell:
-        "rsync -av --exclude='.*' {input} fsassola@phystorage:/partages/Bioinfo/shared/users/fsassola"
+        "rsync -av --exclude='.*' {input} fsassola@phystorage.physique.ens-lyon.fr:/partages/Bioinfo/shared/users/fsassola"

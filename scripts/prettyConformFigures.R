@@ -12,6 +12,8 @@ theme_bob = theme(panel.grid.major = element_blank(),
                 panel.border = element_rect(size = 2),
                 axis.title.x = element_text(size = 16),
                 axis.title.y = element_text(size = 16),
+                strip.text.x = element_text(size = 16),
+                strip.text.y = element_text(size = 16)
                 axis.text = element_text(size=14),
                 #plot.title = element_text(face = "bold"),
                 legend.title = element_text(size = 16),
@@ -23,10 +25,10 @@ theme_bob = theme(panel.grid.major = element_blank(),
 ## load muts according to wildcard
 
 filelist = list.files(path = args[1], "*_mutations.tsv", full.names = TRUE)
-df = read_tsv(filelist[1])
+df = read_tsv(filelist[1], show_col_types = FALSE)
 
 for(filepath in filelist[2:length(filelist)]) {
-	tmp = read_tsv(filepath)
+	tmp = read_tsv(filepath, show_col_types = FALSE)
 	tmp$position = NULL
 	df = cbind(df, tmp)
 }
@@ -68,21 +70,22 @@ plot1 = ggplot(data = df[df$position %in% -50:500,], aes(y = mean10, x = positio
 	ggtitle("Les taux de transversion sont supérieurs aux taux de transition") +
 	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-	theme_linedraw() + theme(strip.placement = "outside", panel.grid = element_blank(), plot.title = element_text(hjust = 0.5), legend.position = "none") + geom_vline(xintercept = c(0, 117, 270), color = "grey") +
+	theme(strip.placement = "outside", panel.grid = element_blank(), plot.title = element_text(hjust = 0.5), legend.position = "none") + geom_vline(xintercept = c(0, 117, 270), color = "grey") +
 	theme_bob
 
 ## load data to add second plot of global muts
 
 filepath = list.files(path = args[1], "*_total.tsv", full.names = TRUE)
 
-total = read_tsv(filepath[1])
+total = read_tsv(filepath[1], show_col_types = FALSE)
 
 plot2 = ggplot(data = total[total$position %in% -50:500,], aes(x=position, y = mean10)) + geom_line() +
 	ylab("% de mutation lissés sur 10 pb") +
 	ggtitle("Taux de mutation global") +
 	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-	theme_linedraw() + theme(panel.grid = element_blank(), plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = c(0, 117, 270), color = "grey")
+	theme(panel.grid = element_blank(), plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = c(0, 117, 270), color = "grey") +
+	theme_bob
 
 figure = plot_grid(plot1, plot2, labels = c("A", "B"), rel_widths = c(0.6, 0.3))
 figure

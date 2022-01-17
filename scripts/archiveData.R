@@ -71,6 +71,7 @@ print("create one df by type of mut")
 muts = cbind(muts, str_split_fixed(muts$mutation, "", n=2))
 colnames(muts) = c("position", "mutation", "comptage", "ancestral", "reference")
 for(base in unique(muts$ancestral)) {
+	print(base)
 	currentBDF = data.frame(position = unique(total$position))
 	currentBDF[match(bases[bases$base == base, "position"], currentBDF$position), "comptage"] = bases[bases$base == base, "comptage"]
 	for(bdest in unique(muts[muts$ancestral == base, "reference"])) {
@@ -91,6 +92,7 @@ muts$group = sapply(muts$mutation, FUN = function(x) switch(x, "AT" = 1, "TA" = 
 
 for(group in unique(muts$group)) {
 	currentBDF = data.frame(position = unique(total$position))
+	print(group)
 	for(base in unique(muts[muts$group == group,"ancestral"])) {
 		c_base = paste("total_", base, sep = "")
 		currentBDF[match(bases[bases$base == base, "position"], currentBDF$position), c_base] = bases[bases$base == base, "comptage"]
