@@ -210,13 +210,15 @@ rule archivate:
         "envs/R.yaml"
     output:
         folder = directory("data/{datetime}_{species}_{type}_formatted/"),
-        touch = touch(".archived_{species}_{type}")
+        touch = touch(".archived_{datetime}_{species}_{type}")
     shell:
         "Rscript scripts/archiveData.R {input} {output.folder}"
 
 rule setupPackages:
     output:
         touch(".R.setup")
+    conda:
+        "envs/R.yaml"
     shell:
         "Rscript scripts/setupPackages.R"
 
@@ -237,7 +239,7 @@ rule commonFigs:
         folder2 = "data/{datetime}_{species2}_{type}_formatted/",
         setup = ".R.setup"
     output:
-        directory("data/{datetime}_{species1}_{species2}_figs/")
+        directory("data/{datetime}_{species1}_{species2}_{type}_figs/")
     conda:
         "envs/R.yaml"
     shell:
@@ -249,9 +251,12 @@ rule sendToPhystorage:
         "data/{datetime}_{species1}_{type2}_formatted/",
         "data/{datetime}_{species2}_{type1}_formatted/",
         "data/{datetime}_{species2}_{type2}_formatted/",
-        "data/{datetime}_{species1}_{species2}_figs/",
-        "data/{datetime}_{species2}__{type}_figures",
-        "data/{datetime}_{species1}__{type}_figures"
+        "data/{datetime}_{species1}_{species2}_{type1}_figs/",
+        "data/{datetime}_{species1}_{species2}_{type2}_figs/",
+        "data/{datetime}_{species1}_{type1}_figures",
+        "data/{datetime}_{species1}_{type2}_figures",
+        "data/{datetime}_{species2}_{type1}_figures",
+        "data/{datetime}_{species2}_{type2}_figures"
     output:
         touch(".{datetime}.{species1}.{species2}.{type1}.{type2}")
     shell:

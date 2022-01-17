@@ -29,7 +29,6 @@ for(filepath in filelist[2:length(filelist)]) {
 	tmp = read_tsv(filepath)
 	tmp$position = NULL
 	df = cbind(df, tmp)
-	print(tail(df))
 }
 
 ## keep only "mean" ones
