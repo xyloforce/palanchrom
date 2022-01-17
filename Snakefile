@@ -5,7 +5,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        "data/panTro5_hg38_figs/"
+        "." + datetime.datetime.now().strftime("%Y%m%d%H%M") + ".panTro5.hg38.CG.nCG"
 
 def getLiftoverFile(wildcards):
     return config["liftover"][wildcards.species]
@@ -209,32 +209,50 @@ rule archivate:
     conda:
         "envs/R.yaml"
     output:
-        directory("data/" + datetime.datetime.now().strftime("%Y%m%d%H%M") + "{species}_{type}_formatted/"),
-        touch(".archived_{species}_{type}")
+        folder = directory("data/{datetime}_{species}_{type}_formatted/"),
+        touch = touch(".archived_{species}_{type}")
     shell:
-        "Rscript scripts/archiveData.R {input} {output}"
+        "Rscript scripts/archiveData.R {input} {output.folder}"
+
+rule setupPackages:
+    output:
+        touch(".R.setup")
+    shell:
+        "Rscript scripts/setupPackages.R"
 
 rule prettyFigures:
     input:
-        "data/{species}_CG_bases.tsv",
-        "data/{species}_nCG_bases.tsv",
-        "data/{species}_CG_muts.tsv",
-        "data/{species}_nCG_muts.tsv"
+        folder = "data/{datetime}_{species}_{type}_formatted/",
+        setup = ".R.setup"
     conda:
         "envs/R.yaml"
     output:
-        directory("data/{species}_figures"),
-        "data/{species}_figures/{species}.rda"
+        directory("data/{datetime}_{species}_{type}_figures")
     shell:
-        "Rscript scripts/prettyConformFigures.R {input} {output}"
+        "Rscript scripts/prettyConformFigures.R {input.folder} {output}"
 
 rule commonFigs:
     input:
-        "data/{species1}_figures/{species1}.rda",
-        "data/{species2}_figures/{species2}.rda"
+        folder1 = "data/{datetime}_{species1}_{type}_formatted/",
+        folder2 = "data/{datetime}_{species2}_{type}_formatted/",
+        setup = ".R.setup"
     output:
-        directory("data/{species1}_{species2}_figs/")
+        directory("data/{datetime}_{species1}_{species2}_figs/")
     conda:
         "envs/R.yaml"
     shell:
-        "Rscript scripts/commonFigs.R {input} {output}"
+        "Rscript scripts/commonFigs.R {input.folder1} {input.folder2} {output}"
+
+rule sendToPhystorage:
+    input:
+        "data/{datetime}_{species1}_{type1}_formatted/",
+        "data/{datetime}_{species1}_{type2}_formatted/",
+        "data/{datetime}_{species2}_{type1}_formatted/",
+        "data/{datetime}_{species2}_{type2}_formatted/",
+        "data/{datetime}_{species1}_{species2}_figs/",
+        "data/{datetime}_{species2}__{type}_figures",
+        "data/{datetime}_{species1}__{type}_figures"
+    output:
+        touch(".{datetime}.{species1}.{species2}.{type1}.{type2}")
+    shell:
+        "rsync -av --exclude='.*' {input} fsassola@phystorage:/partages/Bioinfo/shared/users/fsassola"

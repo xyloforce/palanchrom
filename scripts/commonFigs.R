@@ -4,24 +4,29 @@ library(ggplot2)
 library(stringr)
 library(cowplot)
 
-args = commandArgs(trailingOnly=TRUE)
-#args = c("hg38.rda", "panTro5.rda")
+#args = commandArgs(trailingOnly=TRUE)
+args = c("hg38.rda", "panTro5.rda")
 
-load(args[1])
+filelist = list.files(path = args[1], "*_total.tsv", full.names = TRUE)
+df = read_tsv(filelist[1])
+species = str_split(args[1], "/")
+species = str_split(species[length(species)], ".")[1]
+df$species = species
 
-muts_hg = muts
-bases_hg = bases
+filelist = list.files(path = args[2], "*_total.tsv", full.names = TRUE)
+tmp = read_tsv(filelist[1])
+species = str_split(args[2], "/")
+species = str_split(species[length(species)], ".")[1]
+tmp$species = species
 
-muts_hg$species = "hg38"
-bases_hg$species = "hg38"
+df = rbind(df, tmp)
 
-load(args[2])
-
-muts_pan = muts
-bases_pan = bases
-
-muts_pan$species = "panTro5"
-bases_pan$species = "panTro5"
+plot = ggplot(data = total[total$position %in% -50:500,], aes(x=position, y = mean10, color = species)) + geom_line() +
+	ylab("% de mutation lissés sur 10 pb") +
+	ggtitle("Taux de mutation global") +
+	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
+	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
+	theme_linedraw() + theme(panel.grid = element_blank(), plot.title = element_text(hjust = 0.5)) + geom_vline(xintercept = c(0, 117, 270), color = "grey")
 
 folder = args[3]
 
@@ -33,19 +38,4 @@ if(file.exists(folder)) {
 
 setwd(folder)
 
-muts = rbind(muts_hg, muts_pan)
-muts = muts[muts$source == "NCPG",]
-muts = aggregate(muts$mean10, by = list(muts$position, muts$species), FUN = sum)
-colnames(muts) = c("position", "species", "mean10")
-
-ggplot(data = muts, aes(x = position, y = mean10, color = species)) +
-	geom_line() +
-	ylab("% de mutation lissés sur 10 pb") +
-	ggtitle("Taux de mutation global par espèce") +
-	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-	theme_linedraw() +
-	theme(panel.grid = element_blank(), plot.title = element_text(hjust = 0.5)) +
-	geom_vline(xintercept = c(0, 117, 270), color = "grey")
-
-ggsave("mutation_rate_by_species.png")
+ggsave("mutations_by_species.png", figure, width = 24, height = 9)
