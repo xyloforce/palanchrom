@@ -52,11 +52,11 @@ colnames(df) = c("position", "mutation", "mean10", "ancestral", "reference")
 df$group = sapply(df$mutation, FUN = function(x) switch(x, "AT" = 2, "TA" = 2, "AG" = 1, "TC" = 1, "AC" = 3, "TG" = 3, "GC" = 6, "CG" = 6, "GT" = 5, "CA" = 5, "GA" = 4, "CT" = 4))
 
 correct_labels <- c("3" = "AC - TG (transversion)",
-                    "2" = "AG - TC (transition)",
-                    "1" = "AT - TA (transversion)",
+                    "1" = "AG - TC (transition)",
+                    "2" = "AT - TA (transversion)",
                     "5" = "CA - GT (transversion)",
-                    "4" = "CG - GC (transversion)",
-                    "6" = "CT - GA (transition)"
+                    "6" = "CG - GC (transversion)",
+                    "4" = "CT - GA (transition)"
                     )
 
 df$color = sapply(df$mutation, FUN = function(x) switch(x, "AT" = "1", "TA" = "2", "AG" = "3", "TC" = "4", "AC" = "1", "TG" = "2", "GC" = "2", "CG" = "1", "GT" = "2", "CA" = "1", "GA" = "4", "CT" = "3"))

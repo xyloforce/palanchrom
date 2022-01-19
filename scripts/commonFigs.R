@@ -40,7 +40,7 @@ plot1 = ggplot(data = df[df$position %in% -50:500,], aes(x=position, y = mean10,
 	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	theme_linedraw() +
-	geom_vline(xintercept = c(0, 117, 270), color = "grey") +
+	geom_vline(xintercept = c(0, 112, 270), color = "grey") +
 	theme_bob
 plot1
 
