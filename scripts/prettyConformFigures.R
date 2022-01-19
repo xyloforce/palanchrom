@@ -77,7 +77,7 @@ plot1 = ggplot(data = df[df$position %in% -50:500,], aes(y = mean10, x = positio
 
 ## load data to add second plot of global muts
 
-filepath = list.files(path = args[1], "*_total.tsv", full.names = TRUE)
+filepath = list.files(path = args[1], "total.tsv", full.names = TRUE)
 
 total = read_tsv(filepath[1], show_col_types = FALSE)
 

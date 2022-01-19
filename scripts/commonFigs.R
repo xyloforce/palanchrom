@@ -21,13 +21,13 @@ theme_bob = theme(panel.grid.major = element_blank(),
 args = commandArgs(trailingOnly=TRUE)
 #args = c("data/2022_01_17_panTro5_CG_formatted", "data/202201171632_hg38_CG_formatted", "data/202201171632_panTro5_hg38_CG_figs")
 
-filelist = list.files(path = args[1], "*_total.tsv", full.names = TRUE)
+filelist = list.files(path = args[1], "total.tsv", full.names = TRUE)
 df = read_tsv(filelist[1], show_col_types = FALSE)
 species = unlist(str_split(args[1], "/"))
 species = unlist(str_split(species[length(species)], "_"))[4]
 df$species = species
 
-filelist = list.files(path = args[2], "*_total.tsv", full.names = TRUE)
+filelist = list.files(path = args[2], "total.tsv", full.names = TRUE)
 tmp = read_tsv(filelist[1], show_col_types = FALSE)
 species = unlist(str_split(args[2], "/"))
 species = unlist(str_split(species[length(species)], "_"))[4]
