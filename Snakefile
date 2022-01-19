@@ -12,15 +12,15 @@ def getLiftoverFile(wildcards):
 
 def getCorrectBed(wildcards):
     if wildcards.species == config["speciesA"]:
-        return "data/intersected.bed"
+        return config["result_folder"] + "/intersected.bed"
     else:
-        return "data/common" + config["speciesA"] + "Lift{species}.bed"
+        return config["result_folder"] + "/common" + config["speciesA"] + "Lift{species}.bed"
 
 def getCorrectFasta(wildcards):
     if wildcards.species == config["speciesA"]:
-        return "data/commonSeqs_" + config["speciesB"] + ".fa"
+        return config["result_folder"] + "/commonSeqs_" + config["speciesB"] + ".fa"
     else:
-        return "data/commonSeqs_" + config["speciesA"] + ".fa"
+        return config["result_folder"] + "/commonSeqs_" + config["speciesA"] + ".fa"
 
 def correctWildcard(wildcards):
     return wildcards.species[0].upper() + wildcards.species[1:]
@@ -31,10 +31,10 @@ def getBarrierFile(wildcards):
 rule getNonOverlapInt:
     shadow: "shallow"
     output:
-        bedHO = "data/{ref}.lift.{species}.{ref}.overlap.bed",
-        bedHNO = "data/{ref}.lift.{species}.{ref}.nonOverlap.bed",
-        bedSO = "data/{ref}.lift.{species}.{species}.overlap.bed",
-        bedSNO = "data/{ref}.lift.{species}.{species}.nonOverlap.bed"
+        bedHO = config["result_folder"] + "/{ref}.lift.{species}.{ref}.overlap.bed",
+        bedHNO = config["result_folder"] + "/{ref}.lift.{species}.{ref}.nonOverlap.bed",
+        bedSO = config["result_folder"] + "/{ref}.lift.{species}.{species}.overlap.bed",
+        bedSNO = config["result_folder"] + "/{ref}.lift.{species}.{species}.nonOverlap.bed"
     params:
         speciesA = config["speciesA"],
         currentSp = correctWildcard
@@ -56,17 +56,17 @@ rule getNonOverlapInt:
 
 rule sort:
     input:
-        "data/{ref}.lift.{species}.{ref}.nonOverlap.bed"
+        config["result_folder"] + "/{ref}.lift.{species}.{ref}.nonOverlap.bed"
     output:
-        "data/{ref}Lift{species}.sorted.bed"
+        config["result_folder"] + "/{ref}Lift{species}.sorted.bed"
     shell:
         "sort -k1,1 -k2,2n {input} > {output}"
 
 rule intersect:
     input:
-        expand("data/{ref}Lift{species}.sorted.bed", ref = config["speciesA"], species = [config["speciesB"],] + config["outgroups"])
+        expand(config["result_folder"] + "/{ref}Lift{species}.sorted.bed", ref = config["speciesA"], species = [config["speciesB"],] + config["outgroups"])
     output:
-        "data/intersected.bed"
+        config["result_folder"] + "/intersected.bed"
     shadow: "shallow"
     shell:
         """
@@ -84,17 +84,17 @@ rule intersect:
 
 rule updateInterval:
     input:
-        bed = "data/intersected.bed",
-        originalH = "data/{ref}.lift.{species}.{ref}.nonOverlap.bed",
-        originalS = "data/{ref}.lift.{species}.{species}.nonOverlap.bed"
+        bed = config["result_folder"] + "/intersected.bed",
+        originalH = config["result_folder"] + "/{ref}.lift.{species}.{ref}.nonOverlap.bed",
+        originalS = config["result_folder"] + "/{ref}.lift.{species}.{species}.nonOverlap.bed"
     output:
-        "data/common{ref}Lift{species}.bed"
+        config["result_folder"] + "/common{ref}Lift{species}.bed"
     shell:
         "python3 scripts/updateInterval.py {input.originalH} {input.originalS} {input.bed} {output}"
 
 rule getFastas:
     output:
-        "data/{species}.fa"
+        config["result_folder"] + "/{species}.fa"
     wildcard_constraints:
         species="[A-Za-z\d]+"
     shadow: "shallow"
@@ -106,10 +106,10 @@ rule getFastas:
 
 rule getSeqsFromInt:
     input:
-        fa = "data/{species}.fa",
+        fa = config["result_folder"] + "/{species}.fa",
         bed = getCorrectBed
     output:
-        fasta = "data/commonSeqs_{species}.fa"
+        fasta = config["result_folder"] + "/commonSeqs_{species}.fa"
     shell:
         """
         bedtools getfasta -s -fi {input.fa} -bed {input.bed} > {output.fasta}
@@ -117,48 +117,48 @@ rule getSeqsFromInt:
 
 rule checkLength:
     input:
-        fasta = expand("data/commonSeqs_{species}.fa", species = [config["speciesB"],] + config["outgroups"] + [config["speciesA"],])
+        fasta = expand(config["result_folder"] + "/commonSeqs_{species}.fa", species = [config["speciesB"],] + config["outgroups"] + [config["speciesA"],])
     output: touch(".checkCompleted")
     shell:
         "python3 scripts/checkLength.py {input}"
 
 rule getAncestralState:
     input:
-        fasta = expand("data/commonSeqs_{outgroups}.fa", outgroups = config["outgroups"]),
-        ref = "data/commonSeqs_{species}.fa",
+        fasta = expand(config["result_folder"] + "/commonSeqs_{outgroups}.fa", outgroups = config["outgroups"]),
+        ref = config["result_folder"] + "/commonSeqs_{species}.fa",
         ref2 = getCorrectFasta,
         check = ".checkCompleted"
     output:
-        "data/{species}_ancestralBases.vcf"
+        config["result_folder"] + "/{species}_ancestralBases.vcf"
     shell:
         "./bin/getAncestralBase.bin {input.ref} {input.ref2} {input.fasta} {output}"
 
 rule getAncestralGenome:
     input:
-        vcf = "data/{ref}_ancestralBases.vcf",
-        bed = "data/common" + config["speciesA"] + "Lift{ref}.bed",
-        fa = "data/{ref}.fa"
+        vcf = config["result_folder"] + "/{ref}_ancestralBases.vcf",
+        bed = config["result_folder"] + "/common" + config["speciesA"] + "Lift{ref}.bed",
+        fa = config["result_folder"] + "/{ref}.fa"
     output:
-        "data/{ref}_ancestralGenome.fasta"
+        config["result_folder"] + "/{ref}_ancestralGenome.fasta"
     shell:
         "./bin/makeAncestralGenome.bin {input} {output}"
 
 rule getAncestralGenomeRef:
     input:
-        vcf = "data/" + config["speciesA"] + "_ancestralBases.vcf",
-        bed = "data/intersected.bed",
-        fa = "data/" + config["speciesA"] + ".fa"
+        vcf = config["result_folder"] + "/" + config["speciesA"] + "_ancestralBases.vcf",
+        bed = config["result_folder"] + "/intersected.bed",
+        fa = config["result_folder"] + "/" + config["speciesA"] + ".fa"
     output:
-        "data/" + config["speciesA"] + "_ancestralGenome.fasta"
+        config["result_folder"] + "/" + config["speciesA"] + "_ancestralGenome.fasta"
     shell:
         "./bin/makeAncestralGenome.bin {input} {output}"
 
 rule getInt:
     input:
-        "data/{species}_ancestralGenome.fasta",
+        config["result_folder"] + "/{species}_ancestralGenome.fasta",
     output:
-        "data/{species}_{type}_ints.bed",
-        "data/{species}_n{type}_ints.bed"
+        config["result_folder"] + "/{species}_{type}_ints.bed",
+        config["result_folder"] + "/{species}_n{type}_ints.bed"
     params:
         pattern = "{type}"
     shell:
@@ -168,25 +168,25 @@ rule filterBarriers:
     input:
         getBarrierFile
     output:
-        "data/barriersAOE_{ref}.tsv"
+        config["result_folder"] + "/barriersAOE_{ref}.tsv"
     shell:
         "Rscript scripts/filterInterNIEBs.R {input} {output}"
         
 rule filterVCF:
     input:
-        "data/{species}_ancestralBases.vcf"
+        config["result_folder"] + "/{species}_ancestralBases.vcf"
     output:
-        "data/{species}.filtered_ancestralBases.vcf"
+        config["result_folder"] + "/{species}.filtered_ancestralBases.vcf"
     shell:
         'grep -v -P "\tN\t" {input} > {output}'
 
 rule countMuts:
     input:
-        "data/barriersAOE_{species}.tsv",
-        "data/{species}_{type}_ints.bed",
-        "data/{species}.filtered_ancestralBases.vcf"
+        config["result_folder"] + "/barriersAOE_{species}.tsv",
+        config["result_folder"] + "/{species}_{type}_ints.bed",
+        config["result_folder"] + "/{species}.filtered_ancestralBases.vcf"
     output:
-        "data/{species}_{type}_muts.tsv"
+        config["result_folder"] + "/{species}_{type}_muts.tsv"
     resources:
         mem_cons = 50
     shell:
@@ -194,22 +194,22 @@ rule countMuts:
 
 rule countBases:
     input:
-        "data/{species}.fa",
-        "data/barriersAOE_{species}.tsv",
-        "data/{species}_{type}_ints.bed"
+        config["result_folder"] + "/{species}.fa",
+        config["result_folder"] + "/barriersAOE_{species}.tsv",
+        config["result_folder"] + "/{species}_{type}_ints.bed"
     output:
-        "data/{species}_{type}_bases.tsv"
+        config["result_folder"] + "/{species}_{type}_bases.tsv"
     shell:
         "./bin/countBases.bin {input} {output}"
 
 rule archivate:
     input:
-        "data/{species}_{type}_bases.tsv",
-        "data/{species}_{type}_muts.tsv"
+        config["result_folder"] + "/{species}_{type}_bases.tsv",
+        config["result_folder"] + "/{species}_{type}_muts.tsv"
     conda:
         "envs/R.yaml"
     output:
-        folder = directory("data/{datetime}_{species}_{type}_formatted/"),
+        folder = directory(config["result_folder"] + "/{datetime}_{species}_{type}_formatted/"),
         touch = touch(".archived_{datetime}_{species}_{type}")
     shell:
         "Rscript scripts/archiveData.R {input} {output.folder}"
@@ -224,22 +224,22 @@ rule setupPackages:
 
 rule prettyFigures:
     input:
-        folder = "data/{datetime}_{species}_{type}_formatted/",
+        folder = config["result_folder"] + "/{datetime}_{species}_{type}_formatted/",
         setup = ".R.setup"
     conda:
         "envs/R.yaml"
     output:
-        directory("data/{datetime}_{species}_{type}_figures")
+        directory(config["result_folder"] + "/{datetime}_{species}_{type}_figures")
     shell:
         "Rscript scripts/prettyConformFigures.R {input.folder} {output}"
 
 rule commonFigs:
     input:
-        folder1 = "data/{datetime}_{species1}_{type}_formatted/",
-        folder2 = "data/{datetime}_{species2}_{type}_formatted/",
+        folder1 = config["result_folder"] + "/{datetime}_{species1}_{type}_formatted/",
+        folder2 = config["result_folder"] + "/{datetime}_{species2}_{type}_formatted/",
         setup = ".R.setup"
     output:
-        directory("data/{datetime}_{species1}_{species2}_{type}_figs/")
+        directory(config["result_folder"] + "/{datetime}_{species1}_{species2}_{type}_figs/")
     conda:
         "envs/R.yaml"
     shell:
@@ -247,16 +247,16 @@ rule commonFigs:
 
 rule sendToPhystorage:
     input:
-        "data/{datetime}_{species1}_{type1}_formatted/",
-        "data/{datetime}_{species1}_{type2}_formatted/",
-        "data/{datetime}_{species2}_{type1}_formatted/",
-        "data/{datetime}_{species2}_{type2}_formatted/",
-        "data/{datetime}_{species1}_{species2}_{type1}_figs/",
-        "data/{datetime}_{species1}_{species2}_{type2}_figs/",
-        "data/{datetime}_{species1}_{type1}_figures",
-        "data/{datetime}_{species1}_{type2}_figures",
-        "data/{datetime}_{species2}_{type1}_figures",
-        "data/{datetime}_{species2}_{type2}_figures"
+        config["result_folder"] + "/{datetime}_{species1}_{type1}_formatted/",
+        config["result_folder"] + "/{datetime}_{species1}_{type2}_formatted/",
+        config["result_folder"] + "/{datetime}_{species2}_{type1}_formatted/",
+        config["result_folder"] + "/{datetime}_{species2}_{type2}_formatted/",
+        config["result_folder"] + "/{datetime}_{species1}_{species2}_{type1}_figs/",
+        config["result_folder"] + "/{datetime}_{species1}_{species2}_{type2}_figs/",
+        config["result_folder"] + "/{datetime}_{species1}_{type1}_figures",
+        config["result_folder"] + "/{datetime}_{species1}_{type2}_figures",
+        config["result_folder"] + "/{datetime}_{species2}_{type1}_figures",
+        config["result_folder"] + "/{datetime}_{species2}_{type2}_figures"
     output:
         touch(".{datetime}.{species1}.{species2}.{type1}.{type2}")
     shell:
