@@ -70,7 +70,7 @@ plot1 = ggplot(data = df[df$position %in% -50:500,], aes(y = mean10, x = positio
 	ggtitle("Les taux de transversion sont supérieurs aux taux de transition") +
 	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-	geom_vline(xintercept = c(0, 117, 270), color = "grey") +
+	geom_vline(xintercept = c(0, 133, 266), color = "grey") +
 	theme_linedraw() +
 	theme(strip.placement = "outside", legend.position = "none") +
 	theme_bob
@@ -86,7 +86,7 @@ plot2 = ggplot(data = total[total$position %in% -50:500,], aes(x=position, y = m
 	ggtitle("Taux de mutation global") +
 	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-	geom_vline(xintercept = c(0, 117, 270), color = "grey") +
+	geom_vline(xintercept = c(0, 133, 266), color = "grey") +
 	theme_linedraw() +
 	theme_bob
 
