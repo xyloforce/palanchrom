@@ -259,5 +259,12 @@ rule sendToPhystorage:
         config["result_folder"] + "/{datetime}_{species2}_{type2}_figures"
     output:
         touch(".{datetime}.{species1}.{species2}.{type1}.{type2}")
+    params:
+        folder = config["result_folder"],
+        datetime = "{datetime}"
     shell:
-        "rsync -av --exclude='.*' {input} fsassola@phystorage.physique.ens-lyon.fr:/partages/Bioinfo/shared/users/fsassola"
+        """
+        mkdir {params.folder}/{params.datetime}_results
+        mv {input} {params.folder}/{params.datetime}_results
+        rsync -av --exclude='.*' {params.folder}/{params.datetime}_results fsassola@phystorage.physique.ens-lyon.fr:/partages/Bioinfo/shared/users/fsassola
+        """
