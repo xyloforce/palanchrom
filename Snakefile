@@ -131,7 +131,7 @@ rule getAncestralState:
     output:
         config["result_folder"] + "/{species}_ancestralBases.vcf"
     shell:
-        "./bin/getAncestralBase.bin {input.ref} {input.ref2} {input.fasta} {output}"
+        "./bin/getAncestralBase {input.ref} {input.ref2} {input.fasta} {output}"
 
 rule getAncestralGenome:
     input:
@@ -141,7 +141,7 @@ rule getAncestralGenome:
     output:
         config["result_folder"] + "/{ref}_ancestralGenome.fasta"
     shell:
-        "./bin/makeAncestralGenome.bin {input} {output}"
+        "./bin/makeAncestralGenome {input} {output}"
 
 rule getAncestralGenomeRef:
     input:
@@ -151,7 +151,7 @@ rule getAncestralGenomeRef:
     output:
         config["result_folder"] + "/" + config["speciesA"] + "_ancestralGenome.fasta"
     shell:
-        "./bin/makeAncestralGenome.bin {input} {output}"
+        "./bin/makeAncestralGenome {input} {output}"
 
 rule getInt:
     input:
@@ -162,7 +162,7 @@ rule getInt:
     params:
         pattern = "{type}"
     shell:
-        "./bin/getPattern.bin {params} {input} {output}"
+        "./bin/getPattern {params} {input} {output}"
 
 rule filterBarriers:
     input:
@@ -188,9 +188,9 @@ rule countMuts:
     output:
         config["result_folder"] + "/{species}_{type}_muts.tsv"
     resources:
-        mem_cons = 50
+        mem_cons = 25
     shell:
-        "./bin/countMuts.bin {input} {output}"
+        "./bin/countMuts {input} {output}"
 
 rule countBases:
     input:
@@ -199,8 +199,10 @@ rule countBases:
         config["result_folder"] + "/{species}_{type}_ints.bed"
     output:
         config["result_folder"] + "/{species}_{type}_bases.tsv"
+    resources:
+        mem_cons = 50
     shell:
-        "./bin/countBases.bin {input} {output}"
+        "./bin/countBases {input} {output}"
 
 rule archivate:
     input:
@@ -264,7 +266,11 @@ rule sendToPhystorage:
         datetime = "{datetime}"
     shell:
         """
-        mkdir {params.folder}/{params.datetime}_results
+        FOLDER={params.folder}/{params.datetime}_results
+        if [ -d "$FOLDER" ]; then
+        rm -r $FOLDER
+        fi
+        mkdir $FOLDER
         mv {input} {params.folder}/{params.datetime}_results
         rsync -av --exclude='.*' {params.folder}/{params.datetime}_results fsassola@phystorage.physique.ens-lyon.fr:/partages/Bioinfo/shared/users/fsassola
         """
