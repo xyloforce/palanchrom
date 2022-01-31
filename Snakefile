@@ -231,9 +231,10 @@ rule prettyFigures:
     conda:
         "envs/R.yaml"
     output:
-        directory(config["result_folder"] + "/{datetime}_{species}_{type}_figures")
+        folder = directory(config["result_folder"] + "/{datetime}_{species}_{type}_figures"),
+        touch = touch(".figures_{datetime}_{species}_{type}")
     shell:
-        "Rscript scripts/prettyConformFigures.R {input.folder} {output}"
+        "Rscript scripts/prettyConformFigures.R {input.folder} {output.folder}"
 
 rule commonFigs:
     input:

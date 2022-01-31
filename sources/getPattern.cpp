@@ -16,14 +16,13 @@ int main(int argc, char *argv[])
     std::string regex = constructRegex(addNEachPos(pattern));
 
     std::cout << "Reading input..." << std::endl;
-    fasta inputFile(argv[2], "read_line", false);
+    fasta inputFile(argv[2], read_line, standard);
 
     std::cout << "Creating outputs..." << std::endl;
     bed outputFile(argv[3], false);
     bed outputConvert(argv[4], false);
 
     std::cout << "Starting analysis..." << std::endl;
-    int count(0);
 
     while(!inputFile.isEOF()) {
         fasta_entry entry(inputFile.readFastaLine());

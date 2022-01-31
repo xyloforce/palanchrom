@@ -324,7 +324,7 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
                 default:
                     // got an overlap
                     if(matchs.find(entry) != matchs.end()) {
-                        throw std::logic_error("unexpected multiple entry");
+                        throw std::logic_error("id is not unique : already listed in map");
                     }
                     matchs[entry].push_back(intsA[index]);
                     unsigned int indexA(index);
@@ -608,7 +608,7 @@ std::vector <AOE_entry> AOEbed::getBedByID(std::string id) {
 std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (sorted_bed& entries) {
     std::string lastChrom = "";
     std::map <bed_entry, std::vector<AOE_entry>> matchs;
-    for(const std::string chrom: entries.getChroms()) {
+    for(const std::string &chrom: entries.getChroms()) {
         std::vector <bed_entry> intsB = entries.getBedByID(chrom);
         std::vector <AOE_entry> intsA = getBedByID(chrom);
         // need to convert AOE entries to bed and back ??
@@ -624,11 +624,15 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (sorted_bed& ent
 std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (vcf& entries) {
     std::string lastChrom = "";
     std::map <bed_entry, std::vector<AOE_entry>> matchs;
-    for(const std::string chrom: entries.getChroms()) {
+    for(const std::string &chrom: entries.getChroms()) {
+//         std::cout << "convert vcf to bed" << std::endl;
         std::vector <bed_entry> intsB = entries.convertToBed(entries.getVCFByChrom(chrom));
+//         std::cout << "get corresponding bed" << std::endl;
         std::vector <AOE_entry> intsA = getBedByID(chrom);
         // need to convert AOE entries to bed and back ??
+//         std::cout << "convert AOE to bed" << std::endl;
         std::vector <bed_entry> convertedA(convertToBed(intsA));
+//         std::cout << "get matchs" << std::endl;
         std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(convertedA, intsB);
         for(const auto &entry: tmp_matchs) {
             matchs[entry.first] = convertBack(entry.second);
@@ -636,6 +640,7 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (vcf& entries) {
     }
     return matchs;
 }
+
 
 std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, std::vector <bed_entry> toIntersect) {
     std::vector <bed_entry> results;

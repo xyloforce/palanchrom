@@ -15,13 +15,12 @@ int main(int argc, char* argv[])
     fasta files[argc -2];
     // defines array of fasta entries objects
     fasta_entry entries[argc - 2];
-    vcf outputFile(argv[argc - 1], false);
-    int count = 0;
+    vcf outputFile(argv[argc - 1], write);
 
     std::cout << "Opening files..." << std::endl;
     // open files
     for (int arg(1); arg < argc -1; arg++) {
-        files[arg - 1] = fasta(argv[arg], "read_line", true);
+        files[arg - 1] = fasta(argv[arg], read_line, bedtools);
     }
 
     std::cout << "Starting analysis..." << std::endl;
@@ -47,7 +46,7 @@ int main(int argc, char* argv[])
         for(unsigned long i(0); i<ref.size(); i++) {
             if(consensus[i] != ref[i] && ref[i] != 'N') {
                 std::string refS("");
-                std::string info(".");
+                std::map <std::string, std::string> info;
                 char commonBase('\0');
 
                 if(consensus[i] == ref2[i]) {
@@ -61,11 +60,9 @@ int main(int argc, char* argv[])
                 }
                 else if(consensus[i] != 'N') {
                     commonBase = 'N';
-                    info = "source=non-match;ref=";
-                    info += consensus[i];
-                    info += ";alt=";
-                    info += ref2[i];
-                    info += ";";
+                    info["source"] = "non_match";
+                    info["ref"] = consensus[i];
+                    info["alt"] = ref2[i];
                     if(entries[0].getStrand() == '-') {
                         refS += reverseComp(ref[i]);
                     } else {

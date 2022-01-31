@@ -1,8 +1,8 @@
 #include "fasta_tools.h"
-#include "bio_tools.h"
 #include <iostream>
 #include <fstream>
 #include <regex>
+#include "bio_tools.h"
 
 header::header(std::string chrom, int start = 0, int stop = 0, char strand = 'U')
 {
@@ -81,6 +81,7 @@ void sequence::setSequence(std::string sequence) {
 
 sequence sequence::subsetSequence ( int begin, int end ) const
 {
+    // HALF OPEN INT BC begin and len = end - begin so if 1-2 : base 1 and 1 base
     std::string tString;
     tString = m_sequence.substr(begin, end - begin);
     sequence tSeq(tString);
@@ -91,25 +92,25 @@ char sequence::getChar(int index) const {
     return m_sequence[index];
 }
 
-fasta_entry::fasta_entry(std::string inputSeq, std::string id, int start = 0, int stop = 0, char strand = 'U', bool bedtools_type = false)
+fasta_entry::fasta_entry(std::string inputSeq, std::string id, int start = 0, int stop = 0, char strand = 'U', fastaType type = fastaType::standard)
 {
     m_sequence = sequence(inputSeq);
     m_header = header(id, start, stop, strand);
-    m_bedtools_type = bedtools_type;
+    m_type = type;
 }
 
 fasta_entry::fasta_entry()
 {
     m_sequence = sequence("");
     m_header = header("");
-    m_bedtools_type = false;
+    m_type = standard;
 }
 
-fasta_entry::fasta_entry(sequence seq, header head, bool bedtools_type)
+fasta_entry::fasta_entry(sequence seq, header head, fastaType type)
 {
     m_sequence = seq;
     m_header = head;
-    m_bedtools_type = bedtools_type;
+    m_type = type;
 }
 
 std::string fasta_entry::getMinusStrand()
@@ -119,7 +120,7 @@ std::string fasta_entry::getMinusStrand()
     } else if(m_header.getStrand() == '-') {
         return m_sequence.getSequence();
     } else {
-        if(m_bedtools_type == true) {
+        if(m_type == fastaType::bedtools) {
             std::cout << "unitialized strand, using + as default" << std::endl;
         }
         return m_sequence.getReverseComplement();
@@ -133,7 +134,7 @@ std::string fasta_entry::getPluStrand()
     } else if(m_header.getStrand() == '-') {
         return m_sequence.getReverseComplement();
     } else {
-        if(m_bedtools_type == true) {
+        if(m_type == fastaType::bedtools) {
             std::cout << "unitialized strand, using + as default" << std::endl;
         }
         return m_sequence.getSequence();
@@ -190,9 +191,9 @@ void fasta_entry::trimSequence(int size, int end)
     }
 }
 
-void fasta_entry::write_fasta_entry(std::ofstream& outputFile, bool bedtools_type)
+void fasta_entry::write_fasta_entry(std::ofstream& outputFile, fastaType type)
 {
-    if(bedtools_type) {
+    if(type == fastaType::bedtools) {
         outputFile << ">" << m_header.getID() << ":" << m_header.getStart() << "-" << m_header.getEnd() << "(" << m_header.getStrand() << ")" << '\n';
     } else {
         outputFile << ">" << m_header.getID() << '\n';
@@ -210,7 +211,7 @@ long fasta_entry::getPos(long pos_sequence) const
     } else if(m_header.getStrand() == '-') {
         return (m_header.getEnd() - pos_sequence);
     } else {
-        if(m_bedtools_type) {
+        if(m_type == fastaType::bedtools) {
             std::cout << "Undefined strand, using + as default" << std::endl;
         }
         return (m_header.getStart() + pos_sequence +1);
@@ -228,7 +229,7 @@ fasta_entry fasta_entry::subsetEntry(int begin, int end) const
     header tHeader = m_header;
     tHeader.setStart(m_header.getStart() + begin);
     tHeader.setEnd(m_header.getEnd() - end);
-    fasta_entry tEntry(tSequence, tHeader, m_bedtools_type);
+    fasta_entry tEntry(tSequence, tHeader, m_type);
     
     return tEntry;
 }
@@ -249,12 +250,29 @@ void fasta_entry::editSeq ( std::string edit, int start, int end )
     } else if (m_header.getStrand() == '-') {
         m_header.setStart(m_header.getStart() - editSize);
     } else {
-        if(m_bedtools_type) {
+        if(m_type == fastaType::bedtools) {
             std::cout << "Undefined strand, using + as default" << std::endl;
         }
         m_header.setEnd(m_header.getEnd() + editSize);
     }
 }
+
+void fasta_entry::editSeq(std::vector <vcf_entry> entries) {
+    m_sequence.editSequence(entries);
+}
+
+void sequence::editSequence(std::vector <vcf_entry> entries)
+{
+    for(const auto &entry: entries) {
+        int editSize = entry.getAlternate()[0].size();
+        if(entry.getRef() == toUpper(m_sequence.substr(entry.getPos()-1, entry.getRef().size()))) {
+            m_sequence.replace(entry.getPos()-1, editSize, entry.getAlternate()[0]);
+        } else {
+            throw std::logic_error("non-match");
+        }
+    }
+}
+
 
 char fasta_entry::getStrand()
 {
@@ -265,11 +283,10 @@ fasta::fasta()
 {
 }
 
-fasta::fasta(std::string filename, std::string read, bool bedtools_type)
-{
+fasta::fasta(std::string filename, openType type, fastaType typeH) {
     int index(0);
-    m_bedtools_type = bedtools_type;
-    if(read == "read") {
+    m_type = typeH;
+    if(type == openType::read) {
         m_input = std::ifstream(filename);
         while(!m_input.eof()) {
             fasta_entry entry = readFastaLine();
@@ -278,15 +295,20 @@ fasta::fasta(std::string filename, std::string read, bool bedtools_type)
             index ++;
             std::cout << index << "     \r" << std::flush;
         }
-    } else if(read == "read_line") {
+    } else if(type == openType::read_line) {
         m_input = std::ifstream(filename);
-    } else if(read == "write") {
+    } else if(type == openType::write) {
         m_output = std::ofstream(filename);
     }
 }
 
-fasta_entry fasta::getFastaById(std::string id) {
-    return m_content[m_indexes[id]];
+fasta_entry fasta::getFastaById(std::string id) const {
+    std::map<std::string,int>::const_iterator it = m_indexes.find(id);
+    if(it != m_indexes.end()) {
+        return m_content[it->second];
+    } else {
+        throw std::logic_error("id not found");
+    }
 }
 
 fasta_entry fasta::getSubset(bed_entry entry) {
@@ -297,6 +319,49 @@ fasta_entry fasta::getSubset(bed_entry entry) {
 fasta_entry fasta_entry::getSubset(bed_entry entry) {
     return subsetEntry(entry.getStart(), entry.getStop());
 }
+
+fasta_entry fasta::getSubset(vcf_entry entry) {
+    fasta_entry entryF = getFastaById(entry.getChrom());
+    return entryF.subsetEntry(entry.getPos() -1, entry.getPos());
+}
+
+fasta_entry fasta_entry::getSubset(vcf_entry entry)
+{
+    return subsetEntry(entry.getPos() - 1, entry.getPos()); // one based vs 0 based
+}
+
+bool fasta_entry::isValid(vcf_entry entry)
+{
+    if(toUpper(m_sequence.subsetSequence(entry.getPos() - 1, entry.getPos()).getSequence()) != toUpper(entry.getRef())) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+bool fasta::isValid(vcf_entry entry)
+{
+    return getFastaById(entry.getChrom()).isValid(entry);
+}
+
+std::vector<bool> fasta::areValid(std::vector<vcf_entry> entries)
+{
+    std::vector <bool> result;
+    std::string currentChrom;
+    fasta_entry current;
+    for(const auto &entry: entries) {
+        if(entry.getChrom() == currentChrom) {
+            result.push_back(current.isValid(entry));
+        } else {
+            currentChrom = entry.getChrom();
+            current = getFastaById(currentChrom);
+            result.push_back(current.isValid(entry));
+        }
+    }
+    return result;
+}
+
+
 
 fasta_entry fasta::readFastaLine()
 {
@@ -313,13 +378,15 @@ fasta_entry fasta::readFastaLine()
     bool notStrand = true;
     bool continueIter = true;
     bool currentHeader = true;
+
+    bool skip = false;
     
     while(continueIter && !m_input.eof()) {
         m_input.get(tchar);
         if(tchar == '>' && currentHeader) {
             currentHeader = false;
             while(tchar != '\n') {
-                if(m_bedtools_type) {
+                if(m_type == fastaType::bedtools) {
                     if(tchar == ':' || tchar == '(' || tchar == ')') {
                         info ++;
                     } else if(tchar == '-' && notStrand) {
@@ -333,6 +400,12 @@ fasta_entry fasta::readFastaLine()
                         stopS += tchar;
                     } else if(info == 3) {
                         strand = tchar;
+                    }
+                } else if(m_type == fastaType::ucsc) {
+                    if(tchar != ' ' && !skip && tchar != '>') {
+                        headerF += tchar;
+                    } else if(tchar == ' ') {
+                        skip = true;
                     }
                 } else {
                     if(tchar != '>') {
@@ -349,7 +422,7 @@ fasta_entry fasta::readFastaLine()
         }
     }
     
-    if(m_bedtools_type) {
+    if(m_type == fastaType::bedtools) {
         if(startS != "" && stopS != "") {
             start = stoi(startS);
             stop = stoi(stopS);
@@ -361,18 +434,38 @@ fasta_entry fasta::readFastaLine()
         start = 0;
         stop = sequence.size();
     }
-    return fasta_entry(sequence, headerF, start, stop, strand, m_bedtools_type);
+    return fasta_entry(sequence, headerF, start, stop, strand, m_type);
 }
 
 void fasta::write_fasta_entry(fasta_entry entry)
 {
-    entry.write_fasta_entry(m_output, m_bedtools_type);
+    entry.write_fasta_entry(m_output, m_type);
 }
 
 bool fasta::isEOF() const
 {
     return m_input.eof();
 }
+
+void fasta::editSeq(vcf_entry entry)
+{
+    int index = m_indexes[entry.getChrom()];
+    m_content[index].editSeq(std::vector<vcf_entry>(1, entry));
+}
+
+std::vector<fasta_entry> fasta::getEntries()
+{
+    return m_content;
+}
+
+
+void fasta::write_fasta_file(fasta &fileHandler)
+{
+    for(const auto &entry: fileHandler.getEntries()) {
+        write_fasta_entry(entry);
+    }
+}
+
 
 std::vector <fasta_entry> fasta::getSeqFromInts (std::vector <bed_entry> intsOfInterest) {
     std::sort(intsOfInterest.begin(), intsOfInterest.end());

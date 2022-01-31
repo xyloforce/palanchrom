@@ -1,7 +1,8 @@
 #include "vcf_tools.h"
 #include "bed_tools.h"
 
-vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref, std::vector <std::string> alt, int qual, std::string filter, std::string info)
+
+vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref, std::vector <std::string> alt, int qual, std::string filter, std::map <std::string, std::string> info)
 {
     m_chrom = chrom;
     m_pos = pos;
@@ -22,7 +23,7 @@ vcf_entry::vcf_entry()
     m_alt = std::vector <std::string>();
     m_qual = 0;
     m_filter = ".";
-    m_info = ".";
+    m_info = std::map <std::string, std::string> ();
 }
 
 vcf_entry::vcf_entry(bed_entry entry) {
@@ -53,7 +54,7 @@ vcf_entry::vcf_entry(bed_entry entry) {
     m_ref = ref;
     m_alt = alt;
     m_qual = entry.getScore();
-    m_info = ".";
+    m_info = std::map <std::string, std::string>();
 }
 
 bool vcf_entry::operator == (const vcf_entry& entry) const
@@ -88,11 +89,19 @@ std::string vcf_entry::to_string() const
 {
     std::string result;
     std::string alt;
+    std::string info;
     for(int i(0); i < m_alt.size() ; i ++) {
         alt += m_alt[i] + ",";
     }
     alt.pop_back();
-    result = m_chrom + "\t" + std::to_string(m_pos) + "\t" + m_id + "\t" + m_ref + "\t" + alt + "\t" + std::to_string(m_qual) + "\t" + m_filter + "\t" + m_info;
+    for(const auto &pair: m_info) {
+        info += pair.first;
+        info += "=";
+        info += pair.second;
+        info += ";";
+    }
+    info.pop_back();
+    result = m_chrom + "\t" + std::to_string(m_pos) + "\t" + m_id + "\t" + m_ref + "\t" + alt + "\t" + std::to_string(m_qual) + "\t" + m_filter + "\t" + info;
     
     return result;
 }
@@ -111,13 +120,20 @@ int vcf_entry::getQual() const {
     return m_qual;
 }
 
+std::string vcf_entry::getInfoValue(std::string key) const {
+     std::map <std::string, std::string>::const_iterator it = m_info.find(key);
+    if (it != m_info.end()) {
+        return it->second;
+    } else {
+        return "";
+    }
+}
 
 vcf_entry vcf::readVCFLine()
 {
     std::string line;
     char tchar = '\0';
     int col = 1;
-    
     std::string chrom = "";
     std::string tpos = "";
     long int pos(0);
@@ -128,14 +144,16 @@ vcf_entry vcf::readVCFLine()
     std::string tqual = "";
     int qual(0);
     std::string filter = "";
-    std::string info = "";
-    
+    std::map <std::string, std::string> info;
     bool warn = false;
+    bool isValue = false;
+    std::string key = "";
+    std::string value = "";
     
     while(tchar != '\n' && !m_input.eof()) {
         // file is chrom pos id ref alt qual filter info
         m_input.get(tchar);
-        
+
         if(tchar != '\n' && tchar != '\t' && tchar != '#') {
             switch(col) {
                 case 1:
@@ -165,7 +183,24 @@ vcf_entry vcf::readVCFLine()
                     filter += tchar;
                     break;
                 case 8:
-                    info += tchar;
+                    switch(tchar) {
+                        case ';':
+                            isValue = false;
+                            info[key] = value;
+                            key = "";
+                            value = "";
+                            break;
+                        case '=':
+                            isValue = true;
+                            break;
+                        default:
+                            if(isValue) {
+                                value += tchar;   
+                            } else {
+                                key += tchar;
+                            }
+                            break;
+                    }
                     break;
                 default:
                     warn = true;
@@ -174,7 +209,7 @@ vcf_entry vcf::readVCFLine()
         } else if(tchar == '\t') {
             col ++;
         } else if(tchar == '#') {
-            while(tchar != '\n') {
+            while(tchar != '\n') { // read whole line until end then return empty entry
                 m_input.get(tchar);
             }
         }
@@ -195,8 +230,9 @@ vcf_entry vcf::readVCFLine()
     }
 }
 
-vcf::vcf(std::string filename, bool read) {
-    if(read) {
+vcf::vcf(std::string filename, openType type)
+{
+    if(type == openType::read) {
         int index = 0;
         m_input = std::ifstream(filename);
         while(!m_input.eof()) {
@@ -211,11 +247,19 @@ vcf::vcf(std::string filename, bool read) {
             }
         }
         std::cout << std::endl;
+    } else if(type == openType::read_line) {
+        m_input = std::ifstream(filename);
     } else {
         m_output = std::ofstream(filename);
         m_output <<"##fileformat=VCFv4.2\n";
         m_output <<"#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n";
     }
+}
+
+vcf::vcf(std::vector<vcf_entry> values, std::map<std::string, std::vector <int>> indexes)
+{
+    m_content = values;
+    m_indexes = indexes;
 }
 
 void vcf::vcf_writeline(vcf_entry entry_vcf) {
@@ -227,6 +271,31 @@ std::vector<vcf_entry> vcf::getVCFByChrom(std::string chrom)
     std::vector <vcf_entry> results;
     for (const int &index: m_indexes[chrom]) {
         results.push_back(m_content[index]);
+    }
+    return results;
+}
+
+std::vector <vcf_entry> vcf::readVCFByChrom(std::string chrom) {
+    vcf_entry entry(readVCFLine());
+    std::vector <vcf_entry> results;
+    int current(0);
+    int count(0);
+    if(entry.getChrom() == chrom) {
+        while(entry.getChrom() == chrom) {
+            results.push_back(entry);
+            current = m_input.tellg();
+            vcf_entry entry(readVCFLine());
+            count ++;
+            if(count % 10000 == 0) {
+                std::cout << count << "\r";
+            }
+            std::cout << std::endl;
+        }
+        if(entry.getChrom() != chrom) {
+            m_input.seekg(current, std::ios::beg);
+        }
+    } else {
+        throw std::logic_error("ID found doesn't match current - either badly sorted or fasta entry without any ref");
     }
     return results;
 }

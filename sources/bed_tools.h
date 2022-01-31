@@ -103,18 +103,18 @@ protected:
 
 class AOEbed: public sorted_bed {
 public:
-	AOEbed(std::string filename);
-  AOEbed(std::vector <AOE_entry> content);
-	AOE_entry readAOEline();
-  std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
-  std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);
-  std::vector <AOE_entry> getBedByID(std::string id);
-  std::vector <AOE_entry> getIntersects(sorted_bed& inputFile);
-  std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source);
-  std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);
+    AOEbed(std::string filename);
+    AOEbed(std::vector <AOE_entry> content);
+    AOE_entry readAOEline();
+    std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
+    std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);
+    std::vector <AOE_entry> getBedByID(std::string id);
+    std::vector <AOE_entry> getIntersects(sorted_bed& inputFile);
+    std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source);
+    std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);
 private:
-	std::vector <AOE_entry> m_content;
-	std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;
+    std::vector <AOE_entry> m_content;
+    std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;
 };
 
 #endif

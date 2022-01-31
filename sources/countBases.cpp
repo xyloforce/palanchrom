@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Loading fasta... " << std::endl;
-    fasta source(argv[1], "read", false);
+    fasta source(argv[1], read, standard);
     std::cout << "Loading AOEs..." << std::endl;
     AOEbed intsOfInterest(argv[2]);
     std::cout << "Loading bed... " << std::endl;

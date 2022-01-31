@@ -13,13 +13,13 @@ int main(int argc, char* argv[]) {
     }
     
     std::cout << "Loading vcf... " << std::endl;
-    vcf mutations(argv[1], true);
+    vcf mutations(argv[1], read);
     std::cout << "Loading bed... " << std::endl; 
     sorted_bed intervals(argv[2]);
     std::cout << "Started analysis" << std::endl;
     
-    fasta inputFasta(argv[3], "read_line", false);
-    fasta outputFasta(argv[4], "write", false);
+    fasta inputFasta(argv[3], read_line, standard);
+    fasta outputFasta(argv[4], write, standard);
     fasta_entry entry;
     
     std::string temp = "";

@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     AOEbed virtualF(intsOfInterest.getIntersects(mask));
     
     std::cout << "Loading mutations..." << std::endl;
-    vcf muts(argv[3], "read");
+    vcf muts(argv[3], read);
 
     std::cout << "Getting muts in ints" << std::endl;
     std::map <bed_entry, std::vector <AOE_entry>> overlaps = virtualF.getOverlap(muts);

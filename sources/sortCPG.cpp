@@ -12,16 +12,16 @@ int main(int argc, char* argv[]) {
     }
     
     std::cout << "Reading input..." << std::endl;
-    fasta inputFile(argv[1], "read_line", false);
-    fasta outputCPG(argv[2], "write", false);
-    fasta outputNCPG(argv[3], "write", false);
+    fasta inputFile(argv[1], read_line, standard);
+    fasta outputCPG(argv[2], write, standard);
+    fasta outputNCPG(argv[3], write, standard);
     
     // read an entry
     // create two strings : one with CG only one without
     std::cout << "Searching for CG..." << std::endl;
     int count(0);
     while(!inputFile.isEOF()) {
-        fasta_entry entry(inputFile.read_fasta_line());
+        fasta_entry entry(inputFile.readFastaLine());
         std::string no_cpg("");
         std::string cpg("");
 
