@@ -98,7 +98,7 @@ protected:
 
   // internal functions
     std::map <bed_entry, std::vector<bed_entry>> overlap ( std::vector <bed_entry> currentInts, std::vector <bed_entry> pos);
-    std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect);
+    std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS = false, bool fullT = false);
 };
 
 class AOEbed: public sorted_bed {
@@ -109,7 +109,7 @@ public:
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);
     std::vector <AOE_entry> getBedByID(std::string id);
-    std::vector <AOE_entry> getIntersects(sorted_bed& inputFile);
+    std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false);
     std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source);
     std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);
 private:

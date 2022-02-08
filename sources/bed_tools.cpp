@@ -324,6 +324,7 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
                 default:
                     // got an overlap
                     if(matchs.find(entry) != matchs.end()) {
+                        std::cout << entry.getStringEntry() << std::endl;
                         throw std::logic_error("id is not unique : already listed in map");
                     }
                     matchs[entry].push_back(intsA[index]);
@@ -642,46 +643,56 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (vcf& entries) {
 }
 
 
-std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, std::vector <bed_entry> toIntersect) {
+std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS, bool fullT) {
     std::vector <bed_entry> results;
-    std::map <bed_entry, std::vector <bed_entry>> matches = overlap(source, toIntersect);
-    for(const auto &entryToVector: matches) {
-        for(const auto &entry: entryToVector.second) {
+    std::map <bed_entry, std::vector <bed_entry>> matches = overlap(source, toIntersect); // return map bed"toIntersect" : [bed"source"]
+    for(const auto &entryToVector: matches) { // entryToVector is from toIntersect
+        for(const auto &entry: entryToVector.second) { // entry is from source bed
             int status(entryToVector.first.isInside(entry));
             int start(0);
             int stop(0);
             switch(status) {
                 case 1: // stop of entry is inside int && start of entry is outside
-                    start = entryToVector.first.getStart();
-                    stop = entry.getStop();
+                    if(!fullT && !fullS) {
+                        start = entryToVector.first.getStart();
+                        stop = entry.getStop();
+                    }
                     break;
                 case 2: // entry is IN entryToVector.first
-                    start = entry.getStart();
-                    stop = entry.getStop();
+                    if(!fullT) {
+                        start = entry.getStart();
+                        stop = entry.getStop();
+                    }
                     break;
                 case 3:
-                    start = entry.getStart();
-                    stop = entryToVector.first.getStop();
+                    if(!fullT && !fullS) {
+                        start = entry.getStart();
+                        stop = entryToVector.first.getStop();
+                    }
                     break;
                 case 5:
-                    start = entryToVector.first.getStart();
-                    stop = entryToVector.first.getStop();
+                    if(!fullS) {
+                        start = entryToVector.first.getStart();
+                        stop = entryToVector.first.getStop();
+                    }
                     break;
                 default:
                     throw std::logic_error("Cant find non-overlapping ints");
             }
-            results.push_back(bed_entry(entry.getChrom(), start, stop, entryToVector.first.getName(), entry.getScore(), entryToVector.first.getStrand()));
+            if(start != 0 || stop != 0) {
+                results.push_back(bed_entry(entry.getChrom(), start, stop, entryToVector.first.getName(), entry.getScore(), entryToVector.first.getStrand()));
+            }
         }
     }
     return results;
 }
 
-std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile) {
+std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI, bool fullF) {
     std::vector <AOE_entry> results;
     for(const auto &chrom: inputFile.getChroms()) {
         std::vector <bed_entry> input = inputFile.getBedByID(chrom);
         std::vector <bed_entry> converted(convertToBed(getBedByID(chrom)));
-        std::vector <bed_entry> tmp_intersect = intersect(input, converted);
+        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF); // if fullI set : return only
         std::vector <AOE_entry> intersect = convertBack(tmp_intersect);
         results.insert(results.end(), intersect.begin(), intersect.end());
     }
