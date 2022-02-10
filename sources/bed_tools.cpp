@@ -493,8 +493,6 @@ sorted_bed::sorted_bed(std::vector <bed_entry> content) {
     }
 }
 
-
-
 std::vector <bed_entry> sorted_bed::getBedByID(std::string id) {
     std::vector <bed_entry> output;
     for (const auto &pair : m_indexes[id]) {
@@ -506,6 +504,7 @@ std::vector <bed_entry> sorted_bed::getBedByID(std::string id) {
 
 AOEbed::AOEbed(std::string filename) {
     m_input = std::ifstream(filename);
+    m_content.clear();
     int index(0);
     while(!m_input.eof()) {
         AOE_entry entry = readAOEline();
@@ -590,10 +589,10 @@ AOE_entry AOEbed::readAOEline() {
         start = stoi(tstart);
         stop = stoi(tstop);
         zero = stoi(tZero);
+        return AOE_entry(chrom, start, stop, strand, zero);
     } catch (std::invalid_argument exception) {
-        std::cout << "Catched exception, creating empty line" << std::endl;
+        return AOE_entry();
     }
-    return AOE_entry(chrom, start, stop, strand, zero);
 }
 
 std::vector <AOE_entry> AOEbed::getBedByID(std::string id) {
@@ -699,7 +698,7 @@ std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI,
     return results;
 }
 
-std::vector <bed_entry> AOEbed::convertToBed(std::vector <AOE_entry> source) {
+std::vector <bed_entry> AOEbed::convertToBed(std::vector <AOE_entry> source) const {
     std::vector <bed_entry> currentConv;
     for(auto entry: source) {
         entry.setName(std::to_string(entry.getZero()));
@@ -716,4 +715,19 @@ std::vector <AOE_entry> AOEbed::convertBack(std::vector <bed_entry> source) {
         convertBack.push_back(AOE_entry(entry, stoi(entry.getName())));
     }
     return convertBack;
+}
+
+std::vector<bed_entry> AOEbed::convertToBed() const
+{
+    return convertToBed(m_content);
+}
+
+AOE_entry AOEbed::getEntryByIndex(int index) const
+{
+    return m_content[index];
+}
+
+bool AOE_entry::operator==(const AOE_entry& entry) const
+{
+    return m_start == entry.getStart() && m_stop == entry.getStop() && m_chrom == entry.getChrom() && m_zero == entry.getZero() && entry.getType() == m_type;
 }

@@ -10,8 +10,8 @@ args = commandArgs(trailingOnly=TRUE)
 mean10pb <- function(x, n = 10){if(length(x) > 0) {return(filter(x, rep(1 / n, n), sides = 2, circular = FALSE))} else {return(NA)}}
 
 print("loading files")
-bases = read_tsv(args[1], col_names = c("position", "base", "type", "comptage"), na = character(), show_col_types = FALSE)
-muts = read_tsv(args[2], col_names = c("position", "mutation", "type", "comptage"), na = character(), show_col_types = FALSE)
+bases = read_tsv(args[1], col_names = c("position", "base", "type", "comptage"), na = c(""), show_col_types = FALSE)
+muts = read_tsv(args[2], col_names = c("position", "mutation", "type", "comptage"), na = c(""), show_col_types = FALSE)
 
 folder = args[3]
 if(file.exists(folder)) {
@@ -32,7 +32,7 @@ reverseBase = function(x) {
 }
 reverseMutation = function(x) {
 	.parts = unlist(strsplit(x[["mutation"]], split = ""))
-	.result = paste(switch(.parts[1], "A"="T", "C"="G", "T"="A", "G"="C", "N":"N"), switch(.parts[2], "A"="T", "C"="G", "T"="A", "G"="C", "N":"N"), sep = "")
+	.result = paste(switch(.parts[1], "A"="T", "C"="G", "T"="A", "G"="C", "N"="N"), switch(.parts[2], "A"="T", "C"="G", "T"="A", "G"="C", "N"="N"), sep = "")
 	return(.result)
 }
 

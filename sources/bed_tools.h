@@ -55,6 +55,8 @@ public:
     int getRelativePos(int pos) const;
     int getZero() const;
     char getType() const;
+
+    bool operator == (const AOE_entry& entry) const;
 private:
     int m_zero;
     char m_type;
@@ -109,8 +111,10 @@ public:
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);
     std::vector <AOE_entry> getBedByID(std::string id);
+    AOE_entry getEntryByIndex(int index) const;
     std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false);
-    std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source);
+    std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source) const;
+    std::vector <bed_entry> convertToBed() const;
     std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);
 private:
     std::vector <AOE_entry> m_content;
