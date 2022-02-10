@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 5)
     {
-        throw std::domain_error("Unsufficient number of args : need pattern, source fasta and name of bed outputs");
+        throw std::domain_error("Unsufficient number of args : need pattern, source fasta and name of bed outputs (2 names)");
     }
     std::string pattern(argv[1]);
     std::string regex = constructRegex(addNEachPos(pattern));

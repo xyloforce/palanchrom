@@ -52,12 +52,12 @@ colnames(total) = c("position", "comptage")
 tmp = aggregate(muts$comptage, by = list(muts$position), FUN = sum)
 colnames(tmp) = c("position", "comptage")
 total$mutations = tmp[match(total$position, tmp$position),"comptage"]
-
+head(total)
 if (unique(-225:5005 %in% total$position)) {
 	print("ok")
 } else {
-	tmp = data.frame(position = -225:5005)
-	tmp[match(bases$position, tmp$position),] = total
+	tmp = data.frame(position = -225:5005, comptage=0, mutations=0)
+	tmp[match(total$position, tmp$position),] = total
 	total = tmp
 	total[is.na(total)] = 0
 } # prepare code for CPGs
@@ -88,6 +88,7 @@ for(base in unique(muts$ancestral)) {
 
 #### CREATE ONE DF BY TYPE OF COMPL MUTS ########################################################################
 print("create one df by type of complementary mut")
+muts = muts[!(grepl("N", muts$mutation)),]
 muts$group = sapply(muts$mutation, FUN = function(x) switch(x, "AT" = 1, "TA" = 1, "AG" = 2, "TC" = 2, "AC" = 3, "TG" = 3, "GC" = 4, "CG" = 4, "GT" = 5, "CA" = 5, "GA" = 6, "CT" = 6))
 
 for(group in unique(muts$group)) {
