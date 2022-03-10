@@ -13,7 +13,22 @@ int main(int argc, char *argv[])
         throw std::domain_error("Unsufficient number of args : need pattern, source fasta and name of bed outputs (2 names)");
     }
     std::string pattern(argv[1]);
-    std::string regex = constructRegex(addNEachPos(pattern));
+    std::vector <std::string> patterns(1);
+    // parse pattern
+    // create regex
+    // merge pattern
+    for(int i(0); i < pattern.size(); i++) {
+        if(pattern[i] == ',') {
+            patterns.push_back(std::string());
+        } else {
+            patterns[patterns.size()-1] += pattern[i];
+        }
+    }
+    std::string regex = constructRegex(patterns);
+    std::string Nregex = constructNRegex(patterns);
+
+    std::cout << "regex : " << regex << std::endl;
+    std::cout << "n regex : " << Nregex << std::endl;
 
     std::cout << "Reading input..." << std::endl;
     fasta inputFile(argv[2], read_line, standard);
@@ -26,12 +41,13 @@ int main(int argc, char *argv[])
 
     while(!inputFile.isEOF()) {
         fasta_entry entry(inputFile.readFastaLine());
-        std::vector <bed_entry> matchs = entry.matchPatterns(pattern);
+        std::cout << entry.getHeader() << std::endl;
+        std::vector <bed_entry> matchs = entry.matchPatterns(regex);
         for(const auto &bed_line: matchs) {
             outputFile.writeBedLine(bed_line);
         }
 
-        std::vector <bed_entry> tmp = entry.matchPatterns(regex);
+        std::vector <bed_entry> tmp = entry.matchPatterns(Nregex);
         std::vector <bed_entry> convert = entry.reverseInts(tmp);
         for(const auto &bed_line: convert) {
             outputConvert.writeBedLine(bed_line);

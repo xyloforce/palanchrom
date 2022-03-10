@@ -2,10 +2,9 @@
 library(readr)
 library(ggplot2)
 library(stringr)
-library(cowplot)
 
 args = commandArgs(trailingOnly=TRUE)
-#args = c("data/hg38_nCPG_bases.tsv", "data/hg38_nCPG_muts.tsv")
+#args = c("bases.tsv", "muts.tsv", "formatted")
 
 mean10pb <- function(x, n = 10){if(length(x) > 0) {return(filter(x, rep(1 / n, n), sides = 2, circular = FALSE))} else {return(NA)}}
 
@@ -38,28 +37,29 @@ reverseMutation = function(x) {
 
 print("get all bases on one side")
 muts[muts$type == "R","mutation"] = unlist(apply(muts[muts$type == "R",], MARGIN = 1, FUN = reverseMutation))
-muts = aggregate(muts$comptage, by = list(muts$position, muts$mutation), FUN = sum)
+muts = aggregate(muts$comptage, by = list(muts$position, muts$mutation), FUN = sum, na.rm = TRUE)
 colnames(muts) = c("position", "mutation", "comptage")
 bases[bases$type == "R","base"] = unlist(apply(bases[bases$type == "R",], MARGIN = 1, FUN = reverseBase))
-bases = aggregate(bases$comptage, by = list(bases$position, bases$base), FUN = sum)
+bases = aggregate(bases$comptage, by = list(bases$position, bases$base), FUN = sum, na.rm = TRUE)
 colnames(bases) = c("position", "base", "comptage")
 
 #### MERGE TO CREATE TOTAL DF ########################################################################
 
 print("creating total df")
-total = aggregate(bases$comptage, by = list(bases$position), FUN = sum)
+total = aggregate(bases$comptage, by = list(bases$position), FUN = sum, na.rm = TRUE)
 colnames(total) = c("position", "comptage")
-tmp = aggregate(muts$comptage, by = list(muts$position), FUN = sum)
+tmp = aggregate(muts$comptage, by = list(muts$position), FUN = sum, na.rm = TRUE)
 colnames(tmp) = c("position", "comptage")
 total$mutations = tmp[match(total$position, tmp$position),"comptage"]
+# total[is.na(total)] = 0
 head(total)
 if (unique(-225:5005 %in% total$position)) {
 	print("ok")
 } else {
 	tmp = data.frame(position = -225:5005, comptage=0, mutations=0)
 	tmp[match(total$position, tmp$position),] = total
+# 	tmp[is.na(tmp)] = 0
 	total = tmp
-	total[is.na(total)] = 0
 } # prepare code for CPGs
 
 total$relative = total$mutations/total$comptage * 100
@@ -72,17 +72,17 @@ muts = cbind(muts, str_split_fixed(muts$mutation, "", n=2))
 colnames(muts) = c("position", "mutation", "comptage", "ancestral", "reference")
 for(base in unique(muts$ancestral)) {
 	print(base)
-	currentBDF = data.frame(position = unique(total$position))
+	currentBDF = data.frame(position = unique(total$position), comptage = 0)
 	currentBDF[match(bases[bases$base == base, "position"], currentBDF$position), "comptage"] = bases[bases$base == base, "comptage"]
 	for(bdest in unique(muts[muts$ancestral == base, "reference"])) {
 		mut = paste(base, bdest, sep = "")
 		currentBDF[match(muts[muts$mutation == mut, "position"], currentBDF$position),mut] = muts[muts$mutation == mut, "comptage"]
-		currentBDF[is.na(currentBDF[,mut]),mut] = 0
 		relative = paste("relative_", mut, sep= "")
 		currentBDF[,relative] = currentBDF[,mut] / currentBDF$comptage * 100
 		mean10m = paste("mean10_", mut, sep = "")
 		currentBDF[,mean10m] = mean10pb(currentBDF[,relative])
 	}
+# 	currentBDF[is.na(currentBDF)] = 0
 	write_tsv(currentBDF[currentBDF$position %in% -220:5000,], paste(base, "_mutations.tsv", sep = ""))
 }
 
@@ -100,11 +100,11 @@ for(group in unique(muts$group)) {
 		for(bdest in unique(muts[muts$ancestral == base & muts$group == group, "reference"])) {
 			mut = paste(base, bdest, sep = "")
 			currentBDF[match(muts[muts$mutation == mut, "position"], currentBDF$position),mut] = muts[muts$mutation == mut, "comptage"]
-			currentBDF[is.na(currentBDF[,mut]),mut] = 0
 		}
 	}
-	print(head(currentBDF))
 	currentBDF$relative_both = (currentBDF[,3] + currentBDF[,5]) / (currentBDF[,2] + currentBDF[,4]) * 100
 	currentBDF$mean10 = mean10pb(currentBDF$relative_both)
+# 	currentBDF[is.na(currentBDF)] = 0
+	print(head(currentBDF))
 	write_tsv(currentBDF[currentBDF$position %in% -220:5000,], paste("group", group, "-", mut, "_and_reverse.tsv", sep = ""))
 }

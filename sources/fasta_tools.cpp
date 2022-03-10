@@ -555,6 +555,9 @@ std::vector <bed_entry> fasta_entry::reverseInts (std::vector <bed_entry> ints) 
                 results.push_back(bed_entry(m_header.getID(), m_header.getStart(), ints[i].getStart()));
             }
         } else if(i+1 == ints.size()) {
+            if(ints[i].getStart() - ints[i-1].getStop() > 0) {
+                results.push_back(bed_entry(m_header.getID(), ints[i-1].getStop(), ints[i].getStart()));
+            }
             if(m_header.getEnd() - ints[i].getStop() > 0) {
                 results.push_back(bed_entry(m_header.getID(), ints[i].getStop(), m_header.getEnd()));
             }

@@ -5,7 +5,7 @@ library(stringr)
 library(cowplot)
 
 args = commandArgs(trailingOnly=TRUE)
-#args = c("data/202201141625panTro5_nCG_formatted/", "CG")
+#args = c("formatted", "figure")
 
 theme_bob = theme(panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),

@@ -1,5 +1,6 @@
 #include "bio_tools.h"
 #include <iostream>
+#include <set>
 
 char reverseComp(char base) {
     base = toupper(base);
@@ -62,46 +63,81 @@ std::array <int, 5> countBasesInSequence(fasta_entry entry) {
     return results;
 }
 
-std::vector <std::string> addN(std::string toAdd) {
-    std::vector <std::string> addedN;
-    for(int i(0); i < toAdd.size(); i++) {
-        std::string tmp(toAdd);
-        if(tmp[i] != 'N') {
-            tmp[i] = 'N';
-            addedN.push_back(tmp);
-        }
-    }
-    return addedN;
-}
+// std::vector <std::string> addN(std::string toAdd) {
+//     std::vector <std::string> addedN;
+//     for(int i(0); i < toAdd.size(); i++) {
+//         std::string tmp(toAdd);
+//         if(tmp[i] != 'N') {
+//             tmp[i] = 'N';
+//             addedN.push_back(tmp);
+//         }
+//     }
+//     return addedN;
+// }
 
-std::vector <std::string> addNEachPos(std::string toAdd) {
-    std::vector <std::string> results;
-    std::vector <std::string> tmp (1, toAdd);
-    std::vector <std::string> tmp2;
-    std::string allN;
-    for(int i(0); i < toAdd.size(); i++) {
-        allN += 'N';
-    }
-    for(int j(0); j < tmp.size(); j++) {
-        if(tmp[j] == allN) {
-            break;
-        }
-        tmp2 = addN(tmp[j]);
-        results.insert(results.end(), tmp2.begin(), tmp2.end());
-        tmp.insert(tmp.end(), tmp2.begin(), tmp2.end());
-    }
-    results.resize(std::distance(results.begin(), std::unique(results.begin(), results.end())));
-    results.push_back(toAdd);
-    return results;
-}
+// std::vector <std::string> addNEachPos(std::string toAdd) {
+//     std::vector <std::string> results;
+//     std::vector <std::string> tmp (1, toAdd);
+//     std::vector <std::string> tmp2;
+//     std::string allN;
+//     for(int i(0); i < toAdd.size(); i++) {
+//         allN += 'N';
+//     }
+//     for(int j(0); j < tmp.size(); j++) {
+//         if(tmp[j] == allN) {
+//             break;
+//         }
+//         tmp2 = addN(tmp[j]);
+//         results.insert(results.end(), tmp2.begin(), tmp2.end());
+//         tmp.insert(tmp.end(), tmp2.begin(), tmp2.end());
+//     }
+//     results.resize(std::distance(results.begin(), std::unique(results.begin(), results.end())));
+//     results.push_back(toAdd);
+//     return results;
+// }
+
+// std::string constructRegex(std::vector <std::string> patterns) {
+//     std::string finalRegex = "";
+//     for(int i(0); i < patterns.size(); i++) {
+//         finalRegex += patterns[i];
+//         if(i + 1 != patterns.size()) {
+//             finalRegex += "|";
+//         }
+//     }
+//     return finalRegex;
+// }
 
 std::string constructRegex(std::vector <std::string> patterns) {
-    std::string finalRegex = "";
-    for(int i(0); i < patterns.size(); i++) {
-        finalRegex += patterns[i];
-        if(i + 1 != patterns.size()) {
-            finalRegex += "|";
+    // assumption : size is equal for all patterns
+    std::string result;
+    for(int i(0); i < patterns[i].size(); i++) {
+        std::set<char> pos;
+        for(int j(0); j < patterns.size(); j++) {
+            pos.insert(patterns[j][i]);
         }
+        result += "[";
+        for(const auto &character: pos) {
+            result += character;
+        }
+        result += "]";
     }
-    return finalRegex;
+    return result;
+}
+
+std::string constructNRegex(std::vector <std::string> patterns) {
+    // assumption : size is equal for all patterns
+    std::string result;
+    for(int i(0); i < patterns[i].size(); i++) {
+        std::set<char> pos;
+        for(int j(0); j < patterns.size(); j++) {
+            pos.insert(patterns[j][i]);
+        }
+        pos.insert('N');
+        result += "[";
+        for(const auto &character: pos) {
+            result += character;
+        }
+        result += "]";
+    }
+    return result;
 }

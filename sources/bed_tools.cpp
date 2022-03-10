@@ -284,7 +284,7 @@ bed_entry bed::readBedLine() {
     } else {
         start = stoi(tstart);
         stop = stoi(tstop);
-        if(tscore != ".") {
+        if(tscore != "" && tscore != ".") {
             score = stoi(tscore);
         } else {
             score = 0;
