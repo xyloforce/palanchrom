@@ -107,34 +107,40 @@ std::array <int, 5> countBasesInSequence(fasta_entry entry) {
 //     return finalRegex;
 // }
 
-std::string constructRegex(std::vector <std::string> patterns) {
+std::string constructRegex(std::string pattern, bool addN) {
     // assumption : size is equal for all patterns
     std::string result;
-    for(int i(0); i < patterns[i].size(); i++) {
-        std::set<char> pos;
-        for(int j(0); j < patterns.size(); j++) {
-            pos.insert(patterns[j][i]);
+    std::vector <std::set <char>> pos;
+    int sizeMotif(0);
+    for(int i(0); i < pattern.size(); i++) {
+        std::cout << pattern[i] << std::endl;
+        if(pattern[i] == ',') {
+            sizeMotif = 0;
+        } else if(pattern[i] == '-') {
+            for(const auto &set: pos) {
+                result += "[";
+                for(const auto &character: set) {
+                    result += character;
+                }
+                result += "]";
+            }
+            result += "|";
+            pos.clear();
+            sizeMotif = 0;
+        } else {
+            if(pos.size() <= sizeMotif) {
+                pos.push_back(std::set <char> ());
+                if(addN) {
+                    pos[pos.size() - 1].insert('N');
+                }
+            }
+            pos[sizeMotif].insert(pattern[i]);
+            sizeMotif ++;
         }
-        result += "[";
-        for(const auto &character: pos) {
-            result += character;
-        }
-        result += "]";
     }
-    return result;
-}
-
-std::string constructNRegex(std::vector <std::string> patterns) {
-    // assumption : size is equal for all patterns
-    std::string result;
-    for(int i(0); i < patterns[i].size(); i++) {
-        std::set<char> pos;
-        for(int j(0); j < patterns.size(); j++) {
-            pos.insert(patterns[j][i]);
-        }
-        pos.insert('N');
+    for(const auto &set: pos) {
         result += "[";
-        for(const auto &character: pos) {
+        for(const auto &character: set) {
             result += character;
         }
         result += "]";

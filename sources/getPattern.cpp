@@ -13,19 +13,12 @@ int main(int argc, char *argv[])
         throw std::domain_error("Unsufficient number of args : need pattern, source fasta and name of bed outputs (2 names)");
     }
     std::string pattern(argv[1]);
-    std::vector <std::string> patterns(1);
     // parse pattern
     // create regex
     // merge pattern
-    for(int i(0); i < pattern.size(); i++) {
-        if(pattern[i] == ',') {
-            patterns.push_back(std::string());
-        } else {
-            patterns[patterns.size()-1] += pattern[i];
-        }
-    }
-    std::string regex = constructRegex(patterns);
-    std::string Nregex = constructNRegex(patterns);
+
+    std::string regex = constructRegex(pattern);
+    std::string Nregex = constructRegex(pattern, true);
 
     std::cout << "regex : " << regex << std::endl;
     std::cout << "n regex : " << Nregex << std::endl;

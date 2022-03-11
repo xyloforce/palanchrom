@@ -10,7 +10,6 @@ std::string toUpper(std::string lower);
 std::array <int, 5> countBasesInSequence(fasta_entry entry);
 // std::vector <std::string> addNEachPos(std::string toAdd);
 // std::vector <std::string> addN(std::string toAdd);
-std::string constructRegex(std::vector <std::string> patterns);
-std::string constructNRegex(std::vector <std::string> patterns);
+std::string constructRegex(std::string pattern, bool addN = false);
 
 #endif
