@@ -708,16 +708,24 @@ std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool f
     std::vector <AOE_entry> results;
     std::string last_chrom("");
     std::vector <bed_entry> converted;
+    int count(0);
     while(!inputFile.isEOF()) {
         bed_entry entry = inputFile.readBedLine();
         std::vector <bed_entry> input(1, entry);
         if(entry.getChrom() != last_chrom) {
             converted = convertToBed(getBedByID(entry.getChrom()));
+            last_chrom = entry.getChrom();
         }
         std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF); // if fullI set : return only
         std::vector <AOE_entry> intersect = convertBack(tmp_intersect);
         results.insert(results.end(), intersect.begin(), intersect.end());
+
+        count ++;
+        if(count % 100000 == 0) {
+            std::cout << count << "\r";
+        }
     }
+    std::cout << std::endl;
     return results;
 }
 
