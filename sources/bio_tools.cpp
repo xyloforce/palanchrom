@@ -113,7 +113,6 @@ std::string constructRegex(std::string pattern, bool addN) {
     std::vector <std::set <char>> pos;
     int sizeMotif(0);
     for(int i(0); i < pattern.size(); i++) {
-        std::cout << pattern[i] << std::endl;
         if(pattern[i] == ',') {
             sizeMotif = 0;
         } else if(pattern[i] == '-') {

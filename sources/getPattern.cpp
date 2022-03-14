@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
     fasta inputFile(argv[2], read_line, standard);
 
     std::cout << "Creating outputs..." << std::endl;
-    bed outputFile(argv[3], false);
-    bed outputConvert(argv[4], false);
+    bed outputFile(argv[3], openType::write);
+    bed outputConvert(argv[4], openType::write);
 
     std::cout << "Starting analysis..." << std::endl;
 

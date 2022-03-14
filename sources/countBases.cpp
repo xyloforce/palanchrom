@@ -12,11 +12,22 @@ int main(int argc, char* argv[]) {
     fasta source(argv[1], read, standard);
     std::cout << "Loading AOEs..." << std::endl;
     AOEbed intsOfInterest(argv[2]);
-    std::cout << "Loading bed... " << std::endl;
-    sorted_bed mask(argv[3]);
+    std::vector <AOE_entry> toCount;
 
-    std::cout << "Intersecting... " << std::endl;
-    std::vector <AOE_entry> toCount = intsOfInterest.getIntersects(mask);
+    if(argc == 6) {
+        std::cout << "Loading bed... " << std::endl;
+        bed mask(argv[3], openType::read_line);
+
+        std::cout << "Intersecting... " << std::endl;
+        toCount = intsOfInterest.getIntersects(mask);
+    } else {
+        std::cout << "Loading bed... " << std::endl;
+        sorted_bed mask(argv[3]);
+
+        std::cout << "Intersecting... " << std::endl;
+        toCount = intsOfInterest.getIntersects(mask);
+    }
+
     sort(toCount.begin(), toCount.end());
 
     std::cout << "Getting seqs... " << std::endl;

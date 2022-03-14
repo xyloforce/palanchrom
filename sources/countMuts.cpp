@@ -5,7 +5,7 @@
 #include "bio_tools.h"
 
 int main(int argc, char* argv[]) {
-    if(argc < 4) {
+    if(argc < 5) {
         throw std::logic_error("Not enough args were given : needs AOE, bed, vcf, output file");
     }
     std::map <int, std::map <std::string, std::map <char, int>>> counts;
@@ -13,10 +13,17 @@ int main(int argc, char* argv[]) {
     std::cout << "Loading AOEs..." << std::endl;
     AOEbed intsOfInterest(argv[1]);
     std::cout << "Loading bed..." << std::endl;
-    sorted_bed mask(argv[2]);
-    
-    std::cout << "Intersecting ints..." << std::endl;
-    AOEbed virtualF(intsOfInterest.getIntersects(mask));
+
+    std::vector <AOE_entry> intersects;
+    if(argc == 5) {
+        sorted_bed mask(argv[2]);
+        intersects = intsOfInterest.getIntersects(mask);
+    } else {
+        bed mask(argv[2], openType::read_line);
+        intersects = intsOfInterest.getIntersects(mask);
+    }
+
+    AOEbed virtualF(intersects);
     
     std::cout << "Loading mutations..." << std::endl;
     vcf muts(argv[3], read);

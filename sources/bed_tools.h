@@ -65,12 +65,13 @@ private:
 class bed {
 public:
     bed();
-    bed(std::string filename, bool read);
+    bed(std::string filename, openType type);
     bed_entry readBedLine();
     std::map <std::string, bed_entry> getBedByID(std::string id) const;
     void writeBedLine(bed_entry entry);
     bed_entry getBedEntry(int index);
     std::vector <bed_entry> getEntries() const;
+    bool isEOF() const;
 protected:
     std::vector <bed_entry> m_content;
     bool m_isInit;
@@ -113,6 +114,7 @@ public:
     std::vector <AOE_entry> getBedByID(std::string id);
     AOE_entry getEntryByIndex(int index) const;
     std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false);
+    std::vector <AOE_entry> getIntersects(bed& inputFile, bool fullI = false, bool fullF = false);
     std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source) const;
     std::vector <bed_entry> convertToBed() const;
     std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);

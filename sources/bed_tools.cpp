@@ -215,15 +215,17 @@ char AOE_entry::getType() const {
 
 bed::bed() {}
 
-bed::bed ( std::string filename, bool read )
+bed::bed ( std::string filename, openType type )
 {
-    if(read) {
+    if(type == openType::read) {
         m_input = std::ifstream(filename);
         while(!m_input.eof()) {
         // file is chrom start stop name strand
             m_content.push_back(readBedLine());
         }
-    } else {
+    } else if(type == openType::read_line) {
+        m_input = std::ifstream(filename);
+    } else if(type == openType::write) {
         m_output = std::ofstream(filename);
     }
 }
@@ -299,6 +301,10 @@ void bed::writeBedLine(bed_entry entry) {
 
 bed_entry bed::getBedEntry(int index) {
     return m_content[index];
+}
+
+bool bed::isEOF() const {
+    return m_input.eof();
 }
 
 std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <bed_entry> intsA, std::vector <bed_entry> intsB)
@@ -691,6 +697,23 @@ std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI,
     for(const auto &chrom: inputFile.getChroms()) {
         std::vector <bed_entry> input = inputFile.getBedByID(chrom);
         std::vector <bed_entry> converted(convertToBed(getBedByID(chrom)));
+        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF); // if fullI set : return only
+        std::vector <AOE_entry> intersect = convertBack(tmp_intersect);
+        results.insert(results.end(), intersect.begin(), intersect.end());
+    }
+    return results;
+}
+
+std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool fullF) {
+    std::vector <AOE_entry> results;
+    std::string last_chrom("");
+    std::vector <bed_entry> converted;
+    while(!inputFile.isEOF()) {
+        bed_entry entry = inputFile.readBedLine();
+        std::vector <bed_entry> input(1, entry);
+        if(entry.getChrom() != last_chrom) {
+            converted = convertToBed(getBedByID(entry.getChrom()));
+        }
         std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF); // if fullI set : return only
         std::vector <AOE_entry> intersect = convertBack(tmp_intersect);
         results.insert(results.end(), intersect.begin(), intersect.end());
