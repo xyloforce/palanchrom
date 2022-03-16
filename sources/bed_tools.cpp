@@ -628,17 +628,12 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (sorted_bed& ent
 }
 
 std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (vcf& entries) {
-    std::string lastChrom = "";
+//     std::string lastChrom = "";
     std::map <bed_entry, std::vector<AOE_entry>> matchs;
     for(const std::string &chrom: entries.getChroms()) {
-//         std::cout << "convert vcf to bed" << std::endl;
         std::vector <bed_entry> intsB = entries.convertToBed(entries.getVCFByChrom(chrom));
-//         std::cout << "get corresponding bed" << std::endl;
         std::vector <AOE_entry> intsA = getBedByID(chrom);
-        // need to convert AOE entries to bed and back ??
-//         std::cout << "convert AOE to bed" << std::endl;
         std::vector <bed_entry> convertedA(convertToBed(intsA));
-//         std::cout << "get matchs" << std::endl;
         std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(convertedA, intsB);
         for(const auto &entry: tmp_matchs) {
             matchs[entry.first] = convertBack(entry.second);
@@ -647,6 +642,51 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (vcf& entries) {
     return matchs;
 }
 
+std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlapLowMem (vcf& entries) {
+    int count(1);
+    bool warned = false;
+    vcf_entry entryV = entries.readVCFLine(warned);
+    std::string lastChrom(entryV.getChrom());
+    std::vector <bed_entry> intsB;
+    std::map <bed_entry, std::vector<AOE_entry>> matchs;
+
+    while(!entries.isEOF()) {
+        while(count % 10000 != 0 && !entries.isEOF() && lastChrom == entryV.getChrom()) {
+            intsB.push_back(bed_entry(entryV));
+            entryV = entries.readVCFLine(warned);
+            count ++;
+        }
+        std::vector <AOE_entry> intsA = getBedByID(lastChrom);
+        lastChrom = entryV.getChrom();
+        std::vector <bed_entry> convertedA(convertToBed(intsA));
+        std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(convertedA, intsB);
+        for(const auto &entryB: tmp_matchs) {
+            if(matchs.find(entryB.first) != matchs.end()) { // value is in map
+                std::vector<AOE_entry> convertedBack = convertBack(entryB.second);
+                matchs[entryB.first].insert(matchs[entryB.first].end(), convertedBack.begin(), convertedBack.end());
+            } else {
+                matchs[entryB.first] = convertBack(entryB.second);
+            }
+        }
+        intsB.clear();
+        count ++;
+        std::cout << count << "\r";
+    }
+    intsB.push_back(bed_entry(entryV));
+    std::vector <AOE_entry> intsA = getBedByID(entryV.getChrom());
+    std::vector <bed_entry> convertedA(convertToBed(intsA));
+    std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(convertedA, intsB);
+    for(const auto &entryB: tmp_matchs) {
+        if(matchs.find(entryB.first) != matchs.end()) { // value is in map
+            std::vector<AOE_entry> convertedBack = convertBack(entryB.second);
+            matchs[entryB.first].insert(matchs[entryB.first].end(), convertedBack.begin(), convertedBack.end());
+        } else {
+            matchs[entryB.first] = convertBack(entryB.second);
+        }
+    }
+    std::cout << std::endl;
+    return matchs;
+}
 
 std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS, bool fullT) {
     std::vector <bed_entry> results;
@@ -706,31 +746,31 @@ std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI,
 
 std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool fullF) {
     std::vector <AOE_entry> results;
-    std::string last_chrom(".");
     std::vector <bed_entry> converted;
-    int count(0);
-    while(!inputFile.isEOF()) {
-        std::vector <bed_entry> input;
-        bed_entry entry;
+    std::vector <bed_entry> input;
+    bed_entry entry = inputFile.readBedLine();
+    std::string last_chrom(entry.getChrom());
+    int count(1);
 
-        while(count % 10000 != 0 && entry.getChrom() == last_chrom && !inputFile.isEOF()) {
-            entry = inputFile.readBedLine();
-            last_chrom = entry.getChrom();
+    while(!inputFile.isEOF()) {
+        while(entry.getChrom() == last_chrom && count % 50000 != 0) {
             input.push_back(entry);
+            entry = inputFile.readBedLine();
             count ++;
         }
-
-        converted = convertToBed(getBedByID(entry.getChrom()));
+        converted = convertToBed(getBedByID(last_chrom));
+        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF);
+        std::vector <AOE_entry> intersected = convertBack(tmp_intersect);
+        results.insert(results.end(), intersected.begin(), intersected.end());
+        input.clear();
         last_chrom = entry.getChrom();
-
-        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF); // if fullI set : return only
-        std::vector <AOE_entry> intersect = convertBack(tmp_intersect);
-        results.insert(results.end(), intersect.begin(), intersect.end());
-
-        if(count % 10000 == 0) {
-            std::cout << count << "\r";
-        }
+        std::cout << count << " \r";
+        count ++;
     }
+    converted = convertToBed(getBedByID(last_chrom));
+    std::vector <AOE_entry> intersected = convertBack(intersect(std::vector <bed_entry>(1, entry), converted, fullI, fullF));
+    results.insert(results.end(), intersected.begin(), intersected.end());
+
     std::cout << std::endl;
     return results;
 }

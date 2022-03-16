@@ -111,6 +111,7 @@ public:
     AOE_entry readAOEline();
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);
+    std::map <bed_entry, std::vector<AOE_entry>> getOverlapLowMem (vcf& entries);
     std::vector <AOE_entry> getBedByID(std::string id);
     AOE_entry getEntryByIndex(int index) const;
     std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false);
