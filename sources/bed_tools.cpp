@@ -808,3 +808,32 @@ bool AOE_entry::operator==(const AOE_entry& entry) const
 {
     return m_start == entry.getStart() && m_stop == entry.getStop() && m_chrom == entry.getChrom() && m_zero == entry.getZero() && entry.getType() == m_type;
 }
+
+std::string AOE_entry::to_string() const {
+    return m_chrom + "\t" + std::to_string(m_start) + "\t" +  std::to_string(m_stop)  + "\t" + "." + "\t" + "." + "\t" + m_type + "\t" + std::to_string(m_zero);
+}
+
+// void AOEbed::writeToFile(std::string filename)
+void AOEbed::writeToFile(std::string filename, int limit)
+{
+    std::ofstream fileH(filename);
+    int count(0);
+    for(const auto &entry: m_content) {
+        fileH << entry.to_string() << "\n";
+        count ++;
+        if(count == limit) {
+            break;
+        }
+    }
+}
+
+void AOEbed::dumpAOE(int limit) {
+    writeToFile("dump.AOE", limit);
+    m_content.erase(m_content.begin(), m_content.begin() + limit);
+}
+
+int AOEbed::size() const
+{
+    return m_content.size();
+}
+

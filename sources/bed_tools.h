@@ -55,6 +55,7 @@ public:
     int getRelativePos(int pos) const;
     int getZero() const;
     char getType() const;
+    std::string to_string() const;
 
     bool operator == (const AOE_entry& entry) const;
 private:
@@ -109,6 +110,7 @@ public:
     AOEbed(std::string filename);
     AOEbed(std::vector <AOE_entry> content);
     AOE_entry readAOEline();
+    int size() const;
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);
     std::map <bed_entry, std::vector<AOE_entry>> getOverlapLowMem (vcf& entries);
@@ -119,6 +121,8 @@ public:
     std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source) const;
     std::vector <bed_entry> convertToBed() const;
     std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);
+    void writeToFile(std::string filename, int limit = 0);
+    void dumpAOE(int limit);
 private:
     std::vector <AOE_entry> m_content;
     std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;
