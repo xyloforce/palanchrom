@@ -4,63 +4,35 @@
 #include "vcf_tools.h"
 #include "bio_tools.h"
 
-void dump(std::vector <AOE_entry> &data, int limit) {
-    std::ofstream dumpH("dump.AOE");
-    int count (0);
-    for(const auto &entry: data) {
-        dumpH << entry.to_string() << "\n";
-        count ++;
-        if(count == limit) {
-            break;
-        }
-    }
-    data.erase(data.begin(), data.begin()+limit);
-}
-
-std::vector <AOE_entry> intersect (std::string AOEfilename, std::string bedFilename, int argc) {
-    std::cout << "Loading AOEs..." << std::endl;
-    AOEbed intsOfInterest(AOEfilename);
-    std::cout << "Loading bed..." << std::endl;
-
-    std::vector <AOE_entry> intersects;
-    if(argc == 5) {
-        sorted_bed mask(bedFilename);
-        intersects = intsOfInterest.getIntersects(mask);
-    } else {
-        bed mask(bedFilename, openType::read_line);
-        intersects = intsOfInterest.getIntersects(mask);
-    }
-    std::cout << "Intersecting finished, dumping..." << std::endl;
-    dump(intersects, intersects.size()/2);
-    return intersects;
-}
-
-std::map <bed_entry, std::vector <AOE_entry>> overlap (AOEbed &virtualF, std::string vcfFilename, int argc) {
-
-    std::map <bed_entry, std::vector <AOE_entry>> overlaps;
-
-    if(argc == 5) {
-        std::cout << "Loading mutations..." << std::endl;
-        vcf muts(vcfFilename, read);
-        std::cout << "Getting muts in ints" << std::endl;
-        overlaps = virtualF.getOverlap(muts);
-    } else {
-        vcf muts(vcfFilename, read_line);
-        std::cout << "Getting muts in ints" << std::endl;
-        overlaps = virtualF.getOverlapLowMem(muts);
-    }
-    return overlaps;
-}
-
 int main(int argc, char* argv[]) {
     if(argc < 5) {
         throw std::logic_error("Not enough args were given : needs AOE, bed, vcf, output file");
     }
     std::map <int, std::map <std::string, std::map <char, int>>> counts;
-    AOEbed virtualF(intersect (std::string(argv[1]), std::string(argv[2]), argc));
+
+    std::cout << "Loading AOEs..." << std::endl;
+    AOEbed intsOfInterest(argv[1]);
+    std::cout << "Loading bed..." << std::endl;
+
+    std::vector <AOE_entry> intersects;
+    if(argc == 5) {
+        sorted_bed mask(argv[2]);
+        intersects = intsOfInterest.getIntersects(mask);
+    } else {
+        bed mask(argv[2], openType::read_line);
+        intersects = intsOfInterest.getIntersects(mask);
+    }
+    std::cout << "Intersecting finished, dumping..." << std::endl;
+    dump(intersects, intersects.size()/2);
+
+    AOEbed virtualF(intersects);
 
     for(int i(0); i < 2; i++) {
-        std::map <bed_entry, std::vector <AOE_entry>> overlaps = overlap(virtualF, std::string(argv[3]), argc);
+        std::map <bed_entry, std::vector <AOE_entry>> overlaps;
+        std::cout << "Loading mutations..." << std::endl;
+        vcf muts(argv[3], read);
+        std::cout << "Getting muts in ints" << std::endl;
+        overlaps = virtualF.getOverlap(muts);
         std::cout << "Getting muts by pos" << std::endl;
         for(const auto &pair: overlaps) {
             // pair.first is converted vcf & pair.second is a vector of AOE entry
@@ -74,10 +46,10 @@ int main(int argc, char* argv[]) {
             counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
         }
         if(i == 0) {
+            std::cout << "Loading dump..." << std::endl;
             virtualF = AOEbed("dump.AOE");
         }
     }
-
 
     std::ofstream outputFile(argv[4]);
     for(const auto &pair: counts) {

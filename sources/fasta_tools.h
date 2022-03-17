@@ -99,6 +99,7 @@ public:
     fasta_entry getSubset(bed_entry entry);
     fasta_entry getSubset(vcf_entry entry);
     std::vector <fasta_entry> getSeqFromInts (std::vector <bed_entry> intsOfInterest);
+    std::vector <fasta_entry> getSeqFromInts (AOEbed &fileI);
     bool isValid(vcf_entry entry);
     std::vector <bool> areValid(std::vector <vcf_entry> entries);
 };

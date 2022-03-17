@@ -28,19 +28,25 @@ int main(int argc, char* argv[]) {
         toCount = intsOfInterest.getIntersects(mask);
     }
 
-    sort(toCount.begin(), toCount.end());
-
-    std::cout << "Getting seqs... " << std::endl;
-    std::vector <fasta_entry> seqs = source.getSeqFromInts(intsOfInterest.convertToBed(toCount));
-    std::cout << seqs.size() << std::endl;
-
+    dump(toCount, toCount.size()/2);
+    AOEbed fileI(toCount);
     std::map <int, std::map<char, std::map <char, int>>> counts;
-    std::cout << "Counting seqs..." << std::endl;
-    for(int j(0); j < seqs.size(); j++) {
-        std::string sequence = seqs[j].getUppercaseSequence();
-        for(int i(0); i < sequence.size(); i++) {
-            char base = sequence[i];
-            counts[toCount[j].getRelativePos(seqs[j].getPos(i))][base][toCount[j].getType()] ++;
+
+    for(int i(0); i < 2; i ++) {
+        std::cout << "Getting seqs... " << std::endl;
+        std::vector <fasta_entry> seqs = source.getSeqFromInts(fileI);
+        std::cout << seqs.size() << std::endl;
+
+        std::cout << "Counting seqs..." << std::endl;
+        for(int j(0); j < seqs.size(); j++) {
+            std::string sequence = seqs[j].getUppercaseSequence();
+            for(int i(0); i < sequence.size(); i++) {
+                char base = sequence[i];
+                counts[toCount[j].getRelativePos(seqs[j].getPos(i))][base][toCount[j].getType()] ++;
+            }
+        }
+        if(i == 0) {
+            fileI = AOEbed("dump.AOE");
         }
     }
 

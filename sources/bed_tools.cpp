@@ -651,15 +651,19 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlapLowMem (vcf& entr
     std::map <bed_entry, std::vector<AOE_entry>> matchs;
 
     while(!entries.isEOF()) {
-        while(count % 10000 != 0 && !entries.isEOF() && lastChrom == entryV.getChrom()) {
+        std::cout << "reading entries" << std::endl;
+        while(count % 100000 != 0 && !entries.isEOF() && lastChrom == entryV.getChrom()) {
             intsB.push_back(bed_entry(entryV));
             entryV = entries.readVCFLine(warned);
             count ++;
         }
+        std::cout << "preparing comparison for chrom " << lastChrom << std::endl;
         std::vector <AOE_entry> intsA = getBedByID(lastChrom);
         lastChrom = entryV.getChrom();
         std::vector <bed_entry> convertedA(convertToBed(intsA));
+        std::cout << "overlapping" << std::endl;
         std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(convertedA, intsB);
+        std::cout << "saving matches" << std::endl;
         for(const auto &entryB: tmp_matchs) {
             if(matchs.find(entryB.first) != matchs.end()) { // value is in map
                 std::vector<AOE_entry> convertedBack = convertBack(entryB.second);
@@ -670,7 +674,7 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlapLowMem (vcf& entr
         }
         intsB.clear();
         count ++;
-        std::cout << count << "\r";
+//         std::cout << count << "\r";
     }
     intsB.push_back(bed_entry(entryV));
     std::vector <AOE_entry> intsA = getBedByID(entryV.getChrom());
@@ -837,3 +841,21 @@ int AOEbed::size() const
     return m_content.size();
 }
 
+std::vector <AOE_entry> AOEbed::getContent() const
+{
+    return m_content;
+}
+
+
+void dump(std::vector <AOE_entry> &data, int limit) {
+    std::ofstream dumpH("dump.AOE");
+    int count (0);
+    for(const auto &entry: data) {
+        dumpH << entry.to_string() << "\n";
+        count ++;
+        if(count == limit) {
+            break;
+        }
+    }
+    data.erase(data.begin(), data.begin()+limit);
+}

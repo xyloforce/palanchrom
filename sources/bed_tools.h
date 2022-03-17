@@ -111,6 +111,7 @@ public:
     AOEbed(std::vector <AOE_entry> content);
     AOE_entry readAOEline();
     int size() const;
+    std::vector <AOE_entry> getContent() const;
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
     std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);
     std::map <bed_entry, std::vector<AOE_entry>> getOverlapLowMem (vcf& entries);
@@ -127,5 +128,7 @@ private:
     std::vector <AOE_entry> m_content;
     std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;
 };
+
+void dump(std::vector <AOE_entry> &data, int limit);
 
 #endif

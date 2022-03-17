@@ -482,6 +482,22 @@ std::vector <fasta_entry> fasta::getSeqFromInts (std::vector <bed_entry> intsOfI
     return results;
 }
 
+std::vector<fasta_entry> fasta::getSeqFromInts(AOEbed &fileI)
+{
+    std::string lastChrom = "";
+    fasta_entry entryF;
+    std::vector <fasta_entry> results;
+    for(const auto &entryB: fileI.getContent()) {
+        if(lastChrom != entryB.getChrom()) {
+            entryF = getFastaById(entryB.getChrom());
+            lastChrom = entryB.getChrom();
+        }
+        results.push_back(entryF.getSubset(entryB));
+    }
+    return results;
+}
+
+
 int sequence::searchChar(char searched, int pos) const {
     for(int i(pos); i<m_sequence.size(); i++) {
         if(m_sequence[i] == searched) {
