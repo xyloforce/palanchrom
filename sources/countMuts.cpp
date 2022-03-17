@@ -4,6 +4,19 @@
 #include "vcf_tools.h"
 #include "bio_tools.h"
 
+void dump(std::vector <AOE_entry> &data, int limit) {
+    std::ofstream dumpH("dump.AOE");
+    int count (0);
+    for(const auto &entry: data) {
+        dumpH << entry.to_string() << "\n";
+        count ++;
+        if(count == limit) {
+            break;
+        }
+    }
+    data.erase(data.begin(), data.begin()+limit);
+}
+
 std::vector <AOE_entry> intersect (std::string AOEfilename, std::string bedFilename, int argc) {
     std::cout << "Loading AOEs..." << std::endl;
     AOEbed intsOfInterest(AOEfilename);
@@ -17,6 +30,8 @@ std::vector <AOE_entry> intersect (std::string AOEfilename, std::string bedFilen
         bed mask(bedFilename, openType::read_line);
         intersects = intsOfInterest.getIntersects(mask);
     }
+    std::cout << "Intersecting finished, dumping..." << std::endl;
+    dump(intersects, intersects.size()/2);
     return intersects;
 }
 
@@ -42,8 +57,7 @@ int main(int argc, char* argv[]) {
         throw std::logic_error("Not enough args were given : needs AOE, bed, vcf, output file");
     }
     std::map <int, std::map <std::string, std::map <char, int>>> counts;
-    AOEbed virtualF(intersect (std::string(argv[1]), std::string(argv[2]), argc)); // dump half
-    virtualF.dumpAOE(virtualF.size() / 2);
+    AOEbed virtualF(intersect (std::string(argv[1]), std::string(argv[2]), argc));
 
     for(int i(0); i < 2; i++) {
         std::map <bed_entry, std::vector <AOE_entry>> overlaps = overlap(virtualF, std::string(argv[3]), argc);

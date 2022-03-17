@@ -753,7 +753,7 @@ std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool f
     int count(1);
 
     while(!inputFile.isEOF()) {
-        while(entry.getChrom() == last_chrom && count % 50000 != 0) {
+        while(entry.getChrom() == last_chrom && count % 100000 != 0) {
             input.push_back(entry);
             entry = inputFile.readBedLine();
             count ++;
