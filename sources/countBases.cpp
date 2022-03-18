@@ -8,8 +8,6 @@ int main(int argc, char* argv[]) {
         throw std::domain_error("Doesnt have enough args, need fasta AOE bed and output names");
     }
 
-    std::cout << "Loading fasta... " << std::endl;
-    fasta source(argv[1], read, standard);
     std::cout << "Loading AOEs..." << std::endl;
     AOEbed intsOfInterest(argv[2]);
     std::vector <AOE_entry> toCount;
@@ -19,22 +17,23 @@ int main(int argc, char* argv[]) {
         bed mask(argv[3], openType::read_line);
 
         std::cout << "Intersecting... " << std::endl;
-        toCount = intsOfInterest.getIntersects(mask);
+        intsOfInterest.cutToMask(mask);
     } else {
         std::cout << "Loading bed... " << std::endl;
         sorted_bed mask(argv[3]);
 
         std::cout << "Intersecting... " << std::endl;
-        toCount = intsOfInterest.getIntersects(mask);
+        intsOfInterest.cutToMask(mask);
     }
 
-    dump(toCount, toCount.size()/2);
-    AOEbed fileI(toCount);
+    intsOfInterest.dumpAOE(intsOfInterest.size()/2);
     std::map <int, std::map<char, std::map <char, int>>> counts;
+    std::cout << "Loading fasta... " << std::endl;
+    fasta source(argv[1], read, standard);
 
     for(int i(0); i < 2; i ++) {
         std::cout << "Getting seqs... " << std::endl;
-        std::vector <fasta_entry> seqs = source.getSeqFromInts(fileI);
+        std::vector <fasta_entry> seqs = source.getSeqFromInts(intsOfInterest);
         std::cout << seqs.size() << std::endl;
 
         std::cout << "Counting seqs..." << std::endl;
@@ -46,7 +45,7 @@ int main(int argc, char* argv[]) {
             }
         }
         if(i == 0) {
-            fileI = AOEbed("dump.AOE");
+            intsOfInterest = AOEbed("dump.AOE");
         }
     }
 

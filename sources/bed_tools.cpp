@@ -846,6 +846,14 @@ std::vector <AOE_entry> AOEbed::getContent() const
     return m_content;
 }
 
+void AOEbed::cutToMask(bed &mask, bool fullI, bool fullF)
+{
+    m_content = getIntersects(mask, fullI, fullF);
+}
+
+void AOEbed::cutToMask(sorted_bed &mask, bool fullI, bool fullF) {
+    m_content = getIntersects(mask, fullI, fullF);
+}
 
 void dump(std::vector <AOE_entry> &data, int limit) {
     std::ofstream dumpH("dump.AOE");

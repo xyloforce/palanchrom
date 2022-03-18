@@ -119,6 +119,8 @@ public:
     AOE_entry getEntryByIndex(int index) const;
     std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false);
     std::vector <AOE_entry> getIntersects(bed& inputFile, bool fullI = false, bool fullF = false);
+    void cutToMask(bed &mask, bool fullI = false, bool fullF = false);
+    void cutToMask(sorted_bed &mask, bool fullI = false, bool fullF = false);
     std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source) const;
     std::vector <bed_entry> convertToBed() const;
     std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);
