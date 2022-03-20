@@ -95,11 +95,14 @@ public:
     void write_fasta_file(fasta &fileHandler);
     std::vector <fasta_entry> getEntries();
     bool isEOF() const;
+    int size() const;
     fasta_entry getFastaById(std::string id) const;
+    fasta_entry getFastaByIndex(int index) const;
     fasta_entry getSubset(bed_entry entry);
     fasta_entry getSubset(vcf_entry entry);
     std::vector <fasta_entry> getSeqFromInts (std::vector <bed_entry> intsOfInterest);
     std::vector <fasta_entry> getSeqFromInts (AOEbed &fileI);
+    void subsetFromInts(AOEbed &fileI);
     bool isValid(vcf_entry entry);
     std::vector <bool> areValid(std::vector <vcf_entry> entries);
 };

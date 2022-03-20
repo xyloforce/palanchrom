@@ -497,6 +497,29 @@ std::vector<fasta_entry> fasta::getSeqFromInts(AOEbed &fileI)
     return results;
 }
 
+void fasta::subsetFromInts(AOEbed &fileI) {
+    m_content = std::vector <fasta_entry>();
+    if(m_read == read_line) {
+        while(!isEOF()) {
+            fasta_entry entry = readFastaLine();
+            for(const auto &entryB: fileI.getBedByID(entry.getChrom())) {
+                m_content.push_back(entry.getSubset(entryB));
+            }
+        }
+    } else {
+        throw std::logic_error("function is for read_line type fasta");
+    }
+}
+
+int fasta::size() const {
+    return m_content.size();
+}
+
+fasta_entry fasta::getFastaByIndex(int index) const
+{
+    return m_content[index];
+}
+
 
 int sequence::searchChar(char searched, int pos) const {
     for(int i(pos); i<m_sequence.size(); i++) {

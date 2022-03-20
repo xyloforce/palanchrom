@@ -5,9 +5,16 @@
 #include "bio_tools.h"
 
 int main(int argc, char* argv[]) {
+    bool lowMem = false;
+
     if(argc < 5) {
-        throw std::logic_error("Not enough args were given : needs AOE, bed, vcf, output file");
+        throw std::logic_error("Not enough args were given : needs AOE, bed, vcf, output file. Optionnal : flag TRUE if you need low-mem");
+    }  else if(argc == 6) {
+        if(std::string(argv[5]) == "TRUE") {
+            lowMem = true;
+        }
     }
+
     std::map <int, std::map <std::string, std::map <char, int>>> counts;
 
     std::cout << "Loading AOEs..." << std::endl;
@@ -15,24 +22,22 @@ int main(int argc, char* argv[]) {
     std::cout << "Loading bed..." << std::endl;
 
     std::vector <AOE_entry> intersects;
-    if(argc == 5) {
-        sorted_bed mask(argv[2]);
-        intersects = intsOfInterest.getIntersects(mask);
-    } else {
+    if(lowMem) {
         bed mask(argv[2], openType::read_line);
-        intersects = intsOfInterest.getIntersects(mask);
+        intsOfInterest.cutToMask(mask);
+    } else {
+        sorted_bed mask(argv[2]);
+        intsOfInterest.cutToMask(mask);
     }
     std::cout << "Intersecting finished, dumping..." << std::endl;
-    dump(intersects, intersects.size()/2);
-
-    AOEbed virtualF(intersects);
+    intsOfInterest.dumpAOE(intsOfInterest.size()/2);
 
     for(int i(0); i < 2; i++) {
         std::map <bed_entry, std::vector <AOE_entry>> overlaps;
         std::cout << "Loading mutations..." << std::endl;
         vcf muts(argv[3], read);
         std::cout << "Getting muts in ints" << std::endl;
-        overlaps = virtualF.getOverlap(muts);
+        overlaps = intsOfInterest.getOverlap(muts);
         std::cout << "Getting muts by pos" << std::endl;
         for(const auto &pair: overlaps) {
             // pair.first is converted vcf & pair.second is a vector of AOE entry
@@ -47,7 +52,7 @@ int main(int argc, char* argv[]) {
         }
         if(i == 0) {
             std::cout << "Loading dump..." << std::endl;
-            virtualF = AOEbed("dump.AOE");
+            intsOfInterest = AOEbed("dump.AOE");
         }
     }
 
