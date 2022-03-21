@@ -225,12 +225,16 @@ std::string fasta_entry::getChrom()
 
 fasta_entry fasta_entry::subsetEntry(int begin, int end) const
 {
-    sequence tSequence = m_sequence.subsetSequence(begin, end);
-    header tHeader = m_header;
-    tHeader.setStart(m_header.getStart() + begin);
-    tHeader.setEnd(m_header.getEnd() - end);
-    fasta_entry tEntry(tSequence, tHeader, m_type);
-    
+    fasta_entry tEntry;
+    try {
+        sequence tSequence = m_sequence.subsetSequence(begin, end);
+        header tHeader = m_header;
+        tHeader.setStart(m_header.getStart() + begin);
+        tHeader.setEnd(m_header.getEnd() - end);
+        tEntry = fasta_entry(tSequence, tHeader, m_type);
+    } catch (std::out_of_range) {
+        std::cout << "Catched exception, return empty entry" << std::endl;
+    }
     return tEntry;
 }
 
@@ -286,6 +290,7 @@ fasta::fasta()
 fasta::fasta(std::string filename, openType type, fastaType typeH) {
     int index(0);
     m_type = typeH;
+    m_read = type;
     if(type == openType::read) {
         m_input = std::ifstream(filename);
         while(!m_input.eof()) {
@@ -497,13 +502,44 @@ std::vector<fasta_entry> fasta::getSeqFromInts(AOEbed &fileI)
     return results;
 }
 
+bool sequence::operator==(const sequence& entry) const {
+    return m_sequence == entry.getSequence();
+}
+
+bool header::operator==(const header& entry) const
+{
+    return m_start == entry.getStart() && m_stop == entry.getEnd() && m_chrom == entry.getID() && m_strand == entry.getStrand();
+}
+
+sequence fasta_entry::getSequence2() const
+{
+    return m_sequence;
+}
+
+header fasta_entry::getHeader2() const
+{
+    return m_header;
+}
+
+
+bool fasta_entry::operator==(const fasta_entry& entry) const
+{
+    return m_sequence == entry.getSequence2() && m_header == entry.getHeader2();
+}
+
 void fasta::subsetFromInts(AOEbed &fileI) {
     m_content = std::vector <fasta_entry>();
     if(m_read == read_line) {
         while(!isEOF()) {
             fasta_entry entry = readFastaLine();
             for(const auto &entryB: fileI.getBedByID(entry.getChrom())) {
-                m_content.push_back(entry.getSubset(entryB));
+                fasta_entry entryT = entry.getSubset(entryB);
+                if(!(entryT == fasta_entry())) {
+                    m_content.push_back(entryT);
+                } else {
+                    std::cout << entryB.to_string() << std::endl;
+                    std::cout << entry.getHeader() << std::endl;
+                }
             }
         }
     } else {

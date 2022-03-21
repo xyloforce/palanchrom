@@ -25,6 +25,7 @@ public:
     std::string getID_full() const;
     header(std::string chrom, int start, int stop, char strand);
     header();
+    bool operator == (const header& entry) const;
 };
 
 class sequence {
@@ -43,6 +44,7 @@ public:
     void editSequence(std::vector <vcf_entry> entries);
     int getSize() const;
     int searchChar(char searched, int pos) const;
+    bool operator == (const sequence& entry) const;
 };
 
 class fasta_entry {
@@ -75,6 +77,9 @@ public:
     std::vector <bed_entry> matchPatterns(std::string pattern) const;
     std::vector <bed_entry> reverseInts (std::vector <bed_entry> ints) const;
     bool isValid(vcf_entry entry);
+    bool operator == (const fasta_entry& entry) const;
+    sequence getSequence2() const;
+    header getHeader2() const;
 };
 
 class fasta {
