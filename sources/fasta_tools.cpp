@@ -489,17 +489,7 @@ std::vector <fasta_entry> fasta::getSeqFromInts (std::vector <bed_entry> intsOfI
 
 std::vector<fasta_entry> fasta::getSeqFromInts(AOEbed &fileI)
 {
-    std::string lastChrom = "";
-    fasta_entry entryF;
-    std::vector <fasta_entry> results;
-    for(const auto &entryB: fileI.getContent()) {
-        if(lastChrom != entryB.getChrom()) {
-            entryF = getFastaById(entryB.getChrom());
-            lastChrom = entryB.getChrom();
-        }
-        results.push_back(entryF.getSubset(entryB));
-    }
-    return results;
+    return getSeqFromInts(fileI.convertToBed());
 }
 
 bool sequence::operator==(const sequence& entry) const {

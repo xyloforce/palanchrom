@@ -508,22 +508,49 @@ std::vector <bed_entry> sorted_bed::getBedByID(std::string id) {
     return output;
 }
 
-AOEbed::AOEbed(std::string filename) {
+AOEbed::AOEbed(std::string filename,openType oType) {
     m_input = std::ifstream(filename);
     m_content.clear();
+    m_type = oType;
     int index(0);
-    while(!m_input.eof()) {
+    if(oType == read) {
+        while(!m_input.eof()) {
+            AOE_entry entry = readAOEline();
+            if(!(entry == AOE_entry())) {
+                m_content.push_back(entry);
+                std::array <int, 2> pos;
+                pos[0] = entry.getStart();
+                pos[1] = entry.getStop();
+                m_indexes[entry.getChrom()][pos] = index;
+                index ++;
+            }
+        }
+    } else if(oType == read_line) {
+        std::cout << "opening in read_line mode" << std::endl;
+    } else {
+        throw std::logic_error("non-implemented mode");
+    }
+}
+
+void AOEbed::loadBlock(int size)
+{
+    m_content.clear();
+    m_indexes.clear();
+    int count(0);
+    if(m_type != read_line) {
+        throw std::logic_error("type of handler is incorrect");
+    }
+    while(!isEOF() && count < size) {
         AOE_entry entry = readAOEline();
         if(!(entry == AOE_entry())) {
+            std::array <int, 2> pos = {entry.getStart(), entry.getStop()};
             m_content.push_back(entry);
-            std::array <int, 2> pos;
-            pos[0] = entry.getStart();
-            pos[1] = entry.getStop();
-            m_indexes[entry.getChrom()][pos] = index;
-            index ++;
+            m_indexes[entry.getChrom()][pos] = count;
+            count ++;
         }
     }
 }
+
 
 AOEbed::AOEbed(std::vector <AOE_entry> content) {
     int index(0);
@@ -832,8 +859,15 @@ void AOEbed::writeToFile(std::string filename, int limit)
 }
 
 void AOEbed::dumpAOE(int limit) {
+    std::cout << "Dumping..." << std::endl;
     writeToFile("dump.AOE", limit);
     m_content.erase(m_content.begin(), m_content.begin() + limit);
+    std::cout << "Updating index..." << std::endl;
+    m_indexes = std::map <std::string, std::map <std::array <int, 2>, int>>();
+    for(int i(0); i < m_content.size(); i++) {
+        std::array <int, 2> currInt = {m_content[i].getStart(), m_content[i].getStop()};
+        m_indexes[m_content[i].getChrom()][currInt] = i;
+    }
 }
 
 int AOEbed::size() const
@@ -849,10 +883,21 @@ std::vector <AOE_entry> AOEbed::getContent() const
 void AOEbed::cutToMask(bed &mask, bool fullI, bool fullF)
 {
     m_content = getIntersects(mask, fullI, fullF);
+    std::cout << "Updating index..." << std::endl;
+    m_indexes = std::map <std::string, std::map <std::array <int, 2>, int>>();
+    for(int i(0); i < m_content.size(); i++) {
+        std::array <int, 2> currInt = {m_content[i].getStart(), m_content[i].getStop()};
+        m_indexes[m_content[i].getChrom()][currInt] = i;
+    }
 }
 
 void AOEbed::cutToMask(sorted_bed &mask, bool fullI, bool fullF) {
     m_content = getIntersects(mask, fullI, fullF);
+    m_indexes = std::map <std::string, std::map <std::array <int, 2>, int>>();
+    for(int i(0); i < m_content.size(); i++) {
+        std::array <int, 2> currInt = {m_content[i].getStart(), m_content[i].getStop()};
+        m_indexes[m_content[i].getChrom()][currInt] = i;
+    }
 }
 
 void dump(std::vector <AOE_entry> &data, int limit) {

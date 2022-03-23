@@ -17,7 +17,6 @@ int main(int argc, char* argv[]) {
     AOEbed intsOfInterest(argv[2]);
 
     if(lowMem) {
-        std::cout << "Loading bed... " << std::endl;
         bed mask(argv[3], openType::read_line);
 
         std::cout << "Intersecting... " << std::endl;
@@ -30,30 +29,49 @@ int main(int argc, char* argv[]) {
         intsOfInterest.cutToMask(mask);
     }
 
-    intsOfInterest.dumpAOE(intsOfInterest.size()/2);
-    std::map <int, std::map<char, std::map <char, int>>> counts;
-    std::cout << "Loading fasta... " << std::endl;
-    fasta source(argv[1], read_line, standard);
+    intsOfInterest.writeToFile(".savestate.tmp");
+    intsOfInterest.dumpAOE(intsOfInterest.size());
 
-    for(int i(0); i < 2; i ++) {
-        std::cout << "Getting seqs... " << std::endl;
-        source.subsetFromInts(intsOfInterest); // change this to intra-fasta code
-        // even better : load entry / cut / load next entry
-         std::cout << source.size() << std::endl;
+    std::map <int, std::map<char, std::map <char, int>>> counts; // pos on NIEB : base : type of int : count
 
-        std::cout << "Counting seqs..." << std::endl;
-        for(int j(0); j < source.size(); j++) {
-            std::string sequence = source.getFastaByIndex(j).getUppercaseSequence();
-            for(int i(0); i < sequence.size(); i++) {
-                char base = sequence[i]; // FIXME TO COUNT IS USELESS !!!!
-                counts[intsOfInterest.getEntryByIndex(j).getRelativePos(source.getFastaByIndex(j).getPos(i))][base][intsOfInterest.getEntryByIndex(j).getType()] ++;
+    fasta source(argv[1], read, standard);
+    AOEbed inputFile("dump.AOE", read_line);
+    std::cout << "Loading input block by block" << std::endl;
+
+    while(!inputFile.isEOF()) {
+        inputFile.loadBlock(100000);
+        std::vector <fasta_entry> toCount = source.getSeqFromInts(inputFile);
+        for(int i(0); i < toCount.size(); i ++) {
+            std::string sequence = toCount[i].getSequence();
+            for(int j(0); j < sequence.size(); j++) {
+                counts[inputFile.getEntryByIndex(i).getRelativePos(toCount[i].getPos(j))][sequence[j]][inputFile.getEntryByIndex(j).getType()] ++;
             }
         }
-        if(i == 0) {
-            std::cout << "Loading dump.." << std::endl;
-            intsOfInterest = AOEbed("dump.AOE");
-        }
     }
+
+
+//     std::cout << "Loading fasta... " << std::endl;
+
+//     for(int i(0); i < 2; i ++) {
+//         std::cout << "Getting seqs... " << std::endl;
+//         fasta source(argv[1], read_line, standard);
+//         source.subsetFromInts(intsOfInterest); // change this to intra-fasta code
+//         // even better : load entry / cut / load next entry
+//          std::cout << source.size() << std::endl;
+//
+//         std::cout << "Counting seqs..." << std::endl;
+//         for(int j(0); j < source.size(); j++) {
+//             std::string sequence = source.getFastaByIndex(j).getUppercaseSequence();
+//             for(int i(0); i < sequence.size(); i++) {
+//                 char base = sequence[i];
+//                 counts[intsOfInterest.getEntryByIndex(j).getRelativePos(source.getFastaByIndex(j).getPos(i))][base][intsOfInterest.getEntryByIndex(j).getType()] ++;
+//             }
+//         }
+//         if(i == 0) {
+//             std::cout << "Loading dump.." << std::endl;
+//             intsOfInterest = AOEbed("dump.AOE");
+//         }
+//     }
 
     std::cout << "Writing results ... " << std::endl;
     std::ofstream resultFile(argv[4]);

@@ -78,6 +78,7 @@ protected:
     bool m_isInit;
     std::ifstream m_input;
     std::ofstream m_output;
+    openType m_type;
 };
 
 class sorted_bed: public bed {
@@ -107,7 +108,7 @@ protected:
 
 class AOEbed: public sorted_bed {
 public:
-    AOEbed(std::string filename);
+    AOEbed(std::string filename, openType oType = read);
     AOEbed(std::vector <AOE_entry> content);
     AOE_entry readAOEline();
     int size() const;
@@ -126,6 +127,7 @@ public:
     std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);
     void writeToFile(std::string filename, int limit = 0);
     void dumpAOE(int limit);
+    void loadBlock(int size);
 private:
     std::vector <AOE_entry> m_content;
     std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;
