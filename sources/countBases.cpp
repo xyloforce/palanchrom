@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
         intsOfInterest.cutToMask(mask);
     }
 
-    intsOfInterest.writeToFile(".savestate.tmp");
+//     intsOfInterest.writeToFile(".savestate.tmp");
     intsOfInterest.dumpAOE(intsOfInterest.size());
 
     std::map <int, std::map<char, std::map <char, int>>> counts; // pos on NIEB : base : type of int : count
