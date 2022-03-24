@@ -518,9 +518,7 @@ AOEbed::AOEbed(std::string filename,openType oType) {
             AOE_entry entry = readAOEline();
             if(!(entry == AOE_entry())) {
                 m_content.push_back(entry);
-                std::array <int, 2> pos;
-                pos[0] = entry.getStart();
-                pos[1] = entry.getStop();
+                std::array <int, 2> pos = {entry.getStart(),  entry.getStop()};
                 m_indexes[entry.getChrom()][pos] = index;
                 index ++;
             }

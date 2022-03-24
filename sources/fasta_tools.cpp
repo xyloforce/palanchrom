@@ -234,6 +234,8 @@ fasta_entry fasta_entry::subsetEntry(int begin, int end) const
         tEntry = fasta_entry(tSequence, tHeader, m_type);
     } catch (std::out_of_range) {
         std::cout << "Catched exception, return empty entry" << std::endl;
+        std::cout << begin << " : " << end << std::endl;
+        std::cout << getHeader() << std::endl;
     }
     return tEntry;
 }
@@ -312,6 +314,7 @@ fasta_entry fasta::getFastaById(std::string id) const {
     if(it != m_indexes.end()) {
         return m_content[it->second];
     } else {
+        std::cout << "id : " << id << std::endl;
         throw std::logic_error("id not found");
     }
 }
