@@ -42,36 +42,12 @@ int main(int argc, char* argv[]) {
         inputFile.loadBlock(100000);
         std::vector <fasta_entry> toCount = source.getSeqFromInts(inputFile);
         for(int i(0); i < toCount.size(); i ++) {
-            std::string sequence = toCount[i].getSequence();
+            std::string sequence = toCount[i].getUppercaseSequence();
             for(int j(0); j < sequence.size(); j++) {
                 counts[inputFile.getEntryByIndex(i).getRelativePos(toCount[i].getPos(j))][sequence[j]][inputFile.getEntryByIndex(j).getType()] ++;
             }
         }
     }
-
-
-//     std::cout << "Loading fasta... " << std::endl;
-
-//     for(int i(0); i < 2; i ++) {
-//         std::cout << "Getting seqs... " << std::endl;
-//         fasta source(argv[1], read_line, standard);
-//         source.subsetFromInts(intsOfInterest); // change this to intra-fasta code
-//         // even better : load entry / cut / load next entry
-//          std::cout << source.size() << std::endl;
-//
-//         std::cout << "Counting seqs..." << std::endl;
-//         for(int j(0); j < source.size(); j++) {
-//             std::string sequence = source.getFastaByIndex(j).getUppercaseSequence();
-//             for(int i(0); i < sequence.size(); i++) {
-//                 char base = sequence[i];
-//                 counts[intsOfInterest.getEntryByIndex(j).getRelativePos(source.getFastaByIndex(j).getPos(i))][base][intsOfInterest.getEntryByIndex(j).getType()] ++;
-//             }
-//         }
-//         if(i == 0) {
-//             std::cout << "Loading dump.." << std::endl;
-//             intsOfInterest = AOEbed("dump.AOE");
-//         }
-//     }
 
     std::cout << "Writing results ... " << std::endl;
     std::ofstream resultFile(argv[4]);

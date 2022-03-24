@@ -194,7 +194,7 @@ rule countMuts:
 
 rule countBases:
     input:
-        config["result_folder"] + "/{species}.fa",
+        config["result_folder"] + "/{species}_ancestralGenome.fasta",
         config["result_folder"] + "/barriersAOE_{species}.tsv",
         config["result_folder"] + "/{species}_{type}_ints.bed"
     output:
