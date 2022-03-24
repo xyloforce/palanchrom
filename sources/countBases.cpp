@@ -40,11 +40,14 @@ int main(int argc, char* argv[]) {
 
     while(!inputFile.isEOF()) {
         inputFile.loadBlock(100000);
+        std::cout << "pouet" << std::endl;
         std::vector <fasta_entry> toCount = source.getSeqFromInts(inputFile);
+        std::cout << "pouet2" << std::endl;
         for(int i(0); i < toCount.size(); i ++) {
+            std::cout << "pouet3" << std::endl;
             std::string sequence = toCount[i].getUppercaseSequence();
             for(int j(0); j < sequence.size(); j++) {
-                counts[inputFile.getEntryByIndex(i).getRelativePos(toCount[i].getPos(j))][sequence[j]][inputFile.getEntryByIndex(j).getType()] ++;
+                counts[inputFile.getEntryByIndex(i).getRelativePos(toCount[i].getPos(j))][sequence[j]][inputFile.getEntryByIndex(i).getType()] ++;
             }
         }
     }

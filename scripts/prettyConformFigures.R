@@ -51,12 +51,12 @@ colnames(df) = c("position", "mutation", "mean10", "ancestral", "reference")
 
 df$group = sapply(df$mutation, FUN = function(x) switch(x, "AT" = 2, "TA" = 2, "AG" = 1, "TC" = 1, "AC" = 3, "TG" = 3, "GC" = 6, "CG" = 6, "GT" = 5, "CA" = 5, "GA" = 4, "CT" = 4))
 
-correct_labels <- c("3" = "AC - TG (transversion)",
-                    "1" = "AG - TC (transition)",
-                    "2" = "AT - TA (transversion)",
-                    "5" = "CA - GT (transversion)",
-                    "6" = "CG - GC (transversion)",
-                    "4" = "CT - GA (transition)"
+correct_labels <- c("3" = "A→C - T→G (transversion)",
+                    "1" = "A→G - T→C (transition)",
+                    "2" = "A→T - T→A (transversion)",
+                    "5" = "C→A - G→T (transversion)",
+                    "6" = "C→G - G→C (transversion)",
+                    "4" = "C→T - G→A (transition)"
                     )
 
 df$color = sapply(df$mutation, FUN = function(x) switch(x, "AT" = "1", "TA" = "2", "AG" = "3", "TC" = "4", "AC" = "1", "TG" = "2", "GC" = "2", "CG" = "1", "GT" = "2", "CA" = "1", "GA" = "4", "CT" = "3"))
@@ -67,7 +67,7 @@ plot1 = ggplot(data = df[df$position %in% -50:500,], aes(y = mean10, x = positio
 	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line() +
 	ylab("% de mutation lissés sur 10 pb") +
 	scale_color_discrete(type = c("#7F0794", "#E033FF", "#509400", "#84E016")) +
-	ggtitle("Les taux de transversion sont supérieurs aux taux de transition") +
+	ggtitle("Les taux de transition sont supérieurs aux taux de transversion") +
 	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	geom_vline(xintercept = c(0, 133, 266), color = "grey") +
