@@ -10,18 +10,25 @@ int main(int argc, char *argv[])
 {
     if (argc < 5)
     {
-        throw std::domain_error("Unsufficient number of args : need pattern, source fasta and name of bed outputs (2 names)");
+        throw std::domain_error("Unsufficient number of args : need pattern, source fasta and name of bed outputs (2 names). Optionnal : nregex (but first arg is also regex then)");
     }
-    std::string pattern(argv[1]);
     // parse pattern
     // create regex
     // merge pattern
+    std::string regex;
+    std::string Nregex;
 
-    std::string regex = constructRegex(pattern);
-    std::string Nregex = constructRegex(pattern, true);
+    if(argc == 5) {
+        std::string pattern(argv[1]);
+        regex = constructRegex(pattern);
+        Nregex = constructRegex(pattern, true);
+        std::cout << "regex : " << regex << std::endl;
+        std::cout << "n regex : " << Nregex << std::endl;
+    } else {
+        regex = argv[1];
+        Nregex = argv[5];
+    }
 
-    std::cout << "regex : " << regex << std::endl;
-    std::cout << "n regex : " << Nregex << std::endl;
 
     std::cout << "Reading input..." << std::endl;
     fasta inputFile(argv[2], read_line, standard);
