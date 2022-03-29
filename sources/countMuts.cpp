@@ -30,14 +30,18 @@ int main(int argc, char* argv[]) {
         intsOfInterest.cutToMask(mask);
     }
     std::cout << "Intersecting finished, dumping..." << std::endl;
-    intsOfInterest.dumpAOE(intsOfInterest.size()/2);
+    intsOfInterest.dumpAOE(intsOfInterest.size());
 
-    for(int i(0); i < 2; i++) {
+    AOEbed inputFile("dump.AOE", read_line);
+
+    std::cout << "Loading mutations..." << std::endl;
+    vcf muts(argv[3], read);
+
+    while(!inputFile.isEOF()) {
+        inputFile.loadBlock(100000);
         std::map <bed_entry, std::vector <AOE_entry>> overlaps;
-        std::cout << "Loading mutations..." << std::endl;
-        vcf muts(argv[3], read);
         std::cout << "Getting muts in ints" << std::endl;
-        overlaps = intsOfInterest.getOverlap(muts);
+        overlaps = inputFile.getOverlap(muts);
         std::cout << "Getting muts by pos" << std::endl;
         for(const auto &pair: overlaps) {
             // pair.first is converted vcf & pair.second is a vector of AOE entry
@@ -49,10 +53,6 @@ int main(int argc, char* argv[]) {
             str_mut += toupper(entry.getAlternate()[0][0]);
             str_mut += toupper(entry.getRef()[0]);
             counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
-        }
-        if(i == 0) {
-            std::cout << "Loading dump..." << std::endl;
-            intsOfInterest = AOEbed("dump.AOE");
         }
     }
 
