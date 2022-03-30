@@ -51,7 +51,7 @@ public:
     std::vector <vcf_entry> getVCFEntries() const;
     std::vector <std::string> getChroms() const;
     vcf_entry getVCFEntry(int index);
-    void delEntry(vcf_entry entry);
+    void delEntry(vcf_entry entry, bool updateIndexB = true);
     bool isEOF() const;
     std::vector <bed_entry> convertToBed(std::vector <vcf_entry> entries);
     std::vector <bed_entry> convertToBed();
