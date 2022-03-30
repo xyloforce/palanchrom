@@ -357,3 +357,14 @@ std::vector <std::string> vcf::getChroms() const {
     }
     return results;
 }
+void vcf::delEntry(vcf_entry entry)
+{
+    std::vector <int> indexes = m_indexes[entry.getChrom()];
+    for(int i(0); i < indexes.size(); i++) {
+        if(m_content[indexes[i]] == entry) {
+            m_content.erase(m_content.begin() + indexes[i]);
+            m_indexes[entry.getChrom()].erase(m_indexes[entry.getChrom()].begin() + i);
+            break;
+        }
+    }
+}
