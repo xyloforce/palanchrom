@@ -363,8 +363,15 @@ void vcf::delEntry(vcf_entry entry)
     for(int i(0); i < indexes.size(); i++) {
         if(m_content[indexes[i]] == entry) {
             m_content.erase(m_content.begin() + indexes[i]);
-            m_indexes[entry.getChrom()].erase(m_indexes[entry.getChrom()].begin() + i);
+            updateIndex();
             break;
         }
+    }
+}
+
+void vcf::updateIndex() {
+    m_indexes.clear();
+    for(int i(0); i < m_content.size(); i++) {
+        m_indexes[m_content[i].getChrom()].push_back(i);
     }
 }

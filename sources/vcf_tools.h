@@ -55,6 +55,7 @@ public:
     bool isEOF() const;
     std::vector <bed_entry> convertToBed(std::vector <vcf_entry> entries);
     std::vector <bed_entry> convertToBed();
+    void updateIndex();
 private:
     std::vector<vcf_entry> m_content;
     std::map <std::string, std::vector<int>> m_indexes;

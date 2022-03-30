@@ -43,13 +43,12 @@ int main(int argc, char* argv[]) {
     vcf muts(argv[3], read);
 
     std::map <int, std::map <std::string, std::map <char, int>>> counts;
+    int count_lines(0);
 
     while(!inputFile.isEOF()) {
         inputFile.loadBlock(100000);
         std::map <bed_entry, std::vector <AOE_entry>> overlaps;
-        std::cout << "Getting muts in ints" << std::endl;
         overlaps = inputFile.getOverlap(muts);
-        std::cout << "Getting muts by pos" << std::endl;
         for(const auto &pair: overlaps) {
             // pair.first is converted vcf & pair.second is a vector of AOE entry
             if(pair.second.size() > 1) {
@@ -61,7 +60,9 @@ int main(int argc, char* argv[]) {
             str_mut += toupper(entry.getRef()[0]);
             counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
             muts.delEntry(entry);
+            count_lines ++;
         }
+        std::cout << count_lines << "           \r";
     }
 
     std::ofstream outputFile(argv[4]);
