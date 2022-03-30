@@ -41,7 +41,7 @@ bed_entry::bed_entry(vcf_entry entry) {
         alt += ',';
     }
     alt.pop_back();
-    m_name = entry.getRef() + ':' + alt;
+    m_name = entry.getRef() + ':' + alt + ':' + entry.getID();
     m_score = entry.getQual();
     m_strand = '+';
 }

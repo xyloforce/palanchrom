@@ -22,6 +22,8 @@ public:
     std::string getInfoValue(std::string key) const;
     std::string to_string() const;
     std::string getChrom() const;
+    std::string getID() const;
+    std::string getID2() const;
     int getPos() const;
     void vcf_writeline(std::ofstream& output) const;
     bool operator == (const vcf_entry& entry) const;
@@ -52,6 +54,7 @@ public:
     std::vector <std::string> getChroms() const;
     vcf_entry getVCFEntry(int index);
     void delEntry(vcf_entry entry, bool updateIndexB = true);
+    void delEntries(std::vector <vcf_entry> entries);
     bool isEOF() const;
     std::vector <bed_entry> convertToBed(std::vector <vcf_entry> entries);
     std::vector <bed_entry> convertToBed();
@@ -59,6 +62,7 @@ public:
 private:
     std::vector<vcf_entry> m_content;
     std::map <std::string, std::vector<int>> m_indexes;
+    std::map <std::string, int> m_ids;
     std::ifstream m_input;
     std::ofstream m_output;
 };

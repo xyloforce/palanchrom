@@ -27,35 +27,35 @@ vcf_entry::vcf_entry()
 }
 
 vcf_entry::vcf_entry(bed_entry entry) {
-//     std::cout << entry.getChrom() << std::endl;
     m_chrom = entry.getChrom();
     m_pos = entry.getStart() + 1;
-//     std::cout << entry.getStart() + 1 << std::endl;
-    m_id = ".";
+    std::string id;
     std::string name = entry.getName();
-//     std::cout << entry.getName() << std::endl;
-    bool isRef(true);
+    int col(0);
     int item(0);
     std::string ref("");
     std::vector <std::string> alt(1, std::string());
     for(int i(0); i < name.size(); i++) {
         if(name[i] == ':') {
-            isRef = false;
+            col ++;
         }
-        if(isRef) {
+        if(col == 0) {
             ref += name[i];
-        } else {
+        } else if(col == 1) {
             if(name[i] == ',') {
                 alt.push_back(std::string(""));
                 item ++;
             } else if(name[i] != ':') {
                 alt[item] += name[i];
             }
+        } else if(col == 2) {
+            id += name[i];
         }
     }
 
     m_ref = ref;
     m_alt = alt;
+    m_id = id;
     m_qual = entry.getScore();
     m_filter = ".";
     m_info = std::map <std::string, std::string>();
@@ -261,6 +261,7 @@ vcf::vcf(std::string filename, openType type)
             if(!(entry == vcf_entry())) {
                 m_content.push_back(entry);
                 m_indexes[entry.getChrom()].push_back(index);
+                m_ids[entry.getID()] = index;
                 index ++;
                 if(index % 10000 == 0) {
                     std::cout << index << "           \r";
@@ -359,21 +360,42 @@ std::vector <std::string> vcf::getChroms() const {
 }
 void vcf::delEntry(vcf_entry entry, bool updateIndexB)
 {
-    std::vector <int> indexes = m_indexes[entry.getChrom()];
-    for(int i(0); i < indexes.size(); i++) {
-        if(m_content[indexes[i]] == entry) {
-            m_content.erase(m_content.begin() + indexes[i]);
-            if(updateIndexB) {
-                updateIndex();
-            }
-            break;
-        }
+    m_content.erase(m_content.begin() + m_ids[entry.getID()]);
+    if(updateIndexB) {
+        updateIndex();
     }
 }
+
+// void vcf::delEntries(std::vector<vcf_entry> entries)
+// {
+//     std::sort(entries.begin(), entries.end()); // they are in ascending order
+//     std::map <std::string, std::vector <int>> chToEn;
+//     for(int i(0); i < entries.size(); i++) {
+//         chToEn[entries[i].getChrom()].push_back(i);
+//     }
+//     std::vector <int> indexes;
+//     for(const auto &ch: chToEn) {
+//         indexes = m_indexes[ch.first];
+//
+//     }
+// }
 
 void vcf::updateIndex() {
     m_indexes.clear();
     for(int i(0); i < m_content.size(); i++) {
         m_indexes[m_content[i].getChrom()].push_back(i);
     }
+}
+
+std::string vcf_entry::getID2() const
+{
+    std::string alt_str;
+    for(int i(0); i < m_alt.size(); i++) {
+        alt_str += m_alt[i];
+    }
+    return m_chrom + std::to_string(m_pos) + alt_str;
+}
+
+std::string vcf_entry::getID() const {
+    return m_id;
 }

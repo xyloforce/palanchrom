@@ -61,9 +61,10 @@ int main(int argc, char* argv[]) {
             counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
             muts.delEntry(entry, false);
             count_lines ++;
+            std::cout << count_lines << "           \r";
         }
         muts.updateIndex();
-        std::cout << count_lines << "           \r";
+
     }
 
     std::ofstream outputFile(argv[4]);
