@@ -45,11 +45,11 @@ int main(int argc, char* argv[]) {
     std::map <int, std::map <std::string, std::map <char, int>>> counts;
     int count_lines(0);
 
+    std::vector <vcf_entry> toDel;
+
     while(!inputFile.isEOF()) {
         inputFile.loadBlock(100000);
-        std::map <bed_entry, std::vector <AOE_entry>> overlaps;
-        overlaps = inputFile.getOverlap(muts);
-        for(const auto &pair: overlaps) {
+        for(const auto &pair: inputFile.getOverlap(muts)) {
             // pair.first is converted vcf & pair.second is a vector of AOE entry
             if(pair.second.size() > 1) {
                 throw std::logic_error("More than one overlap");
@@ -59,12 +59,11 @@ int main(int argc, char* argv[]) {
             str_mut += toupper(entry.getAlternate()[0][0]);
             str_mut += toupper(entry.getRef()[0]);
             counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
-            muts.delEntry(entry, false);
+            toDel.push_back(entry);
             count_lines ++;
             std::cout << count_lines << "           \r";
         }
-        muts.updateIndex();
-
+        muts.delEntries(toDel);
     }
 
     std::ofstream outputFile(argv[4]);

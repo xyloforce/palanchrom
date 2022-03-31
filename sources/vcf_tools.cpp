@@ -1,5 +1,6 @@
 #include "vcf_tools.h"
 #include "bed_tools.h"
+#include <algorithm>
 
 
 vcf_entry::vcf_entry(std::string chrom, int pos, std::string id, std::string ref, std::vector <std::string> alt, int qual, std::string filter, std::map <std::string, std::string> info)
@@ -358,32 +359,31 @@ std::vector <std::string> vcf::getChroms() const {
     }
     return results;
 }
-void vcf::delEntry(vcf_entry entry, bool updateIndexB)
+void vcf::delEntry(vcf_entry entry)
 {
     m_content.erase(m_content.begin() + m_ids[entry.getID()]);
-    if(updateIndexB) {
-        updateIndex();
-    }
+    updateIndex();
 }
 
-// void vcf::delEntries(std::vector<vcf_entry> entries)
-// {
-//     std::sort(entries.begin(), entries.end()); // they are in ascending order
-//     std::map <std::string, std::vector <int>> chToEn;
-//     for(int i(0); i < entries.size(); i++) {
-//         chToEn[entries[i].getChrom()].push_back(i);
-//     }
-//     std::vector <int> indexes;
-//     for(const auto &ch: chToEn) {
-//         indexes = m_indexes[ch.first];
-//
-//     }
-// }
+void vcf::delEntries(std::vector<vcf_entry> entries)
+{
+    std::vector <int> indexes;
+    for(const auto &entry: entries) {
+        indexes.push_back(m_ids[entry.getID()]);
+    }
+    std::sort(indexes.begin(), indexes.end(), std::greater <int> ());
+    for(const int &index: indexes) {
+        m_content.erase(m_content.begin() + index);
+    }
+    updateIndex();
+}
 
 void vcf::updateIndex() {
     m_indexes.clear();
+    m_ids.clear();
     for(int i(0); i < m_content.size(); i++) {
         m_indexes[m_content[i].getChrom()].push_back(i);
+        m_ids[m_content[i].getID()] = i;
     }
 }
 
