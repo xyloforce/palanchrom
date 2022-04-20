@@ -166,6 +166,9 @@ std::string sequence::to_string() {
     for(int i(0); i < m_sequence.size()/80; i ++) {
         return_string += m_sequence.substr(i*80,80) + '\n';
     }
+    if(m_sequence.size() % 80 != 0) { // if it's not a multiple of 80 u need to add it bc for instance if string is 5 chars long and cutoff is 2 first u get 0-2 then 2-4 then 2 is not < to 2,5 rounded to 2
+        return_string += m_sequence.substr(m_sequence.size()/80*80,80) + '\n';
+    }
     return return_string;
 }
 

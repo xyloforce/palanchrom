@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
         entry = inputFasta.readFastaLine();
         std::string sequence;
         for(int i(0); i< entry.getSize(); i++) {
-            sequence += 'n';
+            sequence += 'N';
         }
         
         std::vector <bed_entry> currentInt = intervals.getBedByID(entry.getChrom());
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
             count ++;
             int size(line.getStop()-line.getStart());
             // first arg is POS of char so it's zero based
-            sequence.replace(line.getStart(), size, entry.subsetEntry(line.getStart(), line.getStop()).getSequence());
+            sequence.replace(line.getStart(), size, entry.subsetEntry(line.getStart(), line.getStop()).getUppercaseSequence());
 
             if(count % 1000 == 0) {
                 std::cout << count << "         \r";

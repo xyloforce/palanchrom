@@ -47,10 +47,9 @@ int main(int argc, char* argv[]) {
 
     std::cout << "overlapping..." << std::endl;
     while(!inputFile.isEOF()) {
-        inputFile.loadBlock(100000);
+        inputFile.loadBlock(1000000);
         for(const auto &pair: inputFile.getOverlap(muts)) {
             // pair.first is converted vcf & pair.second is a vector of AOE entry
-            std::cout << "test" << std::endl;
             if(pair.second.size() > 1) {
                 throw std::logic_error("More than one overlap");
             }
@@ -62,6 +61,7 @@ int main(int argc, char* argv[]) {
         std::cout << count_lines << "\r";
     }
 
+    std::cout << "Writing results ... " << std::endl;
     std::ofstream outputFile(argv[4]);
     for(const auto &pair: counts) {
         for(const auto &pair2: pair.second) {
