@@ -141,7 +141,7 @@ rule getAncestralGenome:
     output:
         config["result_folder"] + "/{ref}_ancestralGenome.fasta"
     shell:
-        "./bin/makeAncestralGenome {input} {output}"
+        "./bin/makeAncestral {input} {output}"
 
 rule getAncestralGenomeRef:
     input:
@@ -151,7 +151,7 @@ rule getAncestralGenomeRef:
     output:
         config["result_folder"] + "/" + config["speciesA"] + "_ancestralGenome.fasta"
     shell:
-        "./bin/makeAncestralGenome {input} {output}"
+        "./bin/makeAncestral {input} {output}"
 
 rule getInt:
     input:
