@@ -8,15 +8,12 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc < 5)
-    {
-        throw std::domain_error("Unsufficient number of args : need pattern, source fasta and name of bed outputs (2 names). Optionnal : nregex (but first arg is also regex then)");
-    }
     // parse pattern
     // create regex
     // merge pattern
     std::string regex;
     std::string Nregex;
+    bool noN = false;
 
     if(argc == 5) {
         std::string pattern(argv[1]);
@@ -24,11 +21,17 @@ int main(int argc, char *argv[])
         Nregex = constructRegex(pattern, true);
         std::cout << "regex : " << regex << std::endl;
         std::cout << "n regex : " << Nregex << std::endl;
-    } else {
+    } else if(argc == 6){
         regex = argv[1];
-        Nregex = argv[5];
+        if (std::string(argv[5]) == "FALSE") {
+            noN = true;
+        } else {
+            Nregex = argv[5];
+        }
+    } else {
+        std::cout << "Incorrect number of args : need pattern, source fasta and name of bed outputs (2 names). Optionnal : nregex (but first arg is also regex then) or FALSE + regex in first pos" << std::endl;
+        exit(1);
     }
-
 
     std::cout << "Reading input..." << std::endl;
     fasta inputFile(argv[2], read_line, standard);
@@ -41,16 +44,17 @@ int main(int argc, char *argv[])
 
     while(!inputFile.isEOF()) {
         fasta_entry entry(inputFile.readFastaLine());
-        std::cout << entry.getHeader() << std::endl;
+        std::cout << entry.getHeader() << "        \n";
         std::vector <bed_entry> matchs = entry.matchPatterns(regex);
         for(const auto &bed_line: matchs) {
             outputFile.writeBedLine(bed_line);
         }
-
-        std::vector <bed_entry> tmp = entry.matchPatterns(Nregex);
-        std::vector <bed_entry> convert = entry.reverseInts(tmp);
-        for(const auto &bed_line: convert) {
-            outputConvert.writeBedLine(bed_line);
+        if(!noN) {
+            std::vector <bed_entry> tmp = entry.matchPatterns(Nregex);
+            std::vector <bed_entry> convert = entry.reverseInts(tmp);
+            for(const auto &bed_line: convert) {
+                outputConvert.writeBedLine(bed_line);
+            }
         }
     }
     return 0;
