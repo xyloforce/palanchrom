@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
     while(!inputFile.isEOF()) {
         fasta_entry entry(inputFile.readFastaLine());
-        std::cout << entry.getHeader() << "        \n";
+        std::cout << entry.getHeader() << "        \r";
         std::vector <bed_entry> matchs = entry.matchPatterns(regex);
         for(const auto &bed_line: matchs) {
             outputFile.writeBedLine(bed_line);
