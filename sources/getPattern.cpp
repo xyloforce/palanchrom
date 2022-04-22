@@ -23,10 +23,12 @@ int main(int argc, char *argv[])
         std::cout << "n regex : " << Nregex << std::endl;
     } else if(argc == 6){
         regex = argv[1];
+        std::cout << "matching : " << regex << std::endl;
         if (std::string(argv[5]) == "FALSE") {
             noN = true;
         } else {
             Nregex = argv[5];
+            std::cout << "avoiding : " << Nregex << std::endl;
         }
     } else {
         std::cout << "Incorrect number of args : need pattern, source fasta and name of bed outputs (2 names). Optionnal : nregex (but first arg is also regex then) or FALSE + regex in first pos" << std::endl;
