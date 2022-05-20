@@ -5,37 +5,45 @@
 
 int main(int argc, char* argv[]) {
     bool lowMem = false;
+    bool restart = false;
     if(argc < 5) {
-        throw std::domain_error("Doesnt have enough args, need fasta AOE bed and output names. Optionnal : flag TRUE if you need low-mem");
+        std::cout << "Doesnt have enough args, need fasta AOE bed and output names. Optionnal : flag TRUE if you need low-mem, again TRUE if you want to restart from dump" << std::endl;
+        exit(1);
     } else if(argc == 6) {
         if(std::string(argv[5]) == "TRUE") {
             lowMem = true;
         }
+    }  else if(argc == 7) {
+        if(std::string(argv[6]) == "TRUE") {
+            restart = true;
+        }
     }
 
-    std::cout << "Loading AOEs..." << std::endl;
-    AOEbed intsOfInterest(argv[2]);
+    if(!restart) {
+        std::cout << "Loading AOEs..." << std::endl;
+        AOEbed intsOfInterest(argv[2]);
 
-    if(lowMem) {
-        bed mask(argv[3], openType::read_line);
+        if(lowMem) {
+            bed mask(argv[3], openType::read_line);
 
-        std::cout << "Intersecting... " << std::endl;
-        intsOfInterest.cutToMask(mask);
-    } else {
-        std::cout << "Loading bed... " << std::endl;
-        sorted_bed mask(argv[3]);
+            std::cout << "Intersecting... " << std::endl;
+            intsOfInterest.cutToMask(mask);
+        } else {
+            std::cout << "Loading bed... " << std::endl;
+            sorted_bed mask(argv[3]);
 
-        std::cout << "Intersecting... " << std::endl;
-        intsOfInterest.cutToMask(mask);
+            std::cout << "Intersecting... " << std::endl;
+            intsOfInterest.cutToMask(mask);
+        }
+
+    //     intsOfInterest.writeToFile(".savestate.tmp");
+        intsOfInterest.dumpAOE(intsOfInterest.size());
     }
-
-//     intsOfInterest.writeToFile(".savestate.tmp");
-    intsOfInterest.dumpAOE(intsOfInterest.size());
 
     std::map <int, std::map<char, std::map <char, int>>> counts; // pos on NIEB : base : type of int : count
-
     fasta source(argv[1], read, standard);
     AOEbed inputFile("dump.AOE", read_line);
+
     std::cout << "Loading input block by block" << std::endl;
 
     while(!inputFile.isEOF()) {

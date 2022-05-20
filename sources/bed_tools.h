@@ -67,7 +67,7 @@ class bed {
 public:
     bed();
     bed(std::string filename, openType type);
-    bed_entry readBedLine();
+    bed_entry readBedLine(int count);
     std::map <std::string, bed_entry> getBedByID(std::string id) const;
     void writeBedLine(bed_entry entry);
     bed_entry getBedEntry(int index);
@@ -128,6 +128,7 @@ public:
     void writeToFile(std::string filename, int limit = 0);
     void dumpAOE(int limit);
     void loadBlock(int size);
+    std::vector <AOE_entry> getEntries();
 private:
     std::vector <AOE_entry> m_content;
     std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;

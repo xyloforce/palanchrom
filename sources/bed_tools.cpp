@@ -217,11 +217,13 @@ bed::bed() {}
 
 bed::bed ( std::string filename, openType type )
 {
+    int count(0);
     if(type == openType::read) {
         m_input = std::ifstream(filename);
         while(!m_input.eof()) {
         // file is chrom start stop name strand
-            m_content.push_back(readBedLine());
+            m_content.push_back(readBedLine(count));
+            count ++;
         }
     } else if(type == openType::read_line) {
         m_input = std::ifstream(filename);
@@ -230,13 +232,13 @@ bed::bed ( std::string filename, openType type )
     }
 }
 
-bed_entry bed::readBedLine() {
+bed_entry bed::readBedLine(int count) {
     char tchar = '\0';
     std::string tstart = "";
     std::string tstop = "";
     std::string chrom = "";
     int col = 1;
-    std::string name = "";
+    std::string name = ".";
     std::string tscore = "";
     char strand = '\0';
     int start = 0;
@@ -278,8 +280,9 @@ bed_entry bed::readBedLine() {
     if (col == 3) {
         start = stoi(tstart);
         stop = stoi(tstop);
-            
-        return bed_entry(chrom, start, stop, ".", 0, '+');
+        //name = ".";
+        score = 0;
+        strand = '+';
     } else if (col < 3) {
         std::cout << "incorrect line, returning empty entry" << std::endl;
         return bed_entry();
@@ -291,8 +294,11 @@ bed_entry bed::readBedLine() {
         } else {
             score = 0;
         }
-        return bed_entry(chrom, start, stop, name, score, strand);
     }
+    if(name == ".") {
+        name = std::to_string(count);
+    }
+    return bed_entry(chrom, start, stop, name, score, strand);
 }
 
 void bed::writeBedLine(bed_entry entry) {
@@ -465,9 +471,10 @@ sorted_bed::sorted_bed() {}
 
 sorted_bed::sorted_bed(std::string filename) {
     m_input = std::ifstream(filename);
-    int index = 0;
+    int index(0), count(0);
     while(!m_input.eof()) {
-        bed_entry entry = readBedLine();
+        bed_entry entry = readBedLine(count);
+        count ++;
         if(!(entry == bed_entry())) {
             std::array <int, 3> key;
             key[0] = entry.getStart();
@@ -777,14 +784,15 @@ std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool f
     std::vector <AOE_entry> results;
     std::vector <bed_entry> converted;
     std::vector <bed_entry> input;
-    bed_entry entry = inputFile.readBedLine();
+    int count(0);
+    bed_entry entry = inputFile.readBedLine(count);
+    count ++;
     std::string last_chrom(entry.getChrom());
-    int count(1);
 
     while(!inputFile.isEOF()) {
         while(entry.getChrom() == last_chrom && count % 100000 != 0) {
             input.push_back(entry);
-            entry = inputFile.readBedLine();
+            entry = inputFile.readBedLine(count);
             count ++;
         }
         converted = convertToBed(getBedByID(last_chrom));
@@ -854,6 +862,10 @@ void AOEbed::writeToFile(std::string filename, int limit)
             break;
         }
     }
+}
+
+std::vector <AOE_entry> AOEbed::getEntries() {
+    return m_content;
 }
 
 void AOEbed::dumpAOE(int limit) {

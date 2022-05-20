@@ -50,6 +50,7 @@ total = aggregate(bases$comptage, by = list(bases$position), FUN = sum, na.rm = 
 colnames(total) = c("position", "comptage")
 tmp = aggregate(muts$comptage, by = list(muts$position), FUN = sum, na.rm = TRUE)
 colnames(tmp) = c("position", "comptage")
+total$mutations = 0
 total$mutations = tmp[match(total$position, tmp$position),"comptage"]
 # total[is.na(total)] = 0
 head(total)
@@ -76,6 +77,7 @@ for(base in unique(muts$ancestral)) {
 	currentBDF[match(bases[bases$base == base, "position"], currentBDF$position), "comptage"] = bases[bases$base == base, "comptage"]
 	for(bdest in unique(muts[muts$ancestral == base, "reference"])) {
 		mut = paste(base, bdest, sep = "")
+		currentBDF[,mut] = 0
 		currentBDF[match(muts[muts$mutation == mut, "position"], currentBDF$position),mut] = muts[muts$mutation == mut, "comptage"]
 		relative = paste("relative_", mut, sep= "")
 		currentBDF[,relative] = currentBDF[,mut] / currentBDF$comptage * 100
@@ -96,9 +98,11 @@ for(group in unique(muts$group)) {
 	print(group)
 	for(base in unique(muts[muts$group == group,"ancestral"])) {
 		c_base = paste("comptage_", base, sep = "")
+		currentBDF[, c_base] = 0
 		currentBDF[match(bases[bases$base == base, "position"], currentBDF$position), c_base] = bases[bases$base == base, "comptage"]
 		for(bdest in unique(muts[muts$ancestral == base & muts$group == group, "reference"])) {
 			mut = paste(base, bdest, sep = "")
+			currentBDF[, mut] = 0
 			currentBDF[match(muts[muts$mutation == mut, "position"], currentBDF$position),mut] = muts[muts$mutation == mut, "comptage"]
 		}
 	}
