@@ -6,8 +6,10 @@
 int main(int argc, char* argv[]) {
     bool lowMem = false;
     bool restart = false;
+    int block_quantity(0);
+
     if(argc < 5) {
-        std::cout << "Doesnt have enough args, need fasta AOE bed and output names. Optionnal : flag TRUE if you need low-mem, again TRUE if you want to restart from dump" << std::endl;
+        std::cout << "Doesnt have enough args, need fasta AOE bed and output names. Optionnal : flag TRUE if you need low-mem, again TRUE if you want to restart from dump, int to set number of blocks to load" << std::endl;
         exit(1);
     } else if(argc == 6) {
         if(std::string(argv[5]) == "TRUE") {
@@ -16,6 +18,16 @@ int main(int argc, char* argv[]) {
     }  else if(argc == 7) {
         if(std::string(argv[6]) == "TRUE") {
             restart = true;
+        }
+        else if(argc == 8) {
+            if(std::string(argv[5]) == "TRUE") {
+                lowMem = true;
+            }
+            try {
+                 block_quantity = std::stoi(argv[7]);
+            } catch(std::invalid_argument) {
+                block_quantity = 100000;
+            }
         }
     }
 
@@ -47,7 +59,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Loading input block by block" << std::endl;
 
     while(!inputFile.isEOF()) {
-        inputFile.loadBlock(100000);
+        inputFile.loadBlock(block_quantity);
         std::vector <fasta_entry> toCount = source.getSeqFromInts(inputFile);
         for(int i(0); i < toCount.size(); i ++) {
             std::string sequence = toCount[i].getUppercaseSequence();
