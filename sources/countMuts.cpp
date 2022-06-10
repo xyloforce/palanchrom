@@ -9,7 +9,8 @@ int main(int argc, char* argv[]) {
     bool restart = false;
 
     if(argc < 5) {
-        throw std::logic_error("Not enough args were given : needs AOE, bed, vcf, output file. Optionnal : flag TRUE if you need low-mem, TRUE again if you want to restart from dump");
+        std::cout << "Not enough args were given : needs AOE, bed, vcf, output file. Optionnal : flag TRUE if you need low-mem, TRUE again if you want to restart from dump" << std::endl;
+        exit(1);
     }  else if(argc == 6) {
         if(std::string(argv[5]) == "TRUE") {
             lowMem = true;

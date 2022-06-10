@@ -336,6 +336,7 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
                 default:
                     // got an overlap
                     if(matchs.find(entry) != matchs.end()) {
+                        std::cout << matchs.find(entry) -> first.getStringEntry() << std::endl;
                         std::cout << entry.getStringEntry() << std::endl;
                         throw std::logic_error("id is not unique : already listed in map");
                     }
