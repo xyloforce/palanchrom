@@ -120,7 +120,15 @@ bool bed_entry::operator > (const bed_entry& entry) const
 bool bed_entry::operator < (const bed_entry& entry) const
 {
     if(m_chrom == entry.getChrom()) {
-        return (m_start < entry.getStart());
+        if(m_start == entry.getStart()) {
+            if(m_stop == entry.getStop()) {
+                return (m_strand < entry.getStrand()) ;
+            } else {
+                return (m_stop < entry.getStop());
+            }
+        } else {
+            return (m_start < entry.getStart());
+        }
     } else {
         return (m_chrom < entry.getChrom());
     }
@@ -175,6 +183,11 @@ AOE_entry::AOE_entry(std::string chrom, int start, int stop, char type, int zero
     m_stop = stop;
     m_type = type;
     m_zero = zero;
+    if(m_type == 'R') {
+        m_strand = '-';
+    } else {
+        m_strand = '+';
+    }
 }
 
 AOE_entry::AOE_entry() {
@@ -182,6 +195,7 @@ AOE_entry::AOE_entry() {
     m_start = 0;
     m_stop = 0;
     m_type = '\0';
+    m_strand = '\0';
     m_zero = 0;
 }
 
@@ -189,7 +203,12 @@ AOE_entry::AOE_entry(bed_entry entry, int zero) {
     m_chrom = entry.getChrom();
     m_start = entry.getStart();
     m_stop = entry.getStop();
-    m_type = entry.getStrand();
+    m_strand = entry.getStrand();
+    if(m_strand == '-') {
+        m_type = 'R';
+    } else {
+        m_type = 'L';
+    }
     m_zero = zero;
 }
 
@@ -212,6 +231,7 @@ int AOE_entry::getZero() const {
 char AOE_entry::getType() const {
     return m_type;
 }
+
 
 bed::bed() {}
 
@@ -524,6 +544,7 @@ AOEbed::AOEbed(std::string filename,openType oType) {
     if(oType == read) {
         while(!m_input.eof()) {
             AOE_entry entry = readAOEline();
+
             if(!(entry == AOE_entry())) {
                 m_content.push_back(entry);
                 std::array <int, 2> pos = {entry.getStart(),  entry.getStop()};
@@ -817,7 +838,7 @@ std::vector <bed_entry> AOEbed::convertToBed(std::vector <AOE_entry> source) con
     std::vector <bed_entry> currentConv;
     for(auto entry: source) {
         entry.setName(std::to_string(entry.getZero()));
-        entry.setStrand(entry.getType());
+        // entry.setStrand(entry.getType()); no longer needed as AOE entries does now have a strand
         currentConv.push_back(entry);
     }
     return currentConv;
