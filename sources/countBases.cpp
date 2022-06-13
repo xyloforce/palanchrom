@@ -66,6 +66,9 @@ int main(int argc, char* argv[]) {
             for(int j(0); j < sequence.size(); j++) {
                 counts[inputFile.getEntryByIndex(i).getRelativePos(toCount[i].getPos(j))][sequence[j]][inputFile.getEntryByIndex(i).getType()] ++;
             }
+            if(i / toCount.size() * 100 % 10 == 0) {
+                std::cout << i << "\r";
+            }
         }
     }
 
