@@ -6,6 +6,7 @@ bed_entry::bed_entry ( std::string chrom, int start, int stop, std::string name,
     if(start > stop) {
         std::cout << start << "  " << stop << std::endl;
         std::cout << "Error : start > stop" << std::endl;
+        exit(1);
     }
     m_chrom = chrom;
     m_start = start;
@@ -20,6 +21,7 @@ bed_entry::bed_entry ( std::string chrom, int start, int stop)
     if(start > stop) {
         std::cout << start << "  " << stop << std::endl;
         std::cout << "Error : start > stop" << std::endl;
+        exit(1);
     }
     m_chrom = chrom;
     m_start = start;
@@ -189,6 +191,7 @@ AOE_entry::AOE_entry(std::string chrom, int start, int stop, char type, int zero
     if(start > stop) {
         std::cout << start << "  " << stop << std::endl;
         std::cout << "Error : start > stop" << std::endl;
+        exit(1);
     }
     m_chrom = chrom;
     m_start = start;
