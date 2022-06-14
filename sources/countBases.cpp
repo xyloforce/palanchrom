@@ -12,23 +12,31 @@ int main(int argc, char* argv[]) {
         std::cout << "Doesnt have enough args, need fasta AOE bed and output names. Optionnal : flag TRUE if you need low-mem, again TRUE if you want to restart from dump, int to set number of blocks to load" << std::endl;
         exit(1);
     } else if(argc == 6) {
+        std::cout << "starting in lowmem" << std::endl;
         if(std::string(argv[5]) == "TRUE") {
             lowMem = true;
         }
     }  else if(argc == 7) {
+        std::cout << "restarting from dump" << std::endl;
         if(std::string(argv[6]) == "TRUE") {
             restart = true;
         }
-        else if(argc == 8) {
-            if(std::string(argv[5]) == "TRUE") {
-                lowMem = true;
-            }
-            try {
-                 block_quantity = std::stoi(argv[7]);
-            } catch(std::invalid_argument) {
-                block_quantity = 100000;
-            }
+    } else if(argc == 8) {
+        std::cout << "starting with differing block value" << std::endl;
+        if(std::string(argv[5]) == "TRUE") {
+            lowMem = true;
         }
+        if(std::string(argv[6]) == "TRUE") {
+            restart = true;
+        }
+        try {
+            block_quantity = std::stoi(argv[7]);
+        } catch(std::invalid_argument) {
+            block_quantity = 100000;
+        }
+    } else {
+        std::cout << "too many args" << std::endl;
+        exit(1);
     }
 
     if(!restart) {
@@ -62,11 +70,12 @@ int main(int argc, char* argv[]) {
         inputFile.loadBlock(block_quantity);
         std::vector <fasta_entry> toCount = source.getSeqFromInts(inputFile);
         for(int i(0); i < toCount.size(); i ++) {
+//             std::cout << toCount[i].getHeader() << std::endl;
             std::string sequence = toCount[i].getUppercaseSequence();
             for(int j(0); j < sequence.size(); j++) {
                 counts[inputFile.getEntryByIndex(i).getRelativePos(toCount[i].getPos(j))][sequence[j]][inputFile.getEntryByIndex(i).getType()] ++;
             }
-            if(i / toCount.size() * 100 % 10 == 0) {
+            if(i / toCount.size() % 10 == 0.0) {
                 std::cout << i << "\r";
             }
         }
