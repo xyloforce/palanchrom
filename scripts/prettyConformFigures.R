@@ -7,9 +7,7 @@ library(cowplot)
 args = commandArgs(trailingOnly=TRUE)
 #args = c("formatted", "figure")
 
-theme_bob = theme(panel.grid.major = element_blank(),
-                panel.grid.minor = element_blank(),
-                panel.border = element_rect(size = 2),
+theme_bob = theme(panel.border = element_rect(size = 2),
                 axis.title.x = element_text(size = 16),
                 axis.title.y = element_text(size = 16),
                 strip.text.x = element_text(size = 16),

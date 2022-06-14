@@ -11,14 +11,21 @@ int main(int argc, char* argv[]) {
     if(argc < 5) {
         std::cout << "Not enough args were given : needs AOE, bed, vcf, output file. Optionnal : flag TRUE if you need low-mem, TRUE again if you want to restart from dump" << std::endl;
         exit(1);
-    }  else if(argc == 6) {
+    }  else if(argc == 5) {
+        std::cout << "Normal start" << std::endl;
+    }   else if(argc == 6) {
         if(std::string(argv[5]) == "TRUE") {
+            std::cout << "Starting in low mem" << std::endl;
             lowMem = true;
         }
     }  else if(argc == 7) {
         if(std::string(argv[6]) == "TRUE") {
+            std::cout << "Restarting from dump" << std::endl;
             restart = true;
         }
+    } else {
+        std::cout << "Too much args" << std::endl;
+        exit(1);
     }
 
     if(!restart) {
@@ -52,12 +59,14 @@ int main(int argc, char* argv[]) {
         for(const auto &pair: inputFile.getOverlap(muts)) {
             // pair.first is converted vcf & pair.second is a vector of AOE entry
             if(pair.second.size() > 1) {
-                throw std::logic_error("More than one overlap");
+                std::cout << "Warning : more than one overlap" << std::endl;
             }
             vcf_entry entry(pair.first);
-            std::string str_mut {static_cast<char>(toupper(entry.getAlternate()[0][0])), static_cast<char>(toupper(entry.getRef()[0]))};
-            counts[pair.second[0].getRelativePos(entry.getPos()-1)][str_mut][pair.second[0].getType()] ++;
-            count_lines ++;
+            for(const auto &a_entry: pair.second) {
+                std::string str_mut {static_cast<char>(toupper(entry.getAlternate()[0][0])), static_cast<char>(toupper(entry.getRef()[0]))};
+                counts[a_entry.getRelativePos(entry.getPos()-1)][str_mut][a_entry.getType()] ++;
+                count_lines ++;
+            }
         }
         std::cout << count_lines << "\r";
     }

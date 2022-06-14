@@ -6,11 +6,13 @@
 int main(int argc, char* argv[]) {
     bool lowMem = false;
     bool restart = false;
-    int block_quantity(1000);
+    int block_quantity(100000);
 
     if(argc < 5) {
         std::cout << "Doesnt have enough args, need fasta AOE bed and output names. Optionnal : flag TRUE if you need low-mem, again TRUE if you want to restart from dump, int to set number of blocks to load" << std::endl;
         exit(1);
+    } else if(argc == 5) {
+      std::cout << "normal start" << std::endl;
     } else if(argc == 6) {
         std::cout << "starting in lowmem" << std::endl;
         if(std::string(argv[5]) == "TRUE") {
@@ -35,7 +37,7 @@ int main(int argc, char* argv[]) {
             block_quantity = 100000;
         }
     } else {
-        std::cout << "too many args" << std::endl;
+        std::cout << "too many args, exiting." << std::endl;
         exit(1);
     }
 
