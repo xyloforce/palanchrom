@@ -3,20 +3,22 @@ library(readr)
 library(ggplot2)
 library(stringr)
 library(cowplot)
+library(extrafont)
 
 args = commandArgs(trailingOnly=TRUE)
 #args = c("formatted", "figure")
 
-theme_bob = theme(panel.border = element_rect(size = 2),
-                axis.title.x = element_text(size = 16),
-                axis.title.y = element_text(size = 16),
-                strip.text.x = element_text(size = 16),
-                strip.text.y = element_text(size = 16),
-                axis.text = element_text(size=14),
-                #plot.title = element_text(face = "bold"),
-                legend.title = element_text(size = 16),
-                legend.text = element_text(size = 14),
-                plot.title = element_text(size = 20, hjust = 0.5))
+source("~/setThemePoster.R")
+# theme_bob = theme(panel.border = element_rect(size = 2),
+#                 axis.title.x = element_text(size = 16),
+#                 axis.title.y = element_text(size = 16),
+#                 strip.text.x = element_text(size = 16),
+#                 strip.text.y = element_text(size = 16),
+#                 axis.text = element_text(size=14),
+#                 #plot.title = element_text(face = "bold"),
+#                 legend.title = element_text(size = 16),
+#                 legend.text = element_text(size = 14),
+#                 plot.title = element_text(size = 20, hjust = 0.5))
 
 #### PLOT SOURCE X DEST X CONTEXT ################################################################################################
 
@@ -24,6 +26,14 @@ theme_bob = theme(panel.border = element_rect(size = 2),
 
 filelist = list.files(path = args[1], "*_mutations.tsv", full.names = TRUE)
 df = read_tsv(filelist[1], show_col_types = FALSE)
+
+if(length(args) > 2) {
+	xlim1 = as.numeric(args[3])
+	xlim2 = as.numeric(args[4])
+} else {
+	xlim1 = -50
+	xlim2 = 350
+}
 
 for(filepath in filelist[2:length(filelist)]) {
 	tmp = read_tsv(filepath, show_col_types = FALSE)
@@ -59,19 +69,19 @@ correct_labels <- c("3" = "A→C - T→G (transversion)",
 
 df$color = sapply(df$mutation, FUN = function(x) switch(x, "AT" = "1", "TA" = "2", "AG" = "3", "TC" = "4", "AC" = "1", "TG" = "2", "GC" = "2", "CG" = "1", "GT" = "2", "CA" = "1", "GA" = "4", "CT" = "3"))
 
+df = df[df$position > xlim1 & df$position < xlim2,]
 # limits = c(0.0001, 0.01), breaks = seq(0.0001, 0.01, by = 0.0015),
 # how to add breaks AND scales free ?
 plot1 = ggplot(data = df[df$position %in% -50:500,], aes(y = mean10, x = position, color = color)) +
-	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line() +
+	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line(size = 1) +
 	ylab("% de mutation lissés sur 10 pb") +
-	scale_color_discrete(type = c("#7F0794", "#E033FF", "#509400", "#84E016")) +
-	ggtitle("Les taux de transition sont supérieurs aux taux de transversion") +
-	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
+	scale_color_discrete(type = c("#9C310B", "#FF713D", "#009C7D", "#20E8C0")) +
+	ggtitle("Taux de mutation complémentaires (le premier est le plus sombre)") +
+	scale_x_continuous(limits = c(xlim1, xlim2), sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	geom_vline(xintercept = c(0, 133, 266), color = "grey") +
-	theme_linedraw() +
-	theme(strip.placement = "outside", legend.position = "none") +
-	theme_bob
+	theme_poster +
+	theme(strip.placement = "outside", legend.position = "none")
 
 ## load data to add second plot of global muts
 
@@ -79,17 +89,16 @@ filepath = list.files(path = args[1], "total.tsv", full.names = TRUE)
 
 total = read_tsv(filepath[1], show_col_types = FALSE)
 
-plot2 = ggplot(data = total[total$position %in% -50:500,], aes(x=position, y = mean10)) + geom_line() +
+plot2 = ggplot(data = total[total$position %in% -50:500,], aes(x=position, y = mean10)) + geom_line(size = 1) +
 	ylab("% de mutation lissés sur 10 pb") +
 	ggtitle("Taux de mutation global") +
-	scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
+	scale_x_continuous(limits = c(xlim1, xlim2), sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	geom_vline(xintercept = c(0, 133, 266), color = "grey") +
-	theme_linedraw() +
-	theme_bob
+	theme_poster
 
 figure = plot_grid(plot1, plot2, labels = c("A", "B"), rel_widths = c(0.6, 0.3))
-figure
+# figure
 
 folder = args[2]
 

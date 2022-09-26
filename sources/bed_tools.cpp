@@ -170,8 +170,8 @@ std::string bed_entry::getChrom() const {
     return m_chrom;
 }
 
-std::string bed_entry::getStringEntry() const {
-    return m_chrom + '\t' + std::to_string(m_start) + '\t' + std::to_string(m_stop) + '\t' + m_name + '\t' + std::to_string(m_score) + '\t' + m_strand;
+std::string bed_entry::getStringEntry(char sep) const {
+    return m_chrom + sep + std::to_string(m_start) + sep + std::to_string(m_stop) + sep + m_name + sep + std::to_string(m_score) + sep + m_strand;
 }
 
 void bed_entry::setName(std::string name) {
@@ -272,7 +272,7 @@ bed_entry bed::readBedLine(int count) {
     std::string tstop = "";
     std::string chrom = "";
     int col = 1;
-    std::string name = ".";
+    std::string name = "";
     std::string tscore = "";
     char strand = '\0';
     int start = 0;
@@ -305,7 +305,7 @@ bed_entry bed::readBedLine(int count) {
                     col ++;
                     break;
                 default:
-                    std::cout << "Skipping chars" << std::endl;
+                    std::cout << "Skipping chars\r";
             }
         } else if(tchar == '\t') {
             col ++;
@@ -318,7 +318,7 @@ bed_entry bed::readBedLine(int count) {
         score = 0;
         strand = '+';
     } else if (col < 3) {
-        std::cout << "incorrect line, returning empty entry" << std::endl;
+        std::cout << "incorrect line, returning empty entry\r";
         return bed_entry();
     } else {
         start = stoi(tstart);
@@ -339,6 +339,21 @@ void bed::writeBedLine(bed_entry entry) {
     m_output << entry.getStringEntry() << '\n';
 }
 
+void bed::writeFullBed() {
+    std::cout << "Saving full file" << std::endl;
+    for(const auto& entry: m_content) {
+        writeBedLine(entry);
+    }
+}
+
+void bed::setupAndWriteBed(std::string filename) {
+    m_type = write;
+    m_output = std::ofstream(filename);
+    writeFullBed();
+}
+
+
+
 bed_entry bed::getBedEntry(int index) {
     return m_content[index];
 }
@@ -347,19 +362,40 @@ bool bed::isEOF() const {
     return m_input.eof();
 }
 
-std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <bed_entry> intsA, std::vector <bed_entry> intsB)
+void bed::updateTags() {
+    for(int i(0); i < m_content.size(); i++) {
+        m_tags[m_content[i].getName()] = i;
+    }
+}
+
+bed_entry bed::getBedByTag(std::string tag)
+{
+    if(m_tags.empty()) {
+        updateTags();
+    }
+    return m_content[m_tags[tag]];
+}
+
+
+std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( const std::vector <bed_entry> intsA, const std::vector <bed_entry> intsB)
 {
 // BEWARE : output map <bedFromB>:vector<bedFromA> !!
-    std::sort(intsB.begin(), intsB.end());
+//     std::sort(intsB.begin(), intsB.end());
     std::map <bed_entry, std::vector<bed_entry>> matchs;
     int A(0);
 
     for(const auto &entry : intsB) {
         bool found = false;
         int B(intsA.size() - 1);
+//         if(entry.getName() == "ENSG00000176148-55342") {
+//             std::cout << entry.getStringEntry() << std::endl;
+//         }
+//         std::cout << "-----" << std::endl;
         while(A <= B && !found) {
             unsigned int index((A+B)/2);
             int status = intsA[index].isInside(entry.getStart(), entry.getStop() - entry.getStart());
+//             std::cout << intsA[index].getStringEntry() << std::endl;
+//             std::cout << status << std::endl;
             switch(status) {
                 case 0:
                     B = index - 1;
@@ -398,8 +434,10 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( std::vector <
                     found = true;
             }
         }
+//         if(entry.getName() == "ENSG00000176148-55342") {
+//             std::cout << found << std::endl;
+//         }
     }
-
     return matchs;
 }
 
@@ -421,9 +459,8 @@ std::map <bed_entry, std::vector <bed_entry>> sorted_bed::getOverlap (sorted_bed
     std::map <bed_entry, std::vector <bed_entry>> result;
     for(const auto &chrom: getChroms()) {
         std::vector <bed_entry> currentChrom = getBedByID(chrom);
-        std::cout << "Overlapping on chrom " << chrom << " with " << currentChrom.size() << " overlaps." << std::endl;
+        std::cout << "Overlapping on chrom " << chrom << " with " << currentChrom.size() << " overlaps.\r";
         std::map <bed_entry, std::vector <bed_entry>> tmp = toOverlap.getOverlap(chrom, currentChrom);
-        std::cout << "Adding results" << std::endl;
         result.insert(tmp.begin(), tmp.end());
     }
     return result; // keys are bed entries from source, values are from intersected
@@ -504,9 +541,15 @@ std::vector <bed_entry> bed::getEntries() const {
 
 sorted_bed::sorted_bed() {}
 
-sorted_bed::sorted_bed(std::string filename) {
+sorted_bed::sorted_bed(std::string filename, int skip) {
     m_input = std::ifstream(filename);
     int index(0), count(0);
+    if(skip > 0) {
+        std::string junk;
+        for(int i(0); i < skip; i++) {
+            std::getline(m_input, junk);
+        }
+    }
     while(!m_input.eof()) {
         bed_entry entry = readBedLine(count);
         count ++;
@@ -573,6 +616,7 @@ AOEbed::AOEbed(std::string filename,openType oType) {
     }
 }
 
+
 void AOEbed::loadBlock(int size)
 {
     m_content.clear();
@@ -595,7 +639,6 @@ void AOEbed::loadBlock(int size)
 
 AOEbed::AOEbed(std::vector <AOE_entry> content) {
     int index(0);
-    m_content = std::vector <AOE_entry>();
     for(const auto &entry: content) {
         m_content.push_back(entry);
         std::array <int, 2> pos;
@@ -653,7 +696,7 @@ AOE_entry AOEbed::readAOEline() {
                     tZero += tchar;
                     break;
                 default:
-                    std::cout << "Skipping chars" << std::endl;
+                    std::cout << "Skipping chars\r";
             }
         } else if(tchar == '\t') {
             col ++;
@@ -761,13 +804,18 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlapLowMem (vcf& entr
 }
 
 std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS, bool fullT) {
-    std::vector <bed_entry> results;
+    std::vector <bed_entry> results({});
     std::map <bed_entry, std::vector <bed_entry>> matches = overlap(source, toIntersect); // return map bed"toIntersect" : [bed"source"]
     for(const auto &entryToVector: matches) { // entryToVector is from toIntersect
         for(const auto &entry: entryToVector.second) { // entry is from source bed
             int status(entryToVector.first.isInside(entry));
             int start(0);
             int stop(0);
+
+//             std::cout << entryToVector.first.getStringEntry() << std::endl;
+//             std::cout << entry.getStringEntry() << std::endl;
+//             std::cout << status << std::endl;
+//             std::cout << fullS << " " << fullT << std::endl;
             switch(status) {
                 case 1: // stop of entry is inside int && start of entry is outside
                     if(!fullT && !fullS) {
@@ -796,6 +844,8 @@ std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, s
                 default:
                     throw std::logic_error("Cant find non-overlapping ints");
             }
+//             std::cout << start << std::endl;
+//             std::cout << stop << std::endl;
             if(start != 0 || stop != 0) {
                 results.push_back(bed_entry(entry.getChrom(), start, stop, entryToVector.first.getName(), entry.getScore(), entryToVector.first.getStrand()));
             }
@@ -809,7 +859,7 @@ std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI,
     for(const auto &chrom: inputFile.getChroms()) {
         std::vector <bed_entry> input = inputFile.getBedByID(chrom);
         std::vector <bed_entry> converted(convertToBed(getBedByID(chrom)));
-        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF); // if fullI set : return only
+        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF); // if fullI set : return only full matchs
         std::vector <AOE_entry> intersect = convertBack(tmp_intersect);
         results.insert(results.end(), intersect.begin(), intersect.end());
     }
@@ -903,6 +953,12 @@ void AOEbed::writeToFile(std::string filename, int limit)
 std::vector <AOE_entry> AOEbed::getEntries() {
     return m_content;
 }
+
+void AOEbed::dumpAOE()
+{
+    dumpAOE(size());
+}
+
 
 void AOEbed::dumpAOE(int limit) {
     std::cout << "Dumping..." << std::endl;

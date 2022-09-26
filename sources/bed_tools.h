@@ -23,7 +23,7 @@ public:
     std::string getName() const;
     std::string getIDFull() const;
     std::string getChrom() const;
-    std::string getStringEntry() const;
+    std::string getStringEntry(char sep = '\t') const;
     int getScore() const;
     char getStrand() const;
 
@@ -70,10 +70,15 @@ public:
     bed_entry readBedLine(int count);
     std::map <std::string, bed_entry> getBedByID(std::string id) const;
     void writeBedLine(bed_entry entry);
+    void writeFullBed();
+    void setupAndWriteBed(std::string filename);
     bed_entry getBedEntry(int index);
     std::vector <bed_entry> getEntries() const;
     bool isEOF() const;
+    void updateTags();
+    bed_entry getBedByTag(std::string tag);
 protected:
+    std::map <std::string, int> m_tags;
     std::vector <bed_entry> m_content;
     bool m_isInit;
     std::ifstream m_input;
@@ -84,7 +89,7 @@ protected:
 class sorted_bed: public bed {
 public:
     sorted_bed();
-    sorted_bed(std::string filename);
+    sorted_bed(std::string filename, int skip = 0);
     sorted_bed(std::vector <bed_entry> content);
 
   // functions
@@ -102,7 +107,7 @@ protected:
     std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
 
   // internal functions
-    std::map <bed_entry, std::vector<bed_entry>> overlap ( std::vector <bed_entry> currentInts, std::vector <bed_entry> pos);
+    std::map< bed_entry, std::vector< bed_entry > > overlap(const std::vector< bed_entry > intsA, const std::vector< bed_entry > intsB);
     std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS = false, bool fullT = false);
 };
 
@@ -127,6 +132,7 @@ public:
     std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);
     void writeToFile(std::string filename, int limit = 0);
     void dumpAOE(int limit);
+    void dumpAOE();
     void loadBlock(int size);
     std::vector <AOE_entry> getEntries();
 private:

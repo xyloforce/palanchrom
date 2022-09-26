@@ -6,8 +6,13 @@ args = commandArgs(trailingOnly=TRUE) # input, output
 # args = c("/home/fabien/Documents/20200228_interSmallNFR.dat", "test_output.pouet")
 data = read_tsv(args[1], col_names = FALSE)
 
-min_intra = args[3]
-min_extra = args[4]
+if(length(args) > 2) {
+    min_intra = args[3]
+    min_extra = args[4]
+} else {
+    min_extra = 0
+    min_intra = 0
+}
 
 # data = read_tsv("../Data/20200228_interSmallNFR.dat", col_names = FALSE)
 # data = data[data$X4 - data$X3 > 1000,]

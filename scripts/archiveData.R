@@ -35,14 +35,19 @@ reverseMutation = function(x) {
 	return(.result)
 }
 
-print("get all bases on one side")
-muts[muts$type == "R","mutation"] = unlist(apply(muts[muts$type == "R",], MARGIN = 1, FUN = reverseMutation))
+if(nrow(muts[muts$type == "R",]) > 0) {
+	print("get all bases on one side")
+	muts[muts$type == "R","mutation"] = unlist(apply(muts[muts$type == "R",], MARGIN = 1, FUN = reverseMutation))
+	bases[bases$type == "R","base"] = unlist(apply(bases[bases$type == "R",], MARGIN = 1, FUN = reverseBase))
+	bases = aggregate(bases$comptage, by = list(bases$position, bases$base), FUN = sum, na.rm = TRUE)
+	colnames(bases) = c("position", "base", "comptage")
+} else {
+	print("only one side provided")
+}
 muts = aggregate(muts$comptage, by = list(muts$position, muts$mutation), FUN = sum, na.rm = TRUE)
 colnames(muts) = c("position", "mutation", "comptage")
-bases[bases$type == "R","base"] = unlist(apply(bases[bases$type == "R",], MARGIN = 1, FUN = reverseBase))
 bases = aggregate(bases$comptage, by = list(bases$position, bases$base), FUN = sum, na.rm = TRUE)
 colnames(bases) = c("position", "base", "comptage")
-
 #### MERGE TO CREATE TOTAL DF ########################################################################
 
 print("creating total df")
