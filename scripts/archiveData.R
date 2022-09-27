@@ -62,6 +62,7 @@ head(total)
 if (unique(-225:5005 %in% total$position)) {
 	print("ok")
 } else {
+	total = total[total$position < 5005 & total$position > -225,]
 	tmp = data.frame(position = -225:5005, comptage=0, mutations=0)
 	tmp[match(total$position, tmp$position),] = total
 # 	tmp[is.na(tmp)] = 0
