@@ -124,8 +124,10 @@ public:
     std::vector <AOE_entry> getBedByID(std::string id);
     AOE_entry getEntryByIndex(int index) const;
     std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false);
+    std::vector <AOE_entry> getIntersects(std::vector <bed_entry> input, std::vector <AOE_entry> frame, bool fullI = false, bool fullF = false);
     std::vector <AOE_entry> getIntersects(bed& inputFile, bool fullI = false, bool fullF = false);
-    std::map <std::string, std::map <int, int>> getCounts(bed &inputFile, bool fullI = false, bool fullF = false, std::string filename = "");
+    std::map <int, int> countVector(std::vector <AOE_entry> input);
+//     std::map <std::string, std::map <int, int>> getCounts(bed &inputFile, bool fullI = false, bool fullF = false, std::string filename = "");
     void cutToMask(bed &mask, bool fullI = false, bool fullF = false);
     void cutToMask(sorted_bed &mask, bool fullI = false, bool fullF = false);
     std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source) const;
@@ -136,6 +138,7 @@ public:
     void dumpAOE();
     void loadBlock(int size);
     std::vector <AOE_entry> getEntries();
+    std::vector <AOE_entry> getSortedEntries();
 private:
     std::vector <AOE_entry> m_content;
     std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;

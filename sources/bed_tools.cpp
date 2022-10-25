@@ -866,6 +866,13 @@ std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI,
     return results;
 }
 
+std::vector<AOE_entry> AOEbed::getIntersects(std::vector<bed_entry> input, std::vector<AOE_entry> frame, bool fullI, bool fullF)
+{
+    std::vector <AOE_entry> results;
+    return(convertBack(intersect(input, convertToBed(frame))));
+}
+
+
 std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool fullF) {
     std::vector <AOE_entry> results;
     std::vector <bed_entry> converted;
@@ -898,14 +905,9 @@ std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool f
     return results;
 }
 
-void addMaps(std::map <int, int> &refMap, std::map <int, int> mapToAdd) {
-    for(const auto& key: mapToAdd) {
-        refMap[key.first] = refMap[key.first] + key.second;
-    }
-}
-
-std::map <int, int> countVector(std::vector <AOE_entry> input) {
+std::map <int, int> AOEbed::countVector(std::vector <AOE_entry> input) {
     std::map <int, int> result;
+    result.clear();
     for(const AOE_entry& entry: input) {
         int pos(entry.getStart());
         while(pos < entry.getStop()) {
@@ -915,107 +917,6 @@ std::map <int, int> countVector(std::vector <AOE_entry> input) {
     }
     return result;
 }
-
-std::map <std::string, std::map <int, int>> AOEbed::getCounts(bed& inputFile, bool fullI, bool fullF, std::string filename)
-{
-    std::vector <bed_entry> input;
-    std::vector <AOE_entry> AOEs;
-    std::string id;
-    std::map <int, int> tmp_count;
-    std::map <std::string, std::map <int, int>> counts;
-    int count(0);
-    std::string last_chrom("");
-    AOE_entry currentA;
-    int currentAI(0);
-    bool skip(false);
-    bool next(true);
-
-    std::ofstream file_output;
-    if(filename != "") {
-        file_output = std::ofstream(filename);
-    }
-//     count ++;
-
-    while(!inputFile.isEOF()) {
-        bed_entry entry = inputFile.readBedLine(count);
-        count ++;
-
-        if(last_chrom != entry.getChrom()) {
-            last_chrom = entry.getChrom();
-//             std::cout << last_chrom << "\r";
-            AOEs = getBedByID(last_chrom);
-            if(AOEs.size() > 0) {
-                sort(AOEs.begin(), AOEs.end());
-                currentA = AOEs[0];
-                currentAI = 1;
-                skip = false;
-            } else {
-                skip = true;
-            }
-        }
-        do { // needed to ensure that an entry bigger than currentA isn't skipped
-            if(!skip) { // skip if you're past the end of the AOEs but there is still bed entries OR empty chrom
-                    if(entry.getStop() < currentA.getStart()) { // if entry is smaller than currentA drop it
-                    next = true;
-                } else if(entry.getStart() > currentA.getStop()) { // if entry is bigger you need first to intersect then to change currentA then recheck
-                    // intersect selected then change currentA then recheck
-                    id = currentA.getChrom() + std::to_string(currentA.getStart()) + std::to_string(currentA.getStop());
-                    std::cout << id << "\r";
-                    tmp_count = countVector(convertBack(intersect(input, convertToBed(std::vector <AOE_entry> {currentA}), fullI, fullF)));
-                    if(filename == "") {
-                        counts[id] = tmp_count;
-                    } else {
-                        for(const auto& value: tmp_count) {
-                            file_output << id << "\t" << value.first << "\t" << value.second << "\n";
-                        }
-                    }
-
-                    input.clear();
-                    if(currentAI < AOEs.size()) {
-                        currentA = AOEs[currentAI];
-                        currentAI ++;
-                        next = false;
-                    } else {
-                        next = true;
-                        skip = true;
-                    }
-
-                } else { // if entry isn't in these two cases it probably overlaps
-                    input.push_back(entry);
-                    next = true;
-                }
-            }
-
-//             std::map <AOE_entry, std::vector <bed_entry>> matchs;
-//             while(entry.getChrom() == last_chrom && count % 100000 != 0) {
-//                 input.push_back(entry);
-//                 entry = inputFile.readBedLine(count);
-//                 count ++;
-//             }
-        } while(!next);
-
-//         for(const auto &entry: getBedByID(last_chrom)) {
-//             id = entry.getChrom() + std::to_string(entry.getStart()) + std::to_string(entry.getStop());
-//             std::cout << id << "\r";
-//             std::vector <bed_entry> tmp_bed;
-//             std::vector <bed_entry> tmp_intersect = intersect(input, convertToBed(std::vector <AOE_entry> {entry}), fullI, fullF);
-//             std::vector <AOE_entry> intersected = convertBack(tmp_intersect);
-//             tmp_count = countVector(intersected);
-//             addMaps(counts[id], tmp_count);
-//         }
-//         converted = convertToBed(getBedByID(last_chrom));
-//
-//         input.clear();
-//         last_chrom = entry.getChrom();
-//         std::cout << count << " \r";
-//         count ++;
-    }
-    // we loose last entry, too bad
-    std::cout << std::endl;
-    return counts;
-}
-
-
 
 std::vector <bed_entry> AOEbed::convertToBed(std::vector <AOE_entry> source) const {
     std::vector <bed_entry> currentConv;
@@ -1072,6 +973,14 @@ void AOEbed::writeToFile(std::string filename, int limit)
 std::vector <AOE_entry> AOEbed::getEntries() {
     return m_content;
 }
+
+std::vector<AOE_entry> AOEbed::getSortedEntries()
+{
+    std::vector <AOE_entry> tmp = m_content;
+    sort(tmp.begin(), tmp.end());
+    return tmp;
+}
+
 
 void AOEbed::dumpAOE()
 {

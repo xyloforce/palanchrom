@@ -71,11 +71,14 @@ int main(int argc, char* argv[]) {
     while(!inputFile.isEOF()) {
         inputFile.loadBlock(block_quantity);
         std::vector <fasta_entry> toCount = source.getSeqFromInts(inputFile);
+        std::vector <AOE_entry> sorted_entries = inputFile.getSortedEntries();
         for(int i(0); i < toCount.size(); i ++) {
 //             std::cout << toCount[i].getHeader() << std::endl;
             std::string sequence = toCount[i].getUppercaseSequence();
             for(int j(0); j < sequence.size(); j++) {
-                counts[inputFile.getEntryByIndex(i).getRelativePos(toCount[i].getPos(j))][sequence[j]][inputFile.getEntryByIndex(i).getType()] ++;
+//                 std::cout << inputFile.getSortedEntries()[i].getStringEntry() << "  " << inputFile.getSortedEntries()[i].getZero() << "  " << j << "  "<< sequence[j] << "  " << inputFile.getSortedEntries()[i].getRelativePos(toCount[i].getPos(j)) << std::endl;
+//                 std::cout << toCount[i].getHeader() << std::endl;
+                counts[sorted_entries[i].getRelativePos(toCount[i].getPos(j, 0))][sequence[j]][sorted_entries[i].getType()] ++;
             }
             if(i / toCount.size() % 10 == 0.0) {
                 std::cout << i << "\r";

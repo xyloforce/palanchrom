@@ -17,6 +17,7 @@ private:
     char m_strand;
 public:
     char getStrand() const;
+    void setStrand(char strand);
     void setStart(int start);
     void setEnd(int stop);
     int getStart() const;
@@ -63,9 +64,10 @@ public:
     std::string getMinusStrand();
     std::string getChrom();
     char getStrand();
+    void setStrand(char strand);
     void trimSequence(int size, int end);
     void write_fasta_entry(std::ofstream& outputFile, fastaType type);
-    long getPos(long pos_sequence) const;
+    long getPos(long pos_sequence, int offset = 1) const;
     fasta_entry subsetEntry(int begin, int end) const;
     int getSize() const;
     void editSeq(std::string edit, int start, int end);

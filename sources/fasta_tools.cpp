@@ -92,6 +92,12 @@ char sequence::getChar(int index) const {
     return m_sequence[index];
 }
 
+void header::setStrand(char strand)
+{
+    m_strand = strand;
+}
+
+
 fasta_entry::fasta_entry(std::string inputSeq, std::string id, int start = 0, int stop = 0, char strand = 'U', fastaType type = fastaType::standard)
 {
     m_sequence = sequence(inputSeq);
@@ -204,13 +210,13 @@ void fasta_entry::write_fasta_entry(std::ofstream& outputFile, fastaType type)
     outputFile << m_sequence.to_string();
 }
 
-long fasta_entry::getPos(long pos_sequence) const
+long fasta_entry::getPos(long pos_sequence, int offset) const
 {
     // beware : were 0-based and need to return 1-based pos
     // for negative strand its ok bc the last pos is not included so it's like zero
     // for plus strand need to add one
     if(m_header.getStrand() == '+') {
-        return (m_header.getStart() + pos_sequence +1);
+        return (m_header.getStart() + pos_sequence + offset);
     } else if(m_header.getStrand() == '-') {
         return (m_header.getEnd() - pos_sequence);
     } else {
@@ -232,8 +238,9 @@ fasta_entry fasta_entry::subsetEntry(int begin, int end) const
     try {
         sequence tSequence = m_sequence.subsetSequence(begin, end);
         header tHeader = m_header;
+        // FIXME beware : works only for 0-based genomic sequence (no strand either)
         tHeader.setStart(m_header.getStart() + begin);
-        tHeader.setEnd(m_header.getEnd() - end);
+        tHeader.setEnd(m_header.getStart() + end);
         tEntry = fasta_entry(tSequence, tHeader, m_type);
     } catch (std::out_of_range) {
         std::cout << "Catched exception, return empty entry" << std::endl;
@@ -322,13 +329,21 @@ fasta_entry fasta::getFastaById(std::string id) const {
     }
 }
 
+void fasta_entry::setStrand(char strand)
+{
+    m_header.setStrand(strand);
+}
+
+
 fasta_entry fasta::getSubset(bed_entry entry) {
     fasta_entry entryF = getFastaById(entry.getChrom());
     return entryF.getSubset(entry);
 }
 
 fasta_entry fasta_entry::getSubset(bed_entry entry) {
-    return subsetEntry(entry.getStart(), entry.getStop());
+    fasta_entry entryF(subsetEntry(entry.getStart(), entry.getStop()));
+    entryF.setStrand(entry.getStrand());
+    return entryF;
 }
 
 fasta_entry fasta::getSubset(vcf_entry entry) {
