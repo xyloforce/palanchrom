@@ -26,8 +26,10 @@ public:
     std::string getStringEntry(char sep = '\t') const;
     int getScore() const;
     char getStrand() const;
+    std::string getTmpName() const;
 
   // setters
+    void setTmpName(std::string tmp_name);
     void setName(std::string name);
     void setStrand(char strand);
 
@@ -39,6 +41,7 @@ public:
     bool operator <= (const bed_entry& entry) const;
 
 protected:
+    std::string m_tmp_name;
     std::string m_chrom;
     int m_start;
     int m_stop;
@@ -105,10 +108,9 @@ public:
 
 protected:
     std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
-
   // internal functions
     std::map <bed_entry, std::vector< bed_entry >> overlap(const std::vector< bed_entry > intsA, const std::vector< bed_entry > intsB);
-    std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS = false, bool fullT = false);
+    std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS = false, bool fullT = false, bool nameAfterSource = false);
 };
 
 class AOEbed: public sorted_bed {
@@ -123,7 +125,7 @@ public:
     std::map <bed_entry, std::vector<AOE_entry>> getOverlapLowMem (vcf& entries);
     std::vector <AOE_entry> getBedByID(std::string id);
     AOE_entry getEntryByIndex(int index) const;
-    std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false);
+    std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false, bool nameAfterInput = false);
     std::vector <AOE_entry> getIntersects(std::vector <bed_entry> input, std::vector <AOE_entry> frame, bool fullI = false, bool fullF = false);
     std::vector <AOE_entry> getIntersects(bed& inputFile, bool fullI = false, bool fullF = false);
     std::map <int, int> countVector(std::vector <AOE_entry> input);
@@ -139,6 +141,7 @@ public:
     void loadBlock(int size);
     std::vector <AOE_entry> getEntries();
     std::vector <AOE_entry> getSortedEntries();
+    std::vector <std::string> getChroms();
 private:
     std::vector <AOE_entry> m_content;
     std::map <std::string, std::map <std::array <int, 2>, int>> m_indexes;

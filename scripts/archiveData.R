@@ -88,8 +88,12 @@ for(base in unique(muts$ancestral)) {
         currentBDF[match(muts[muts$mutation == mut, "position"], currentBDF$position),mut] = muts[muts$mutation == mut, "comptage"]
         relative = paste("relative_", mut, sep= "")
         currentBDF[,relative] = currentBDF[,mut] / currentBDF$comptage * 100
+        errorBar = paste("error_", mut, sep= "")
+        currentBDF[,errorBar] = sqrt(currentBDF[,relative]*(1 - currentBDF[,relative])) / currentBDF$comptage
         mean10m = paste("mean10_", mut, sep = "")
         currentBDF[,mean10m] = mean10pb(currentBDF[,relative])
+        error10m = paste("error10_", mut, sep = "")
+        currentBDF[,error10m] = mean10pb(currentBDF[,errorBar])
     }
 #     currentBDF[is.na(currentBDF)] = 0
     write_tsv(currentBDF[currentBDF$position %in% -220:5000,], paste(base, "_mutations.tsv", sep = ""))

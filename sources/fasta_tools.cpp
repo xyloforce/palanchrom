@@ -324,8 +324,8 @@ fasta_entry fasta::getFastaById(std::string id) const {
     if(it != m_indexes.end()) {
         return m_content[it->second];
     } else {
-        std::cout << "id : " << id << std::endl;
-        throw std::logic_error("id not found");
+        std::cout << "Warning : id " << id << " not found, returning empty entry" << std::endl;
+        return fasta_entry();
     }
 }
 

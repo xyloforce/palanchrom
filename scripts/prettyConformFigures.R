@@ -24,8 +24,9 @@ source("~/setThemePoster.R")
 
 ## load muts according to wildcard
 
+print("loading df muts")
 filelist = list.files(path = args[1], "*_mutations.tsv", full.names = TRUE)
-df = read_tsv(filelist[1], show_col_types = FALSE)
+df_source = read_tsv(filelist[1], show_col_types = FALSE)
 
 if(length(args) > 2) {
 	xlim1 = as.numeric(args[3])
@@ -38,24 +39,36 @@ if(length(args) > 2) {
 for(filepath in filelist[2:length(filelist)]) {
 	tmp = read_tsv(filepath, show_col_types = FALSE)
 	tmp$position = NULL
-	df = cbind(df, tmp)
+	df_source = cbind(df_source, tmp)
 }
 
 ## keep only "mean" ones
 
-df = cbind(df$position, df[, grep("mean10", colnames(df))])
+print("selecting columns")
+df = cbind(df_source$position, df_source[, grep("mean10", colnames(df_source))])
+df2 = cbind(df_source$position, df_source[, grep("error10", colnames(df_source))])
 
 ## rename cols to make them readable
 
+print("renaming cols")
 col_names_new = sapply(str_split(colnames(df[,2:ncol(df)]), "_"), FUN = function(x) x[2])
 colnames(df) = c("position", col_names_new)
+col_names_new = sapply(str_split(colnames(df2[,2:ncol(df2)]), "_"), FUN = function(x) x[2])
+colnames(df2) = c("position", col_names_new)
+head(df2)
 
 ## reshape to ggplot them
 
+print("reshaping")
 df = reshape(data = df, idvar = "position", varying = c(colnames(df[,2:ncol(df)])), v.name = c("mean10"), times = c(colnames(df[,2:ncol(df)])), direction = "long")
 colnames(df) = c("position", "mutation", "mean10")
 df = cbind(df, str_split_fixed(df$mutation, pattern ="", n=2))
 colnames(df) = c("position", "mutation", "mean10", "ancestral", "reference")
+df2 = reshape(data = df2, idvar = "position", varying = c(colnames(df2[,2:ncol(df2)])), v.name = c("error10"), times = c(colnames(df2[,2:ncol(df2)])), direction = "long")
+colnames(df2) = c("position", "mutation", "error10")
+df$error10 = df2[match(df$position, df2$position), "error10"]
+df$ymax = df$mean10 + df$error10
+df$ymin = df$mean10 - df$error10
 
 df$group = sapply(df$mutation, FUN = function(x) switch(x, "AT" = 2, "TA" = 2, "AG" = 1, "TC" = 1, "AC" = 3, "TG" = 3, "GC" = 6, "CG" = 6, "GT" = 5, "CA" = 5, "GA" = 4, "CT" = 4))
 
@@ -69,11 +82,13 @@ correct_labels <- c("3" = "A→C - T→G (transversion)",
 
 df$color = sapply(df$mutation, FUN = function(x) switch(x, "AT" = "1", "TA" = "2", "AG" = "3", "TC" = "4", "AC" = "1", "TG" = "2", "GC" = "2", "CG" = "1", "GT" = "2", "CA" = "1", "GA" = "4", "CT" = "3"))
 
+print("plotting")
 df = df[df$position > xlim1 & df$position < xlim2,]
 # limits = c(0.0001, 0.01), breaks = seq(0.0001, 0.01, by = 0.0015),
 # how to add breaks AND scales free ?
 plot1 = ggplot(data = df[df$position %in% -50:500,], aes(y = mean10, x = position, color = color)) +
 	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line(size = 1) +
+	geom_errorbar(aes(ymin = ymin, ymax = ymax)) +
 	ylab("% de mutation lissés sur 10 pb") +
 	scale_color_discrete(type = c("#9C310B", "#FF713D", "#009C7D", "#20E8C0")) +
 	ggtitle("Taux de mutation complémentaires (le premier est le plus sombre)") +
