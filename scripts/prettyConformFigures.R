@@ -57,8 +57,6 @@ col_names_new = sapply(str_split(colnames(df2[,2:ncol(df2)]), "_"), FUN = functi
 colnames(df2) = c("position", col_names_new)
 df2 = df2[df2$position %% 10 == 0,]
 
-head(df2)
-
 ## reshape to ggplot them
 
 print("reshaping")
