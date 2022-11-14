@@ -300,6 +300,7 @@ fasta::fasta()
 }
 
 fasta::fasta(std::string filename, openType type, fastaType typeH) {
+    std::cout << "opening " << filename << std::endl;
     int index(0);
     m_type = typeH;
     m_read = type;
@@ -310,7 +311,7 @@ fasta::fasta(std::string filename, openType type, fastaType typeH) {
             m_content.push_back(entry);
             m_indexes[entry.getChrom()] = index;
             index ++;
-            std::cout << index << "     \r" << std::flush;
+            std::cout << index << "\r";
         }
     } else if(type == openType::read_line) {
         m_input = std::ifstream(filename);

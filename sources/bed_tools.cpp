@@ -1007,7 +1007,7 @@ void AOEbed::dumpAOE(int limit) {
     std::cout << "Dumping..." << std::endl;
     writeToFile("dump.AOE", limit);
     m_content.erase(m_content.begin(), m_content.begin() + limit);
-    if(limit != size()) {
+    if(size() != 0) {
         std::cout << "Updating index..." << std::endl;
         m_indexes = std::map <std::string, std::map <std::array <int, 2>, int>>();
         for(int i(0); i < m_content.size(); i++) {
