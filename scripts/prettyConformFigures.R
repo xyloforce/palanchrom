@@ -47,7 +47,6 @@ for(filepath in filelist[2:length(filelist)]) {
 print("selecting columns")
 df = cbind(df_source$position, df_source[, grep("mean10", colnames(df_source))])
 df2 = cbind(df_source$position, df_source[, grep("error10", colnames(df_source))])
-df2 = df2[df2$position %% 10 == 0,]
 
 ## rename cols to make them readable
 
@@ -56,6 +55,8 @@ col_names_new = sapply(str_split(colnames(df[,2:ncol(df)]), "_"), FUN = function
 colnames(df) = c("position", col_names_new)
 col_names_new = sapply(str_split(colnames(df2[,2:ncol(df2)]), "_"), FUN = function(x) x[2])
 colnames(df2) = c("position", col_names_new)
+df2 = df2[df2$position %% 10 == 0,]
+
 head(df2)
 
 ## reshape to ggplot them
