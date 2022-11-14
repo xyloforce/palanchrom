@@ -47,6 +47,7 @@ for(filepath in filelist[2:length(filelist)]) {
 print("selecting columns")
 df = cbind(df_source$position, df_source[, grep("mean10", colnames(df_source))])
 df2 = cbind(df_source$position, df_source[, grep("error10", colnames(df_source))])
+df2 = df2[df2$position %% 10 == 0,]
 
 ## rename cols to make them readable
 
