@@ -76,7 +76,7 @@ public:
     fasta_entry getSubset(bed_entry entry);
     fasta_entry getSubset(vcf_entry entry);
     std::vector <bed_entry> matchPattern(std::string pattern) const;
-    std::vector <bed_entry> matchPatterns(std::string pattern) const;
+    std::vector <bed_entry> matchPatterns(std::string patter, bool captureGroup = false) const;
     std::vector <bed_entry> reverseInts (std::vector <bed_entry> ints) const;
     bool isValid(vcf_entry entry);
     bool operator == (const fasta_entry& entry) const;

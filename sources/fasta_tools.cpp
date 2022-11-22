@@ -613,17 +613,23 @@ std::vector <bed_entry> fasta_entry::matchPattern(std::string pattern) const {
     return values;
 }
 
-std::vector <bed_entry> fasta_entry::matchPatterns(std::string pattern) const {
+std::vector <bed_entry> fasta_entry::matchPatterns(std::string pattern, bool captureGroup) const {
     std::string sequence(m_sequence.getUppercaseSequence());
     std::regex regex(pattern);
     std::vector <bed_entry> results;
 
-    std::regex_iterator <std::string::iterator> rit (sequence.begin(), sequence.end(), regex);
-    std::regex_iterator <std::string::iterator> rend;
+    std::sregex_iterator rit (sequence.begin(), sequence.end(), regex);
+    std::sregex_iterator rend;
 
+    std::string match(".");
     while(rit != rend) {
-        int position = rit -> position();
-        std::string match = rit -> str();
+        const std::smatch smatch = *rit;
+        int position = smatch.position();
+        if(captureGroup) {
+            match = smatch.str(1);
+        } else {
+            match = smatch.str();
+        }
         int length = position + match.size();
         bed_entry entry(m_header.getID(), position, length, match, 0, '.');
         results.push_back(entry);
