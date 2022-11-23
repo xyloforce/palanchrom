@@ -86,7 +86,7 @@ print("plotting")
 df = df[df$position > xlim1 & df$position < xlim2,]
 # limits = c(0.0001, 0.01), breaks = seq(0.0001, 0.01, by = 0.0015),
 # how to add breaks AND scales free ?
-plot1 = ggplot(data = df[df$position %in% -50:500,], aes(y = mean10, x = position, color = color)) +
+plot1 = ggplot(data = df, aes(y = mean10, x = position, color = color)) +
 	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line(size = 1) +
 	geom_errorbar(aes(ymin = ymin, ymax = ymax)) +
 	ylab("% de mutation lissés sur 10 pb") +
@@ -104,7 +104,9 @@ filepath = list.files(path = args[1], "total.tsv", full.names = TRUE)
 
 total = read_tsv(filepath[1], show_col_types = FALSE)
 
-plot2 = ggplot(data = total[total$position %in% -50:500,], aes(x=position, y = mean10)) + geom_line(size = 1) +
+total = total[total$position > xlim1 & total$position < xlim2,]
+
+plot2 = ggplot(data = total, aes(x=position, y = mean10)) + geom_line(size = 1) +
 	ylab("% de mutation lissés sur 10 pb") +
 	ggtitle("Taux de mutation global") +
 	scale_x_continuous(limits = c(xlim1, xlim2), sec.axis = dup_axis(labels = NULL, name = NULL)) +
