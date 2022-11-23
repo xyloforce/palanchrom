@@ -67,7 +67,7 @@ rule intersect:
         expand(config["result_folder"] + "/{ref}Lift{species}.sorted.bed", ref = config["speciesA"], species = [config["speciesB"],] + config["outgroups"])
     output:
         config["result_folder"] + "/intersected.bed"
-    shadow: "shallow"
+    #shadow: "shallow"
     shell:
         """
         touch {output}
