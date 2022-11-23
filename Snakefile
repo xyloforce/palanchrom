@@ -98,10 +98,12 @@ rule getFastas:
     wildcard_constraints:
         species="[A-Za-z\d]+"
     shadow: "shallow"
+    params:
+        output = config["result_folder"]
     shell:
         """
-        wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz' -P data/
-        gunzip data/{wildcards.species}.fa.gz
+        wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz' -P {params.output}
+        gunzip {params.output}/{wildcards.species}.fa.gz
         """
 
 rule getSeqsFromInt:
