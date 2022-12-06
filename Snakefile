@@ -193,7 +193,7 @@ rule countMuts:
     resources:
         mem_cons = 25
     shell:
-        "./bin/countMuts {input} {output}"
+        "./bin/countMuts {input} {output} TRUE"
 
 rule countBases:
     input:
@@ -206,7 +206,7 @@ rule countBases:
     resources:
         mem_cons = 50
     shell:
-        "./bin/countBases {input} {output}"
+        "./bin/countBases {input} {output} TRUE FALSE 10000"
 
 rule archivate:
     input:
