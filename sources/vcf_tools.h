@@ -49,7 +49,7 @@ public:
     vcf_entry readVCFLine(bool &warned);
     // std::string isMuted(std::string chrom, int pos, std::string ref_bases);
     std::vector <vcf_entry> getVCFByChrom(std::string chrom);
-    std::vector <vcf_entry> readVCFByChrom(std::string chrom);
+    std::vector <vcf_entry> readVCFByChrom(std::string chrom, int limit = 0);
     std::vector <vcf_entry> getVCFEntries() const;
     std::vector <std::string> getChroms() const;
     vcf_entry getVCFEntry(int index);
@@ -58,6 +58,7 @@ public:
     bool isEOF() const;
     std::vector <bed_entry> convertToBed(std::vector <vcf_entry> entries);
     std::vector <bed_entry> convertToBed();
+    std::string checkChrom();
     void updateIndex();
 private:
     std::vector<vcf_entry> m_content;

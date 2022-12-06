@@ -298,30 +298,38 @@ std::vector<vcf_entry> vcf::getVCFByChrom(std::string chrom)
     return results;
 }
 
-std::vector <vcf_entry> vcf::readVCFByChrom(std::string chrom) {
+std::vector <vcf_entry> vcf::readVCFByChrom(std::string chrom, int limit) {
     bool warned = false;
     vcf_entry entry(readVCFLine(warned));
     std::vector <vcf_entry> results;
     int current(0);
     int count(0);
     if(entry.getChrom() == chrom) {
-        while(entry.getChrom() == chrom) {
+        while(entry.getChrom() == chrom && (limit == 0 || count < limit)) {
             results.push_back(entry);
             current = m_input.tellg();
-            vcf_entry entry(readVCFLine(warned));
+            entry = readVCFLine(warned);
             count ++;
             if(count % 10000 == 0) {
                 std::cout << count << "\r";
             }
-            std::cout << std::endl;
         }
         if(entry.getChrom() != chrom) {
             m_input.seekg(current, std::ios::beg);
         }
     } else {
+        std::cout << "Chrom asked is : " << chrom << " and entry is " << entry.getChrom() << std::endl;
         throw std::logic_error("ID found doesn't match current - either badly sorted or fasta entry without any ref");
     }
     return results;
+}
+
+std::string vcf::checkChrom() {
+    bool warned(true);
+    int current(m_input.tellg());
+    vcf_entry entry = readVCFLine(warned);
+    m_input.seekg(current, std::ios::beg);
+    return entry.getChrom();
 }
 
 std::vector <vcf_entry> vcf::getVCFEntries() const {

@@ -90,7 +90,7 @@ plot1 = ggplot(data = df, aes(y = mean10, x = position, color = color)) +
 	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line(size = 1) +
 	geom_errorbar(aes(ymin = ymin, ymax = ymax)) +
 	ylab("% de mutation lissés sur 10 pb") +
-	scale_color_discrete(type = c("#9C310B", "#FF713D", "#009C7D", "#20E8C0")) +
+	scale_color_discrete(type = c("#4a1835", "#ca4192", "#4a2e3e", "#96306c")) +
 	ggtitle("Taux de mutation complémentaires (le premier est le plus sombre)") +
 	scale_x_continuous(limits = c(xlim1, xlim2), sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
@@ -115,7 +115,6 @@ plot2 = ggplot(data = total, aes(x=position, y = mean10)) + geom_line(size = 1) 
 	theme_poster
 
 figure = plot_grid(plot1, plot2, labels = c("A", "B"), rel_widths = c(0.6, 0.3))
-# figure
 
 folder = args[2]
 

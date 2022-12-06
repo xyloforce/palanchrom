@@ -8,12 +8,15 @@
 
 int main(int argc, char* argv[]) {
     if(argc < 4) {
-        std::cout << "Unsufficient number of args" << std::endl;
-        throw std::length_error("need vcf, bed, fasta input and fasta output");
+        std::cout << "Unsufficient number of args : need vcf, bed, fasta input and fasta output" << std::endl;
+        exit(1);
     }
-    
     std::cout << "Loading vcf... " << std::endl;
-    vcf mutations(argv[1], read);
+    vcf mutations(argv[1], read_line);
+    bool warned = true;
+    mutations.readVCFLine(warned); // skip two
+    mutations.readVCFLine(warned); // first lines
+
     std::cout << "Loading bed... " << std::endl; 
     sorted_bed intervals(argv[2]);
     std::cout << "Started analysis" << std::endl;
@@ -45,27 +48,30 @@ int main(int argc, char* argv[]) {
             }
         }
         count = 0;
-        std::vector <vcf_entry> currentVCF = mutations.getVCFByChrom(entry.getChrom());
-        for(const auto &VCFentry : currentVCF) {
-            temp = "";
-            count ++;
-            // check old base
-            int posMut = VCFentry.getPos();
-            posMut --; // bc vcf are 1-based
-            std::string strBase = "";
-            strBase += sequence[posMut];
+        std::vector <vcf_entry> currentVCF;
+        do {
+            currentVCF = mutations.readVCFByChrom(entry.getChrom(), 100000);
+            for(const auto &VCFentry : currentVCF) {
+                temp = "";
+                count ++;
+                // check old base
+                int posMut = VCFentry.getPos();
+                posMut --; // bc vcf are 1-based
+                std::string strBase = "";
+                strBase += sequence[posMut];
 
-            if(toUpper(strBase) == toUpper(VCFentry.getRef())) {
-                sequence[posMut] = VCFentry.getAlternate()[0][0]; // get alternate is vector of string but in this case we can safely assume that it's only one mut by pos;
-            } else {
-                std::cout << "Ref is : " << VCFentry.getRef() << " and current is : " << sequence.substr(posMut -2, 4) << " at pos : " << posMut << " or as in vcf " << VCFentry.getPos() << std::endl;
-                throw std::logic_error("Probable index issue");
+                if(toUpper(strBase) == toUpper(VCFentry.getRef())) {
+                    sequence[posMut] = VCFentry.getAlternate()[0][0]; // get alternate is vector of string but in this case we can safely assume that it's only one mut by pos;
+                } else {
+                    std::cout << "Ref is : " << VCFentry.getRef() << " and current is : " << sequence.substr(posMut, 1) << " at pos : " << posMut << " or as in vcf " << VCFentry.getPos() << std::endl;
+                    throw std::logic_error("Probable index issue");
+                }
+                if(count % 100 == 0) {
+                    std::cout << count << "\r";
+                }
+
             }
-            if(count % 100 == 0) {
-                std::cout << count << "         \r";
-            }
-            
-        }
+        } while(mutations.checkChrom() == entry.getChrom());
         entry.editSeq(sequence, 0, entry.getSize());
         outputFasta.write_fasta_entry(entry);
     }

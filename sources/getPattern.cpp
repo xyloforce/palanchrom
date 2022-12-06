@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
         Nregex = constructRegex(pattern, true);
         std::cout << "regex : " << regex << std::endl;
         std::cout << "n regex : " << Nregex << std::endl;
-    } else if(argc >= 6){
+    } else if(argc >= 6) {
         regex = argv[1];
         std::cout << "matching : " << regex << std::endl;
         if (std::string(argv[5]) == "FALSE") {
