@@ -29,7 +29,6 @@ def getBarrierFile(wildcards):
     return config["barriers"][wildcards.ref]
 
 rule getNonOverlapInt:
-    shadow: "shallow"
     output:
         bedHO = config["result_folder"] + "/{ref}.lift.{species}.{ref}.overlap.bed",
         bedHNO = config["result_folder"] + "/{ref}.lift.{species}.{ref}.nonOverlap.bed",
@@ -97,7 +96,6 @@ rule getFastas:
         config["result_folder"] + "/{species}.fa"
     wildcard_constraints:
         species="[A-Za-z\d]+"
-    shadow: "shallow"
     params:
         output = config["result_folder"]
     shell:
@@ -189,7 +187,6 @@ rule countMuts:
         config["result_folder"] + "/{species}.filtered_ancestralBases.vcf"
     output:
         config["result_folder"] + "/{species}_{type}_muts.tsv"
-    shadow: "shallow"
     resources:
         mem_cons = 25
     shell:
@@ -202,7 +199,6 @@ rule countBases:
         config["result_folder"] + "/{species}_{type}_ints.bed"
     output:
         config["result_folder"] + "/{species}_{type}_bases.tsv"
-    shadow: "shallow"
     resources:
         mem_cons = 50
     shell:
