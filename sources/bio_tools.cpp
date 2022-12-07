@@ -30,7 +30,7 @@ char reverseComp(char base) {
 std::string reverseComp(std::string sequence) {
     std::string result;
     for(int i(0); i < sequence.size(); i++) {
-        result += reverseComp(sequence[i]);
+        result = reverseComp(sequence[i]) + result; // add letter at the beggining to reverse properly the sequence
     }
     return result;
 }
@@ -169,7 +169,7 @@ std::map <char, std::string> getArgs(std::vector<std::string> args) {
                 value = arg;
                 matched[parameter] = value;
             } else {
-                std::cout << "Value wasn't preceded by a parameter, so will be skipped" << std::endl;
+                std::cout << "Value wasn't preceded by a parameter, so will be skipped : " << value << std::endl;
             }
         }
     }

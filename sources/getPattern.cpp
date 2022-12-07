@@ -54,7 +54,11 @@ int main(int argc, char *argv[])
     }
 
     if(args.find('r') != args.end()) {
-        needToBeReversed = true;
+        if(reverseComp(regex) != regex) {
+            needToBeReversed = true;
+        } else {
+            std::cout << "Pattern is identical when reversed" << std::endl;
+        }
     }
 
     std::cout << "Reading input..." << std::endl;
