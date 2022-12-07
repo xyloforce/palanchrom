@@ -157,12 +157,12 @@ rule getInt:
     input:
         config["result_folder"] + "/{species}_ancestralGenome.fasta",
     output:
-        config["result_folder"] + "/{species}_{type}_ints.bed",
-        config["result_folder"] + "/{species}_n{type}_ints.bed"
+        bed1 = config["result_folder"] + "/{species}_{type}_ints.bed",
+        bed2 = config["result_folder"] + "/{species}_n{type}_ints.bed"
     params:
         pattern = "{type}"
     shell:
-        "./bin/getPattern {params} {input} {output}"
+        "./bin/getPattern -p {params} -f {input} -1 {output.bed1} -2 {output.bed2}"
 
 rule filterBarriers:
     input:

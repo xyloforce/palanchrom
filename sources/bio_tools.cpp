@@ -27,6 +27,14 @@ char reverseComp(char base) {
     }
 }
 
+std::string reverseComp(std::string sequence) {
+    std::string result;
+    for(int i(0); i < sequence.size(); i++) {
+        result += reverseComp(sequence[i]);
+    }
+    return result;
+}
+
 std::string toUpper(std::string lower) {
     std::string result = "";
     for(unsigned int i(0); i<lower.size(); i++) {
@@ -145,4 +153,25 @@ std::string constructRegex(std::string pattern, bool addN) {
         result += "]";
     }
     return result;
+}
+
+std::map <char, std::string> getArgs(std::vector<std::string> args) {
+    std::map <char, std::string> matched;
+    char parameter('\0');
+    std::string value;
+    for(const std::string &arg: args) {
+        // alternate btw - or letter
+        if(arg[0] == '-') {
+            parameter = arg[1];
+            value = "unset";
+        } else {
+            if(value == "unset") { // ensure that parameter isn't simply a leftover
+                value = arg;
+                matched[parameter] = value;
+            } else {
+                std::cout << "Value wasn't preceded by a parameter, so will be skipped" << std::endl;
+            }
+        }
+    }
+    return matched;
 }
