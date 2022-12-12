@@ -381,22 +381,15 @@ bed_entry bed::getBedByTag(std::string tag)
 std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( const std::vector <bed_entry> intsA, const std::vector <bed_entry> intsB)
 {
 // BEWARE : output map <bedFromB>:vector<bedFromA> !!
-//     std::sort(intsB.begin(), intsB.end());
     std::map <bed_entry, std::vector<bed_entry>> matchs;
     int A(0);
 
     for(const auto &entry : intsB) {
         bool found = false;
         int B(intsA.size() - 1);
-//         if(entry.getName() == "ENSG00000176148-55342") {
-//             std::cout << entry.getStringEntry() << std::endl;
-//         }
-//         std::cout << "-----" << std::endl;
         while(A <= B && !found) {
             unsigned int index((A+B)/2);
             int status = intsA[index].isInside(entry.getStart(), entry.getStop() - entry.getStart());
-//             std::cout << intsA[index].getStringEntry() << std::endl;
-//             std::cout << status << std::endl;
             switch(status) {
                 case 0:
                     B = index - 1;
@@ -435,12 +428,43 @@ std::map <bed_entry, std::vector<bed_entry>> sorted_bed::overlap ( const std::ve
                     found = true;
             }
         }
-//         if(entry.getName() == "ENSG00000176148-55342") {
-//             std::cout << found << std::endl;
-//         }
     }
     return matchs;
 }
+
+std::map<bed_entry, std::vector<bed_entry>> sorted_bed::overlap(const std::vector<bed_entry> intsA, const std::vector<bed_entry> intsB, bool stranded)
+{
+    std::map <bed_entry, std::vector <bed_entry>> results;
+    if(stranded) {
+        std::map <bed_entry, std::vector <bed_entry>> tmp;
+        std::vector <bed_entry> plusA, minusA, plusB, minusB;
+
+        for(const auto &entry: intsA) {
+            if(entry.getStrand() == '+') {
+                plusA.push_back(entry);
+            } else {
+                minusA.push_back(entry);
+            }
+        }
+
+        for(const auto &entry: intsB) {
+            if(entry.getStrand() == '+') {
+                plusB.push_back(entry);
+            } else {
+                minusB.push_back(entry);
+            }
+        }
+
+        results = overlap(plusA, plusB);
+        tmp = overlap(minusA, minusB);
+        results.insert(tmp.begin(), tmp.end());
+    } else {
+        results = overlap(intsA, intsB);
+    }
+
+    return results;
+}
+
 
 std::map <bed_entry, std::vector<bed_entry>> sorted_bed::getOverlap ( std::string chrom, std::vector <bed_entry> pos)
 {
@@ -733,7 +757,7 @@ std::vector <AOE_entry> AOEbed::getBedByID(std::string id) {
     return output;
 }
 
-std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (sorted_bed& entries) {
+std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (sorted_bed& entries, bool stranded) {
     std::string lastChrom = "";
     std::map <bed_entry, std::vector<AOE_entry>> matchs;
     for(const std::string &chrom: entries.getChroms()) {
@@ -741,7 +765,7 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (sorted_bed& ent
         std::vector <AOE_entry> intsA = getBedByID(chrom);
         // need to convert AOE entries to bed and back ??
         std::vector <bed_entry> convertedA(convertToBed(intsA));
-        std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(convertedA, intsB);
+        std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(convertedA, intsB, stranded);
         for(const auto &entry: tmp_matchs) {
             matchs[entry.first] = convertBack(entry.second);
         }
@@ -749,14 +773,15 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (sorted_bed& ent
     return matchs;
 }
 
-std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (vcf& entries) {
+std::map< bed_entry, std::vector< AOE_entry > > AOEbed::getOverlap(vcf& entries, bool stranded)
+{
 //     std::string lastChrom = "";
     std::map <bed_entry, std::vector<AOE_entry>> matchs;
     for(const std::string &chrom: entries.getChroms()) {
         std::vector <bed_entry> intsB = entries.convertToBed(entries.getVCFByChrom(chrom));
         std::vector <AOE_entry> intsA = getBedByID(chrom);
         std::vector <bed_entry> convertedA(convertToBed(intsA));
-        std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(convertedA, intsB);
+        std::map <bed_entry, std::vector<bed_entry>> tmp_matchs = overlap(convertedA, intsB, stranded);
         for(const auto &entry: tmp_matchs) {
             matchs[entry.first] = convertBack(entry.second);
         }
@@ -814,67 +839,69 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlapLowMem (vcf& entr
     return matchs;
 }
 
-std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS, bool fullT, bool nameAfterSource) {
+std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS, bool fullT, bool nameAfterSource, bool stranded) {
     std::vector <bed_entry> results({});
     std::map <bed_entry, std::vector <bed_entry>> matches = overlap(source, toIntersect); // return map bed"toIntersect" : [bed"source"]
     for(const auto &entryToVector: matches) { // entryToVector is from toIntersect
         for(const auto &entry: entryToVector.second) { // entry is from source bed
-//             std::cout << entryToVector.first.getName() << "  " << entry.getName() << std::endl;
-            int status(entryToVector.first.isInside(entry));
-            int start(0);
-            int stop(0);
+//             std::cout << entryToVector.first.getName() << "  " << entry.getName() << std::endl;*
+            if(!stranded || entry.getStrand() == entryToVector.first.getStrand()) {
+                int status(entryToVector.first.isInside(entry));
+                int start(0);
+                int stop(0);
 
-            switch(status) {
-                case 1: // stop of entry is inside int && start of entry is outside
-                    if(!fullT && !fullS) {
-                        start = entryToVector.first.getStart();
-                        stop = entry.getStop();
-                    }
-                    break;
-                case 2: // entry is IN entryToVector.first
-                    if(!fullT) {
-                        start = entry.getStart();
-                        stop = entry.getStop();
-                    }
-                    break;
-                case 3:
-                    if(!fullT && !fullS) {
-                        start = entry.getStart();
-                        stop = entryToVector.first.getStop();
-                    }
-                    break;
-                case 5:
-                    if(!fullS) {
-                        start = entryToVector.first.getStart();
-                        stop = entryToVector.first.getStop();
-                    }
-                    break;
-                default:
-                    throw std::logic_error("Cant find non-overlapping ints");
-            }
-
-            if(start != 0 || stop != 0) {
-                std::string name;
-                if (nameAfterSource) {
-                    name = entry.getName();
-                } else {
-                    name = entryToVector.first.getName();
+                switch(status) {
+                    case 1: // stop of entry is inside int && start of entry is outside
+                        if(!fullT && !fullS) {
+                            start = entryToVector.first.getStart();
+                            stop = entry.getStop();
+                        }
+                        break;
+                    case 2: // entry is IN entryToVector.first
+                        if(!fullT) {
+                            start = entry.getStart();
+                            stop = entry.getStop();
+                        }
+                        break;
+                    case 3:
+                        if(!fullT && !fullS) {
+                            start = entry.getStart();
+                            stop = entryToVector.first.getStop();
+                        }
+                        break;
+                    case 5:
+                        if(!fullS) {
+                            start = entryToVector.first.getStart();
+                            stop = entryToVector.first.getStop();
+                        }
+                        break;
+                    default:
+                        throw std::logic_error("Cant find non-overlapping ints");
                 }
-                bed_entry tmp_entry = bed_entry(entry.getChrom(), start, stop, name, entry.getScore(), entryToVector.first.getStrand());
-                tmp_entry.setTmpName(entryToVector.first.getTmpName());
-                results.push_back(tmp_entry);
+
+                if(start != 0 || stop != 0) {
+                    std::string name;
+                    if (nameAfterSource) {
+                        name = entry.getName();
+                    } else {
+                        name = entryToVector.first.getName();
+                    }
+                    bed_entry tmp_entry = bed_entry(entry.getChrom(), start, stop, name, entry.getScore(), entryToVector.first.getStrand());
+                    tmp_entry.setTmpName(entryToVector.first.getTmpName());
+                    results.push_back(tmp_entry);
+                }
             }
         }
     }
     return results;
 }
 
-std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI, bool fullF, bool nameAfterInput) {
+std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI, bool fullF, bool nameAfterInput, bool stranded) {
     std::vector <AOE_entry> results;
     for(const auto &chrom: inputFile.getChroms()) {
         std::vector <bed_entry> input = inputFile.getBedByID(chrom);
         std::vector <bed_entry> converted(convertToBed(getBedByID(chrom)));
-        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF, nameAfterInput); // if fullI set : return only full matchs
+        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF, nameAfterInput, stranded); // if fullI set : return only full matchs
         std::vector <AOE_entry> intersect = convertBack(tmp_intersect);
         results.insert(results.end(), intersect.begin(), intersect.end());
     }
@@ -888,7 +915,7 @@ std::vector<AOE_entry> AOEbed::getIntersects(std::vector<bed_entry> input, std::
 }
 
 
-std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool fullF) {
+std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool fullF, bool stranded) {
     std::vector <AOE_entry> results;
     std::vector <bed_entry> converted;
     std::vector <bed_entry> input;
@@ -904,7 +931,7 @@ std::vector <AOE_entry> AOEbed::getIntersects(bed& inputFile, bool fullI, bool f
             count ++;
         }
         converted = convertToBed(getBedByID(last_chrom));
-        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF);
+        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF, false, stranded);
         std::vector <AOE_entry> intersected = convertBack(tmp_intersect);
         results.insert(results.end(), intersected.begin(), intersected.end());
         input.clear();
@@ -1027,9 +1054,9 @@ std::vector <AOE_entry> AOEbed::getContent() const
     return m_content;
 }
 
-void AOEbed::cutToMask(bed &mask, bool fullI, bool fullF)
+void AOEbed::cutToMask(bed &mask, bool fullI, bool fullF, bool stranded)
 {
-    m_content = getIntersects(mask, fullI, fullF);
+    m_content = getIntersects(mask, fullI, fullF, stranded);
     std::cout << "Updating index..." << std::endl;
     m_indexes = std::map <std::string, std::map <std::array <int, 2>, int>>();
     for(int i(0); i < m_content.size(); i++) {
@@ -1038,8 +1065,8 @@ void AOEbed::cutToMask(bed &mask, bool fullI, bool fullF)
     }
 }
 
-void AOEbed::cutToMask(sorted_bed &mask, bool fullI, bool fullF) {
-    m_content = getIntersects(mask, fullI, fullF);
+void AOEbed::cutToMask(sorted_bed &mask, bool fullI, bool fullF, bool stranded) {
+    m_content = getIntersects(mask, fullI, fullF, false, stranded);
     m_indexes = std::map <std::string, std::map <std::array <int, 2>, int>>();
     for(int i(0); i < m_content.size(); i++) {
         std::array <int, 2> currInt = {m_content[i].getStart(), m_content[i].getStop()};

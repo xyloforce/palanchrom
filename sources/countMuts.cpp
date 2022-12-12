@@ -7,39 +7,54 @@
 int main(int argc, char* argv[]) {
     bool lowMem = false;
     bool restart = false;
+    bool strand = false;
 
-    if(argc < 5) {
-        std::cout << "Not enough args were given : needs AOE, bed, vcf, output file. Optionnal : flag TRUE if you need low-mem, TRUE again if you want to restart from dump" << std::endl;
+    std::map <char, std::string> args = getArgs(std::vector<std::string>(argv, argv + argc));
+
+    std::string AOEfilename, bedFilename, vcfFilename, outputFilename;
+
+    try {
+        AOEfilename = args.at('a');
+        bedFilename = args.at('b');
+        vcfFilename = args.at('v');
+        outputFilename = args.at('o');
+    } catch(std::out_of_range) {
+        std::cout << "Missing obligatory parameters. Parameters are : \n";
+        std::cout << "\t-a AOE file \n";
+        std::cout << "\t-b bed file \n";
+        std::cout << "\t-v vcf file \n";
+        std::cout << "\t-o output file \n";
+        std::cout << "Optionnal stuff includes : \n";
+        std::cout << "\t-l low mem mode \n";
+        std::cout << "\t-d restart from dump \n";
+        std::cout << "\t-s use strand information in intervals \n";
         exit(1);
-    }  else if(argc == 5) {
-        std::cout << "Normal start" << std::endl;
-    }   else if(argc == 6) {
-        if(std::string(argv[5]) == "TRUE") {
-            std::cout << "Starting in low mem" << std::endl;
-            lowMem = true;
-        }
-    }  else if(argc == 7) {
-        if(std::string(argv[6]) == "TRUE") {
-            std::cout << "Restarting from dump" << std::endl;
-            restart = true;
-        }
-    } else {
-        std::cout << "Too much args" << std::endl;
-        exit(1);
+    }
+
+    if(args.find('l') != args.end()) {
+        lowMem = true;
+    }
+
+    if(args.find('d') != args.end()) {
+        restart = true;
+    }
+
+    if(args.find('s') != args.end()) {
+        strand = true;
     }
 
     if(!restart) {
         std::cout << "Loading AOEs..." << std::endl;
-        AOEbed intsOfInterest(argv[1]);
+        AOEbed intsOfInterest(AOEfilename);
         std::cout << "Loading bed..." << std::endl;
 
         std::vector <AOE_entry> intersects;
         if(lowMem) {
-            bed mask(argv[2], openType::read_line);
-            intsOfInterest.cutToMask(mask);
+            bed mask(bedFilename, openType::read_line);
+            intsOfInterest.cutToMask(mask, false, false, strand);
         } else {
-            sorted_bed mask(argv[2]);
-            intsOfInterest.cutToMask(mask);
+            sorted_bed mask(bedFilename);
+            intsOfInterest.cutToMask(mask, false, false, strand);
         }
         std::cout << "Intersecting finished, dumping..." << std::endl;
         intsOfInterest.dumpAOE(intsOfInterest.size());
@@ -48,7 +63,7 @@ int main(int argc, char* argv[]) {
     AOEbed inputFile("dump.AOE", read_line);
 
     std::cout << "Loading mutations..." << std::endl;
-    vcf muts(argv[3], read);
+    vcf muts(vcfFilename, read);
 
     std::map <int, std::map <std::string, std::map <char, int>>> counts;
     int count_lines(0);
@@ -72,7 +87,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Writing results ... " << std::endl;
-    std::ofstream outputFile(argv[4]);
+    std::ofstream outputFile(outputFilename);
     for(const auto &pair: counts) {
         for(const auto &pair2: pair.second) {
             for(const auto &pair3: pair2.second)

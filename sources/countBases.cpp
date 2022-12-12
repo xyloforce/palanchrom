@@ -7,55 +7,58 @@ int main(int argc, char* argv[]) {
     bool lowMem = false;
     bool restart = false;
     int block_quantity(50000);
+    bool strand = false;
 
-    if(argc < 5) {
-        std::cout << "Doesnt have enough args, need fasta AOE bed and output names. Optionnal : flag TRUE if you need low-mem, again TRUE if you want to restart from dump, int to set number of blocks to load" << std::endl;
+    std::map <char, std::string> args = getArgs(std::vector<std::string>(argv, argv + argc));
+
+    std::string AOEfilename, bedFilename, fastaFilename, outputFilename;
+
+    try {
+        AOEfilename = args.at('a');
+        bedFilename = args.at('b');
+        fastaFilename = args.at('f');
+        outputFilename = args.at('o');
+    } catch(std::out_of_range) {
+        std::cout << "Missing obligatory parameters. Parameters are : \n";
+        std::cout << "\t-a AOE file \n";
+        std::cout << "\t-b bed file \n";
+        std::cout << "\t-f fasta file \n";
+        std::cout << "\t-o output file \n";
+        std::cout << "Optionnal stuff includes : \n";
+        std::cout << "\t-l low mem mode \n";
+        std::cout << "\t-d restart from dump \n";
+        std::cout << "\t-s use strand information in intervals \n";
         exit(1);
-    } else if(argc == 5) {
-      std::cout << "normal start" << std::endl;
-    } else if(argc == 6) {
-        std::cout << "starting in lowmem" << std::endl;
-        if(std::string(argv[5]) == "TRUE") {
-            lowMem = true;
-        }
-    }  else if(argc == 7) {
-        std::cout << "restarting from dump" << std::endl;
-        if(std::string(argv[6]) == "TRUE") {
-            restart = true;
-        }
-    } else if(argc == 8) {
-        std::cout << "starting with differing block value" << std::endl;
-        if(std::string(argv[5]) == "TRUE") {
-            lowMem = true;
-        }
-        if(std::string(argv[6]) == "TRUE") {
-            restart = true;
-        }
-        try {
-            block_quantity = std::stoi(argv[7]);
-        } catch(std::invalid_argument) {
-            block_quantity = 100000;
-        }
-    } else {
-        std::cout << "too many args, exiting." << std::endl;
-        exit(1);
+    }
+
+    if(args.find('l') != args.end()) {
+        lowMem = true;
+    }
+
+    if(args.find('d') != args.end()) {
+        restart = true;
+    }
+
+    if(args.find('s') != args.end()) {
+        strand = true;
+        std::cout << "Strand set to true" << std::endl;
     }
 
     if(!restart) {
         std::cout << "Loading AOEs..." << std::endl;
-        AOEbed intsOfInterest(argv[2]);
+        AOEbed intsOfInterest(AOEfilename);
 
         if(lowMem) {
-            bed mask(argv[3], openType::read_line);
+            bed mask(bedFilename, openType::read_line);
 
             std::cout << "Intersecting... " << std::endl;
-            intsOfInterest.cutToMask(mask);
+            intsOfInterest.cutToMask(mask, false, false, strand);
         } else {
             std::cout << "Loading bed... " << std::endl;
-            sorted_bed mask(argv[3]);
+            sorted_bed mask(bedFilename);
 
             std::cout << "Intersecting... " << std::endl;
-            intsOfInterest.cutToMask(mask);
+            intsOfInterest.cutToMask(mask, false, false, strand);
         }
 
     //     intsOfInterest.writeToFile(".savestate.tmp");
@@ -63,7 +66,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::map <int, std::map<char, std::map <char, int>>> counts; // pos on NIEB : base : type of int : count
-    fasta source(argv[1], read, standard);
+    fasta source(fastaFilename, read, standard);
     AOEbed inputFile("dump.AOE", read_line);
 
     std::cout << "Loading input block by block" << std::endl;
@@ -87,7 +90,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Writing results ... " << std::endl;
-    std::ofstream resultFile(argv[4]);
+    std::ofstream resultFile(outputFilename);
     for(const auto &intToMap: counts) {
         for(const auto &charToMap: intToMap.second) {
             for(const auto &charToInt: charToMap.second) {

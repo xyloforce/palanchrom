@@ -182,27 +182,27 @@ rule filterVCF:
 
 rule countMuts:
     input:
-        config["result_folder"] + "/barriersAOE_{species}.tsv",
-        config["result_folder"] + "/{species}_{type}_ints.bed",
-        config["result_folder"] + "/{species}.filtered_ancestralBases.vcf"
+        aoe = config["result_folder"] + "/barriersAOE_{species}.tsv",
+        bed = config["result_folder"] + "/{species}_{type}_ints.bed",
+        vcf = config["result_folder"] + "/{species}.filtered_ancestralBases.vcf"
     output:
         config["result_folder"] + "/{species}_{type}_muts.tsv"
     resources:
         mem_cons = 25
     shell:
-        "./bin/countMuts {input} {output} TRUE"
+        "./bin/countMuts -a {input.aoe} -b {input.bed} -v {input.vcf} -o {output} -l"
 
 rule countBases:
     input:
-        config["result_folder"] + "/{species}_ancestralGenome.fasta",
-        config["result_folder"] + "/barriersAOE_{species}.tsv",
-        config["result_folder"] + "/{species}_{type}_ints.bed"
+        fa = config["result_folder"] + "/{species}_ancestralGenome.fasta",
+        aoe = config["result_folder"] + "/barriersAOE_{species}.tsv",
+        bed = config["result_folder"] + "/{species}_{type}_ints.bed"
     output:
         config["result_folder"] + "/{species}_{type}_bases.tsv"
     resources:
         mem_cons = 50
     shell:
-        "./bin/countBases {input} {output} TRUE FALSE 10000"
+        "./bin/countBases -a {input.aoe} -b {input.bed} -f {input.fa} -o {output} -l"
 
 rule archivate:
     input:

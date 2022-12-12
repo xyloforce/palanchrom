@@ -110,7 +110,8 @@ protected:
     std::map <std::string, std::map <std::array <int, 3>, int>> m_indexes;
   // internal functions
     std::map <bed_entry, std::vector< bed_entry >> overlap(const std::vector< bed_entry > intsA, const std::vector< bed_entry > intsB);
-    std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS = false, bool fullT = false, bool nameAfterSource = false);
+    std::map <bed_entry, std::vector< bed_entry >> overlap(const std::vector< bed_entry > intsA, const std::vector< bed_entry > intsB, bool stranded);
+    std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS = false, bool fullT = false, bool nameAfterSource = false, bool stranded = false);
 };
 
 class AOEbed: public sorted_bed {
@@ -120,18 +121,18 @@ public:
     AOE_entry readAOEline();
     int size() const;
     std::vector <AOE_entry> getContent() const;
-    std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries);
-    std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries);
+    std::map <bed_entry, std::vector<AOE_entry>> getOverlap (sorted_bed& entries, bool stranded = false);
+    std::map <bed_entry, std::vector<AOE_entry>> getOverlap (vcf& entries, bool stranded = false);
     std::map <bed_entry, std::vector<AOE_entry>> getOverlapLowMem (vcf& entries);
     std::vector <AOE_entry> getBedByID(std::string id);
     AOE_entry getEntryByIndex(int index) const;
-    std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false, bool nameAfterInput = false);
+    std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false, bool nameAfterInput = false, bool stranded = false);
     std::vector <AOE_entry> getIntersects(std::vector <bed_entry> input, std::vector <AOE_entry> frame, bool fullI = false, bool fullF = false);
-    std::vector <AOE_entry> getIntersects(bed& inputFile, bool fullI = false, bool fullF = false);
+    std::vector <AOE_entry> getIntersects(bed& inputFile, bool fullI = false, bool fullF = false, bool stranded = false);
     std::map <int, int> countVector(std::vector <AOE_entry> input);
 //     std::map <std::string, std::map <int, int>> getCounts(bed &inputFile, bool fullI = false, bool fullF = false, std::string filename = "");
-    void cutToMask(bed &mask, bool fullI = false, bool fullF = false);
-    void cutToMask(sorted_bed &mask, bool fullI = false, bool fullF = false);
+    void cutToMask(bed &mask, bool fullI = false, bool fullF = false, bool stranded = false);
+    void cutToMask(sorted_bed &mask, bool fullI = false, bool fullF = false, bool stranded = false);
     std::vector <bed_entry> convertToBed(std::vector <AOE_entry> source) const;
     std::vector <bed_entry> convertToBed() const;
     std::vector <AOE_entry> convertBack(std::vector <bed_entry> source);

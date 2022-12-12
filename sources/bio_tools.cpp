@@ -163,11 +163,12 @@ std::map <char, std::string> getArgs(std::vector<std::string> args) {
         // alternate btw - or letter
         if(arg[0] == '-') {
             parameter = arg[1];
+            matched[parameter] = "";
             value = "unset";
         } else {
             if(value == "unset") { // ensure that parameter isn't simply a leftover
                 value = arg;
-                matched[parameter] = value;
+                matched.at(parameter) = value;
             } else {
                 std::cout << "Value wasn't preceded by a parameter, so will be skipped : " << value << std::endl;
             }
