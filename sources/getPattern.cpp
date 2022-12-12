@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     // parse pattern
     // create regex
     // merge pattern
-    std::string regex, Nregex;
+    std::string regex, Nregex, Rregex;
     std::string fasta_file, output_1, output_2;
     bool noN = false;
     bool capturingGroups = false;
@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
     if(args.find('r') != args.end()) {
         if(reverseComp(regex) != regex) {
             needToBeReversed = true;
+            Rregex = reverseComp(regex);
         } else {
             std::cout << "Pattern is identical when reversed" << std::endl;
         }
@@ -81,8 +82,7 @@ int main(int argc, char *argv[])
             outputFile.writeBedLine(bed_line);
         }
         if(needToBeReversed) {
-            regex = reverseComp(regex);
-            std::vector <bed_entry> matchs = entry.matchPatterns(regex, capturingGroups);
+            std::vector <bed_entry> matchs = entry.matchPatterns(Rregex, capturingGroups);
             for(auto bed_line: matchs) {
                 if(needToBeReversed) {
                     bed_line.setStrand('-');
