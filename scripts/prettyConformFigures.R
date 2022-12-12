@@ -89,10 +89,10 @@ df = df[df$position > xlim1 & df$position < xlim2,]
 # limits = c(0.0001, 0.01), breaks = seq(0.0001, 0.01, by = 0.0015),
 # how to add breaks AND scales free ?
 plot1 = ggplot(data = df, aes(y = mean10, x = position, color = color)) +
-	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line(size = 1) +
-	geom_errorbar(aes(ymin = ymin, ymax = ymax)) +
+	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line(linewidth = 1) +
+	geom_errorbar(aes(ymin = ymin, ymax = ymax), color = "black") +
 	ylab("% de mutation lissés sur 10 pb") +
-	scale_color_discrete(type = c("#4a1835", "#ca4192", "#4a2e3e", "#96306c")) +
+	scale_color_discrete(type = c("#AD12B3", "#1BB396", "#F933FF", "#19FFD4")) +
 	ggtitle("Taux de mutation complémentaires (le premier est le plus sombre)") +
 	scale_x_continuous(limits = c(xlim1, xlim2), sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
@@ -108,7 +108,7 @@ total = read_tsv(filepath[1], show_col_types = FALSE)
 
 total = total[total$position > xlim1 & total$position < xlim2,]
 
-plot2 = ggplot(data = total, aes(x=position, y = mean10)) + geom_line(size = 1) +
+plot2 = ggplot(data = total, aes(x=position, y = mean10)) + geom_line(linewidth = 1) +
 	ylab("% de mutation lissés sur 10 pb") +
 	ggtitle("Taux de mutation global") +
 	scale_x_continuous(limits = c(xlim1, xlim2), sec.axis = dup_axis(labels = NULL, name = NULL)) +
