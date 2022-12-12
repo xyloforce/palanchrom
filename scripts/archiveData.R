@@ -119,7 +119,12 @@ for(group in unique(muts$group)) {
             currentBDF[match(muts[muts$mutation == mut, "position"], currentBDF$position),mut] = muts[muts$mutation == mut, "comptage"]
         }
     }
-    currentBDF$relative_both = (currentBDF[,3] + currentBDF[,5]) / (currentBDF[,2] + currentBDF[,4]) * 100
+    if(!is.null(ncol(currentBDF[,grep("comptage", colnames(currentBDF))])) & is.null(ncol(currentBDF[,grep("^[ACGT]+?$", colnames(currentBDF))]))) {
+        currentBDF$relative_both = rowSums(currentBDF[,grep("comptage", colnames(currentBDF))]) / rowSums(currentBDF[,grep("^[ACGT]+?$", colnames(currentBDF))]) * 100
+    } else {
+        currentBDF$relative_both = currentBDF[,grep("comptage", colnames(currentBDF))] / currentBDF[,grep("^[ACGT]+?$", colnames(currentBDF))] * 100
+    }
+
     currentBDF$mean10 = mean10pb(currentBDF$relative_both)
 #     currentBDF[is.na(currentBDF)] = 0
     print(head(currentBDF))

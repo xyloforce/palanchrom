@@ -36,10 +36,12 @@ if(length(args) > 2) {
 	xlim2 = 350
 }
 
-for(filepath in filelist[2:length(filelist)]) {
-	tmp = read_tsv(filepath, show_col_types = FALSE)
-	tmp$position = NULL
-	df_source = cbind(df_source, tmp)
+if(length(filelist) > 1) {
+	for(filepath in filelist[2:length(filelist)]) {
+		tmp = read_tsv(filepath, show_col_types = FALSE)
+		tmp$position = NULL
+		df_source = cbind(df_source, tmp)
+	}
 }
 
 ## keep only "mean" ones
