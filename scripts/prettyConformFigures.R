@@ -92,7 +92,7 @@ plot1 = ggplot(data = df, aes(y = mean10, x = position, color = color)) +
 	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line(linewidth = 1) +
 	geom_errorbar(aes(ymin = ymin, ymax = ymax), color = "black") +
 	ylab("% de mutation lissés sur 10 pb") +
-	scale_color_discrete(type = c("#AD12B3", "#1BB396", "#F933FF", "#19FFD4")) +
+	scale_color_discrete(type = c("#994A00", "#FF8819", "#007A99", "#00B6E6")) +
 	ggtitle("Taux de mutation complémentaires (le premier est le plus sombre)") +
 	scale_x_continuous(limits = c(xlim1, xlim2), sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +

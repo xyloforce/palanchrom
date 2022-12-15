@@ -5,13 +5,13 @@ library(ggplot2)
 library(stringr)
 
 args = commandArgs(trailingOnly=TRUE)
-#args = c("bases.tsv", "muts.tsv", "formatted")
+#args = c("bases_XTY_stranded.tsv", "muts_XTY_stranded.tsv", "formatted_XTY_stranded")
 
 #mean10pb <- function(x, n = 10){if(length(x) > 0) {return(filter(x, rep(1 / n, n), sides = 2, circular = FALSE))} else {return(NA)}}
 mean10pb = function(x, n = 10) {rollapply(x, n, mean, na.rm = TRUE, fill = NA)}
 
 print("loading files")
-bases = read_tsv(args[1], col_names = c("position", "base", "type", "comptage"), na = c(""), show_col_types = FALSE)
+bases = read_tsv(args[1], col_names = c("position", "base", "type", "comptage"), na = c(""), col_types = "icci")
 muts = read_tsv(args[2], col_names = c("position", "mutation", "type", "comptage"), na = c(""), show_col_types = FALSE)
 
 folder = args[3]
