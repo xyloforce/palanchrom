@@ -9,16 +9,6 @@ args = commandArgs(trailingOnly=TRUE)
 #args = c("formatted", "figure")
 
 source("~/setThemePoster.R")
-# theme_bob = theme(panel.border = element_rect(size = 2),
-#                 axis.title.x = element_text(size = 16),
-#                 axis.title.y = element_text(size = 16),
-#                 strip.text.x = element_text(size = 16),
-#                 strip.text.y = element_text(size = 16),
-#                 axis.text = element_text(size=14),
-#                 #plot.title = element_text(face = "bold"),
-#                 legend.title = element_text(size = 16),
-#                 legend.text = element_text(size = 14),
-#                 plot.title = element_text(size = 20, hjust = 0.5))
 
 #### PLOT SOURCE X DEST X CONTEXT ################################################################################################
 
@@ -92,7 +82,7 @@ plot1 = ggplot(data = df, aes(y = mean10, x = position, color = color)) +
 	facet_wrap(~group, labeller = as_labeller(correct_labels), scales = "free") + geom_line(linewidth = 1) +
 	geom_errorbar(aes(ymin = ymin, ymax = ymax), color = "black") +
 	ylab("% de mutation lissés sur 10 pb") +
-	scale_color_discrete(type = c("#994A00", "#FF8819", "#007A99", "#00B6E6")) +
+	scale_color_discrete(type = c("#3584E4", "#33D17A", "#E01B24", "#9141AC")) +
 	ggtitle("Taux de mutation complémentaires (le premier est le plus sombre)") +
 	scale_x_continuous(limits = c(xlim1, xlim2), sec.axis = dup_axis(labels = NULL, name = NULL)) +
 	scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
