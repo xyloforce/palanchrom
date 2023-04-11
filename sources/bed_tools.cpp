@@ -839,13 +839,13 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlapLowMem (vcf& entr
     return matchs;
 }
 
-std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS, bool fullT, bool nameAfterSource, bool stranded) {
+std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS, bool fullT, bool nameAfterSource, bool stranded, bool reverse) {
     std::vector <bed_entry> results({});
     std::map <bed_entry, std::vector <bed_entry>> matches = overlap(source, toIntersect); // return map bed"toIntersect" : [bed"source"]
     for(const auto &entryToVector: matches) { // entryToVector is from toIntersect
         for(const auto &entry: entryToVector.second) { // entry is from source bed
 //             std::cout << entryToVector.first.getName() << "  " << entry.getName() << std::endl;*
-            if(!stranded || entry.getStrand() == entryToVector.first.getStrand()) {
+            if(!stranded || entry.getStrand() == entryToVector.first.getStrand() || (reverse && entry.getStrand() != entryToVector.first.getStrand())) {
                 int status(entryToVector.first.isInside(entry));
                 int start(0);
                 int stop(0);
@@ -896,12 +896,12 @@ std::vector <bed_entry> sorted_bed::intersect (std::vector <bed_entry> source, s
     return results;
 }
 
-std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI, bool fullF, bool nameAfterInput, bool stranded) {
+std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI, bool fullF, bool nameAfterInput, bool stranded, bool reverse) {
     std::vector <AOE_entry> results;
     for(const auto &chrom: inputFile.getChroms()) {
         std::vector <bed_entry> input = inputFile.getBedByID(chrom);
         std::vector <bed_entry> converted(convertToBed(getBedByID(chrom)));
-        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF, nameAfterInput, stranded); // if fullI set : return only full matchs
+        std::vector <bed_entry> tmp_intersect = intersect(input, converted, fullI, fullF, nameAfterInput, stranded, reverse); // if fullI set : return only full matchs
         std::vector <AOE_entry> intersect = convertBack(tmp_intersect);
         results.insert(results.end(), intersect.begin(), intersect.end());
     }
@@ -911,7 +911,7 @@ std::vector <AOE_entry> AOEbed::getIntersects(sorted_bed& inputFile, bool fullI,
 std::vector<AOE_entry> AOEbed::getIntersects(std::vector<bed_entry> input, std::vector<AOE_entry> frame, bool fullI, bool fullF)
 {
     std::vector <AOE_entry> results;
-    return(convertBack(intersect(input, convertToBed(frame))));
+    return(convertBack(intersect(input, convertToBed(frame), fullI, fullF)));
 }
 
 

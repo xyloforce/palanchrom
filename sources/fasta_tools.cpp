@@ -582,43 +582,43 @@ int fasta_entry::searchChar(char searched, int pos) const {
     return m_sequence.searchChar(searched, pos);
 }
 
-std::vector <bed_entry> fasta_entry::matchPattern(std::string pattern) const {
-    std::vector <bed_entry> values;
-    int size(pattern.size());
-    int wait(0);
-    int endPos(size);
-    for(int i(0); i< m_sequence.getSize(); i++) {
-        if(wait == 0) {
-            if(subsetEntry(i, i + size).getSequence() == pattern) {
-                endPos = i + size -1;
-                for(int j(1); j*size<m_sequence.getSize(); j++) {
-                    if(subsetEntry(i + (size*(j-1)), i + (size*j)).getUppercaseSequence() != pattern) {
-                        break;
-                    } else {
-                        endPos = i+size*j;
-                    }
-                }
-                values.push_back(bed_entry(m_header.getID(), i, endPos));
-                i = endPos - size;
-            } else {
-                endPos = i + size;
-            }
-            wait = m_sequence.searchChar(pattern[0], endPos - size + 1); // -2 bc pattern begin
-        }
-        wait --;
+// std::vector <bed_entry> fasta_entry::matchPattern(std::string pattern) const {
+//     std::vector <bed_entry> values;
+//     int size(pattern.size());
+//     int wait(0);
+//     int endPos(size);
+//     for(int i(0); i< m_sequence.getSize(); i++) {
+//         if(wait == 0) {
+//             if(subsetEntry(i, i + size).getSequence() == pattern) {
+//                 endPos = i + size -1;
+//                 for(int j(1); j*size<m_sequence.getSize(); j++) {
+//                     if(subsetEntry(i + (size*(j-1)), i + (size*j)).getUppercaseSequence() != pattern) {
+//                         break;
+//                     } else {
+//                         endPos = i+size*j;
+//                     }
+//                 }
+//                 values.push_back(bed_entry(m_header.getID(), i, endPos));
+//                 i = endPos - size;
+//             } else {
+//                 endPos = i + size;
+//             }
+//             wait = m_sequence.searchChar(pattern[0], endPos - size + 1); // -2 bc pattern begin
+//         }
+//         wait --;
         // obvious solution : take substring for each pos and check
         // but safer : take substring -> check -> then search first letter of pattern -> skip search until finding it again
 
-    }
-    return values;
-}
+//     }
+//     return values;
+// }
 
 std::vector <bed_entry> fasta_entry::matchPatterns(std::string pattern, bool captureGroup) const {
-    std::string sequence(m_sequence.getUppercaseSequence());
+    std::string seq(m_sequence.getUppercaseSequence());
     std::regex regex(pattern);
     std::vector <bed_entry> results;
 
-    std::sregex_iterator rit (sequence.begin(), sequence.end(), regex);
+    std::sregex_iterator rit (seq.begin(), seq.end(), regex);
     std::sregex_iterator rend;
 
     std::string match(".");
@@ -635,7 +635,6 @@ std::vector <bed_entry> fasta_entry::matchPatterns(std::string pattern, bool cap
         results.push_back(entry);
         rit ++;
     }
-
     return results;
 }
 

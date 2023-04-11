@@ -8,6 +8,7 @@
 
 int main(int argc, char *argv[])
 {
+    std::cout << "getPattern v1" << std::endl;
     // parse pattern
     // create regex
     // merge pattern
@@ -63,19 +64,22 @@ int main(int argc, char *argv[])
     }
 
     std::cout << "Reading input..." << std::endl;
-    fasta inputFile(fasta_file, read_line, standard);
+    // fasta inputFile(fasta_file, read_line, standard);
+    fasta inputFile(fasta_file, read, standard);
 
     std::cout << "Creating outputs..." << std::endl;
     bed outputFile(output_1, openType::write);
-    bed outputConvert(output_2, openType::write);
+    bed outputConvert;
+    if(!noN) {
+        outputConvert = bed(output_2, openType::write);
+    }
 
     std::cout << "Starting analysis..." << std::endl;
 
-    while(!inputFile.isEOF()) {
-        fasta_entry entry(inputFile.readFastaLine());
-        std::cout << entry.getHeader() << "        \r";
+    for(const auto &entry: inputFile.getEntries()) {
+        std::cout << entry.getHeader() << "\r" << std::flush;
         std::vector <bed_entry> matchs = entry.matchPatterns(regex, capturingGroups);
-        for(auto bed_line: matchs) {
+                for(auto bed_line: matchs) {
             if(needToBeReversed) {
                 bed_line.setStrand('+');
             }
@@ -98,5 +102,33 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+    // while(!inputFile.isEOF()) {
+    //     fasta_entry entry(inputFile.readFastaLine());
+    //     std::cout << entry.getHeader() << "\r" << std::flush;
+    //     std::vector <bed_entry> matchs = entry.matchPatterns(regex, capturingGroups);
+    //     for(auto bed_line: matchs) {
+    //         if(needToBeReversed) {
+    //             bed_line.setStrand('+');
+    //         }
+    //         outputFile.writeBedLine(bed_line);
+    //     }
+    //     if(needToBeReversed) {
+    //         std::vector <bed_entry> matchs = entry.matchPatterns(Rregex, capturingGroups);
+    //         for(auto bed_line: matchs) {
+    //             if(needToBeReversed) {
+    //                 bed_line.setStrand('-');
+    //             }
+    //             outputFile.writeBedLine(bed_line);
+    //         }
+    //     }
+    //     if(!noN) {
+    //         std::vector <bed_entry> tmp = entry.matchPatterns(Nregex, capturingGroups);
+    //         std::vector <bed_entry> convert = entry.reverseInts(tmp);
+    //         for(const auto &bed_line: convert) {
+    //             outputConvert.writeBedLine(bed_line);
+    //         }
+    //     }
+    // }
     return 0;
 }

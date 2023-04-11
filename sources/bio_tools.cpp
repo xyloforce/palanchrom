@@ -156,6 +156,7 @@ std::string constructRegex(std::string pattern, bool addN) {
 }
 
 std::map <char, std::string> getArgs(std::vector<std::string> args) {
+    args.erase(args.begin(), args.begin() + 1);
     std::map <char, std::string> matched;
     char parameter('\0');
     std::string value;
@@ -164,13 +165,14 @@ std::map <char, std::string> getArgs(std::vector<std::string> args) {
         if(arg[0] == '-') {
             parameter = arg[1];
             matched[parameter] = "";
-            value = "unset";
+            value = "waiting";
         } else {
-            if(value == "unset") { // ensure that parameter isn't simply a leftover
+            if(value == "waiting") { // value following a parameter
                 value = arg;
                 matched.at(parameter) = value;
+                value = "";
             } else {
-                std::cout << "Value wasn't preceded by a parameter, so will be skipped : " << value << std::endl;
+                std::cout << "Value wasn't preceded by a parameter, so will be skipped : " << arg << std::endl;
             }
         }
     }

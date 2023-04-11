@@ -111,7 +111,7 @@ protected:
   // internal functions
     std::map <bed_entry, std::vector< bed_entry >> overlap(const std::vector< bed_entry > intsA, const std::vector< bed_entry > intsB);
     std::map <bed_entry, std::vector< bed_entry >> overlap(const std::vector< bed_entry > intsA, const std::vector< bed_entry > intsB, bool stranded);
-    std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS = false, bool fullT = false, bool nameAfterSource = false, bool stranded = false);
+    std::vector <bed_entry> intersect(std::vector <bed_entry> source, std::vector <bed_entry> toIntersect, bool fullS = false, bool fullT = false, bool nameAfterSource = false, bool stranded = false, bool reverse = false);
 };
 
 class AOEbed: public sorted_bed {
@@ -126,7 +126,7 @@ public:
     std::map <bed_entry, std::vector<AOE_entry>> getOverlapLowMem (vcf& entries);
     std::vector <AOE_entry> getBedByID(std::string id);
     AOE_entry getEntryByIndex(int index) const;
-    std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false, bool nameAfterInput = false, bool stranded = false);
+    std::vector <AOE_entry> getIntersects(sorted_bed& inputFile, bool fullI = false, bool fullF = false, bool nameAfterInput = false, bool stranded = false, bool reverse = false);
     std::vector <AOE_entry> getIntersects(std::vector <bed_entry> input, std::vector <AOE_entry> frame, bool fullI = false, bool fullF = false);
     std::vector <AOE_entry> getIntersects(bed& inputFile, bool fullI = false, bool fullF = false, bool stranded = false);
     std::map <int, int> countVector(std::vector <AOE_entry> input);
