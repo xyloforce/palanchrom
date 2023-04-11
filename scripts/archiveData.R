@@ -119,7 +119,7 @@ for(group in unique(muts$group)) {
             currentBDF[match(muts[muts$mutation == mut, "position"], currentBDF$position),mut] = muts[muts$mutation == mut, "comptage"]
         }
     }
-    print(head(currentBDF))
+#     print(head(currentBDF))
     if(!is.null(ncol(currentBDF[,grep("comptage", colnames(currentBDF))])) & !is.null(ncol(currentBDF[, grep("^[ACGT]+?$", colnames(currentBDF))]))) {
         currentBDF$relative_both = rowSums(currentBDF[,grep("^[ACGT]+?$", colnames(currentBDF))]) / rowSums(currentBDF[, grep("comptage", colnames(currentBDF))]) * 100
 #         currentBDF$relative_both = rowSums(currentBDF[,grep("comptage", colnames(currentBDF))]) / rowSums(currentBDF[, grep("^[ACGT]+?$", colnames(currentBDF))]) * 100
@@ -130,6 +130,6 @@ for(group in unique(muts$group)) {
 
     currentBDF$mean10 = mean10pb(currentBDF$relative_both)
 #     currentBDF[is.na(currentBDF)] = 0
-    print(head(currentBDF[currentBDF$position > -50,]))
+#     print(head(currentBDF[currentBDF$position > -50,]))
     write_tsv(currentBDF[currentBDF$position %in% -220:5000, ], paste("group", group, "-", mut, "_and_reverse.tsv", sep = ""))
 }
