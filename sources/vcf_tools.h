@@ -44,6 +44,7 @@ class vcf {
 public:
     vcf(std::string filename, openType type);
     vcf(std::vector <vcf_entry> values, std::map <std::string, std::vector <int>> indexes);
+    vcf(std::vector <vcf_entry> values);
     void vcf_writeline(vcf_entry entry_vcf);
 //     void vcf_writelines(std::string filename);
     vcf_entry readVCFLine(bool &warned);

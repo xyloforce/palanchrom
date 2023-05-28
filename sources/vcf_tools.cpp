@@ -285,6 +285,15 @@ vcf::vcf(std::vector<vcf_entry> values, std::map<std::string, std::vector <int>>
     m_indexes = indexes;
 }
 
+vcf::vcf(std::vector <vcf_entry> entries) {
+    int index(0);
+    for(const vcf_entry &entry: entries) {
+        m_content.push_back(entry);
+        m_indexes[entry.getChrom()].push_back(index);
+        index ++;
+    }
+}
+
 void vcf::vcf_writeline(vcf_entry entry_vcf) {
     entry_vcf.vcf_writeline(m_output);
 }

@@ -773,7 +773,7 @@ std::map <bed_entry, std::vector<AOE_entry>> AOEbed::getOverlap (sorted_bed& ent
     return matchs;
 }
 
-std::map< bed_entry, std::vector< AOE_entry > > AOEbed::getOverlap(vcf& entries, bool stranded)
+std::map< bed_entry, std::vector< AOE_entry >> AOEbed::getOverlap(vcf& entries, bool stranded)
 {
 //     std::string lastChrom = "";
     std::map <bed_entry, std::vector<AOE_entry>> matchs;

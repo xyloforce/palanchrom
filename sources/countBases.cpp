@@ -6,6 +6,7 @@
 int main(int argc, char* argv[]) {
     bool lowMem = false;
     bool restart = false;
+    bool no_int = false;
     int block_quantity(50000);
     bool strand = false;
 
@@ -15,7 +16,6 @@ int main(int argc, char* argv[]) {
 
     try {
         AOEfilename = args.at('a');
-        bedFilename = args.at('b');
         fastaFilename = args.at('f');
         outputFilename = args.at('o');
     } catch(std::out_of_range) {
@@ -28,6 +28,17 @@ int main(int argc, char* argv[]) {
         std::cout << "\t-l low mem mode \n";
         std::cout << "\t-d restart from dump \n";
         std::cout << "\t-s use strand information in intervals \n";
+        std::cout << "\t-n ignore bed \n";
+        exit(1);
+    }
+
+    bedFilename = "";
+    if(args.find('b') != args.end()) {
+        bedFilename = args.at('b');
+    } else if(args.find('n') != args.end()) {
+        no_int = true;
+    } else {
+        std::cout << "Need to set either bed or n" << std::endl;
         exit(1);
     }
 
@@ -53,6 +64,8 @@ int main(int argc, char* argv[]) {
 
             std::cout << "Intersecting... " << std::endl;
             intsOfInterest.cutToMask(mask, false, false, strand);
+        } else if(no_int) {
+            std::cout << "Skipping intersection as asked by n flag..." << std::endl;
         } else {
             std::cout << "Loading bed... " << std::endl;
             sorted_bed mask(bedFilename);
@@ -60,7 +73,6 @@ int main(int argc, char* argv[]) {
             std::cout << "Intersecting... " << std::endl;
             intsOfInterest.cutToMask(mask, false, false, strand);
         }
-
     //     intsOfInterest.writeToFile(".savestate.tmp");
         intsOfInterest.dumpAOE();
     }
