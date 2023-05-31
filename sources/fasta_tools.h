@@ -65,6 +65,7 @@ public:
     std::string getChrom();
     char getStrand();
     void setStrand(char strand);
+    void setSequence(sequence sequence);
     void trimSequence(int size, int end);
     void write_fasta_entry(std::ofstream& outputFile, fastaType type);
     long getPos(long pos_sequence, int offset = 1) const;
@@ -73,7 +74,7 @@ public:
     void editSeq(std::string edit, int start, int end);
     void editSeq(std::vector <vcf_entry> entries);
     int searchChar(char searched, int pos) const;
-    fasta_entry getSubset(bed_entry entry);
+    fasta_entry getSubset(bed_entry entry, bool &warned);
     fasta_entry getSubset(vcf_entry entry);
     // std::vector <bed_entry> matchPattern(std::string pattern) const;
     std::vector <bed_entry> matchPatterns(std::string patter, bool captureGroup = false) const;

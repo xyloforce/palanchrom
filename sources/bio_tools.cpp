@@ -27,11 +27,17 @@ char reverseComp(char base) {
     }
 }
 
-std::string reverseComp(std::string sequence) {
-    std::string result;
-    for(int i(0); i < sequence.size(); i++) {
-        result = reverseComp(sequence[i]) + result; // add letter at the beggining to reverse properly the sequence
-    }
+std::string reverseComp(const std::string sequence) {
+    std::string result(sequence);
+    std::reverse(result.begin(), result.end());
+    std::replace(result.begin(), result.end(), 'A', 't');
+    std::replace(result.begin(), result.end(), 'T', 'a');
+    std::replace(result.begin(), result.end(), 'C', 'g');
+    std::replace(result.begin(), result.end(), 'G', 'c');
+    std::transform(result.begin(), result.end(), result.begin(), ::toupper);
+//     for(int i(0); i < sequence.size(); i++) {
+//         result = reverseComp(sequence[i]) + result; // add letter at the beggining to reverse properly the sequence
+//     }
     return result;
 }
 

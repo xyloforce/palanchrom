@@ -78,6 +78,7 @@ int main(int argc, char* argv[]) {
     }
 
     std::map <int, std::map<char, std::map <char, int>>> counts; // pos on NIEB : base : type of int : count
+//     std::map <int, std::map<std::string, std::map<char, std::map <char, int>>>> counts;
     fasta source(fastaFilename, read, standard);
     AOEbed inputFile("dump.AOE", read_line);
 
@@ -90,6 +91,10 @@ int main(int argc, char* argv[]) {
         for(int i(0); i < toCount.size(); i ++) {
 //             std::cout << toCount[i].getHeader() << std::endl;
             std::string sequence = toCount[i].getUppercaseSequence();
+//             std::cout << i << " - " << sorted_entries[i].getZero() << std::endl;
+//             std::cout << i << " - " << toCount[i].getPos(0) << std::endl;
+//             std::cout << i << " - " << sorted_entries[i].getRelativePos(toCount[i].getPos(0)) << std::endl;
+//             if(i == 3) {exit(1);}
             for(int j(0); j < sequence.size(); j++) {
 //                 std::cout << inputFile.getSortedEntries()[i].getStringEntry() << "  " << inputFile.getSortedEntries()[i].getZero() << "  " << j << "  "<< sequence[j] << "  " << inputFile.getSortedEntries()[i].getRelativePos(toCount[i].getPos(j)) << std::endl;
 //                 std::cout << toCount[i].getHeader() << std::endl;

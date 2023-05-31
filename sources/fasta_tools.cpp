@@ -335,14 +335,27 @@ void fasta_entry::setStrand(char strand)
     m_header.setStrand(strand);
 }
 
+void fasta_entry::setSequence(sequence sequence)
+{
+    m_sequence = sequence;
+}
 
 fasta_entry fasta::getSubset(bed_entry entry) {
     fasta_entry entryF = getFastaById(entry.getChrom());
     return entryF.getSubset(entry);
 }
 
-fasta_entry fasta_entry::getSubset(bed_entry entry) {
+fasta_entry fasta_entry::getSubset(bed_entry entry, bool &warned) {
     fasta_entry entryF(subsetEntry(entry.getStart(), entry.getStop()));
+    if(entryF.getStrand() == 'U' && entry.getStrand() == '-') {
+        if(!warned) {
+            std::cout << "\rBeware : considering unstranded as plus strand. If that's not a issue, ignore this warning.";
+            warned = true;
+        }
+        std::string tmp(entryF.getSequence());
+        std::string reverted = reverseComp(tmp);
+        entryF.setSequence(sequence(reverted));
+    }
     entryF.setStrand(entry.getStrand());
     return entryF;
 }
@@ -499,12 +512,14 @@ std::vector <fasta_entry> fasta::getSeqFromInts (std::vector <bed_entry> intsOfI
     std::string lastChrom = "";
     fasta_entry entryF;
     std::vector <fasta_entry> results;
+    bool warned(false);
     for(const auto &entryB: intsOfInterest) {
+//         std::cout << entryB.getStringEntry() << std::endl;
         if(lastChrom != entryB.getChrom()) {
             entryF = getFastaById(entryB.getChrom());
             lastChrom = entryB.getChrom();
         }
-        results.push_back(entryF.getSubset(entryB));
+        results.push_back(entryF.getSubset(entryB, warned));
     }
     return results;
 }
