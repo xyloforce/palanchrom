@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Loading vcf... " << std::endl;
     vcf mutations(argv[1], read_line);
     bool warned = true;
+    int limit = 0;
     mutations.readVCFLine(warned); // skip two
     mutations.readVCFLine(warned); // first lines
 
@@ -29,6 +30,7 @@ int main(int argc, char* argv[]) {
     
     while(!inputFasta.isEOF()) {
         entry = inputFasta.readFastaLine();
+        std::cout << "reading chr " << entry.getHeader() << std::endl;
         std::string sequence;
         for(int i(0); i< entry.getSize(); i++) {
             sequence += 'N';
@@ -36,22 +38,24 @@ int main(int argc, char* argv[]) {
         
         std::vector <bed_entry> currentInt = intervals.getBedByID(entry.getChrom());
         int count = 0;
-
+        std::cout << "Unmasking common parts of the sequence..." << std::endl;
         for(const auto &line : currentInt) {
             count ++;
-            int size(line.getStop()-line.getStart());
+            int size(line.getStop() - line.getStart());
             // first arg is POS of char so it's zero based
             sequence.replace(line.getStart(), size, entry.subsetEntry(line.getStart(), line.getStop()).getUppercaseSequence());
-
+            // std::cout << "Replacing done" << std::endl;
             if(count % 1000 == 0) {
                 std::cout << count << "         \r";
             }
         }
         count = 0;
         std::vector <vcf_entry> currentVCF;
+        std::cout << "Applying mutations" << std::endl;
         do {
-            currentVCF = mutations.readVCFByChrom(entry.getChrom(), 100000);
+            currentVCF = mutations.readVCFByChrom(entry.getChrom(), limit);
             for(const auto &VCFentry : currentVCF) {
+                // std::cout << VCFentry.getID2() << std::endl;
                 temp = "";
                 count ++;
                 // check old base
@@ -69,11 +73,11 @@ int main(int argc, char* argv[]) {
                 if(count % 100 == 0) {
                     std::cout << count << "\r";
                 }
-
             }
-        } while(mutations.checkChrom() == entry.getChrom());
+        } while(mutations.checkChrom() == entry.getChrom() && !mutations.isEOF());
         entry.editSeq(sequence, 0, entry.getSize());
         outputFasta.write_fasta_entry(entry);
+        std::cout << "entry was written successfully !" << std::endl;
     }
     
     return 0;

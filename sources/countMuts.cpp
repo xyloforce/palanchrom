@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
         intsOfInterest.dumpAOE(intsOfInterest.size());
     }
 
-    AOEbed inputFile("dump.AOE", read_line);
+    AOEbed inputFile("dump.AOE", read);
 
     std::cout << "Loading mutations..." << std::endl;
 
@@ -71,47 +71,41 @@ int main(int argc, char* argv[]) {
     if(!lowMem) {
         vcf muts(vcfFilename, read);
         std::cout << "overlapping..." << std::endl;
-        while(!inputFile.isEOF()) {
-            inputFile.loadBlock(1000000);
-            for(const auto &pair: inputFile.getOverlap(muts)) {
-                // pair.first is converted vcf & pair.second is a vector of AOE entry
-                if(pair.second.size() > 1) {
-                    std::cout << "Warning : more than one overlap" << std::endl;
-                }
-                vcf_entry entry(pair.first);
-                for(const auto &a_entry: pair.second) {
-                    std::string str_mut {static_cast<char>(toupper(entry.getAlternate()[0][0])), static_cast<char>(toupper(entry.getRef()[0]))};
-                    counts[a_entry.getRelativePos(entry.getPos()-1)][str_mut][a_entry.getType()] ++;
-                    count_lines ++;
-                }
+        for(const auto &pair: inputFile.getOverlap(muts)) {
+            // pair.first is converted vcf & pair.second is a vector of AOE entry
+            if(pair.second.size() > 1) {
+                std::cout << "Warning : more than one overlap" << std::endl;
             }
-            std::cout << count_lines << "\r";
+            vcf_entry entry(pair.first);
+            for(const auto &a_entry: pair.second) {
+                std::string str_mut {static_cast<char>(toupper(entry.getAlternate()[0][0])), static_cast<char>(toupper(entry.getRef()[0]))};
+                counts[a_entry.getRelativePos(entry.getPos()-1)][str_mut][a_entry.getType()] ++;
+                count_lines ++;
+            }
         }
+        std::cout << count_lines << "\r";
     } else {
         vcf muts(vcfFilename, read_line);
         std::cout << "overlapping..." << std::endl;
-        while(!inputFile.isEOF()) {
-            inputFile.loadBlock(LIMIT);
-            for(const std::string &chrom: inputFile.getChroms()) {
-                std::vector <vcf_entry> subset;
-                do {
-                    subset = muts.readVCFByChrom(chrom, LIMIT);
-                    vcf subset_file(subset);
-                    for(const auto &pair: inputFile.getOverlap(subset_file)) {
-                        // pair.first is converted vcf & pair.second is a vector of AOE entry
-                        if(pair.second.size() > 1) {
-                            std::cout << "Warning : more than one overlap" << std::endl;
-                        }
-                        vcf_entry entry(pair.first);
-                        for(const auto &a_entry: pair.second) {
-                            std::string str_mut {static_cast<char>(toupper(entry.getAlternate()[0][0])), static_cast<char>(toupper(entry.getRef()[0]))};
-                            counts[a_entry.getRelativePos(entry.getPos()-1)][str_mut][a_entry.getType()] ++;
-                            count_lines ++;
-                        }
+        for(const std::string &chrom: inputFile.getChroms()) {
+            std::vector <vcf_entry> subset;
+            do {
+                subset = muts.readVCFByChrom(chrom, LIMIT);
+                vcf subset_file(subset);
+                for(const auto &pair: inputFile.getOverlap(subset_file)) {
+                    // pair.first is converted vcf & pair.second is a vector of AOE entry
+                    if(pair.second.size() > 1) {
+                        std::cout << "Warning : more than one overlap" << std::endl;
                     }
-                } while(subset.size() == LIMIT); // ensure that it repeats until the given chrom is totally read
-                std::cout << count_lines << "\r";
-            }
+                    vcf_entry entry(pair.first);
+                    for(const auto &a_entry: pair.second) {
+                        std::string str_mut {static_cast<char>(toupper(entry.getAlternate()[0][0])), static_cast<char>(toupper(entry.getRef()[0]))};
+                        counts[a_entry.getRelativePos(entry.getPos()-1)][str_mut][a_entry.getType()] ++;
+                        count_lines ++;
+                    }
+                }
+            } while(!muts.isEOF()); // ensure that it repeats until the given chrom is totally read
+            std::cout << count_lines << "\r";
         }
     }
 

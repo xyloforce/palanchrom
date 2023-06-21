@@ -46,6 +46,7 @@ public:
     vcf(std::vector <vcf_entry> values, std::map <std::string, std::vector <int>> indexes);
     vcf(std::vector <vcf_entry> values);
     void vcf_writeline(vcf_entry entry_vcf);
+    void skip_comment_lines();
 //     void vcf_writelines(std::string filename);
     vcf_entry readVCFLine(bool &warned);
     // std::string isMuted(std::string chrom, int pos, std::string ref_bases);

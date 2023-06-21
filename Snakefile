@@ -154,6 +154,8 @@ rule getAncestralGenomeRef:
         "./bin/makeAncestral {input} {output}"
 
 rule getInt:
+    wildcard_constraints:
+        pattern = "[^n]+"
     input:
         config["result_folder"] + "/{species}_ancestralGenome.fasta",
     output:

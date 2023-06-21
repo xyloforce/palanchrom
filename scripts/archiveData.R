@@ -91,7 +91,7 @@ for(base in unique(muts$ancestral)) {
         relative = paste("relative_", mut, sep= "")
         currentBDF[,relative] = currentBDF[,mut] / currentBDF$comptage * 100
         errorBar = paste("error_", mut, sep= "")
-        currentBDF[,errorBar] = (sqrt(currentBDF[,relative]*(1 - currentBDF[,relative]) / currentBDF$comptage)) / currentBDF[,relative]
+        currentBDF[,errorBar] = (sqrt(currentBDF[,relative]*(100 - currentBDF[,relative]) / currentBDF$comptage)) / currentBDF[,relative]
         mean10m = paste("mean10_", mut, sep = "")
         currentBDF[,mean10m] = mean10pb(currentBDF[,relative])
         error10m = paste("error10_", mut, sep = "")
