@@ -75,6 +75,7 @@ correct_labels <- c("3" = "A→C - T→G (transversion)",
 df$color = sapply(df$mutation, FUN = function(x) switch(x, "AT" = "1", "TA" = "2", "AG" = "3", "TC" = "4", "AC" = "1", "TG" = "2", "GC" = "2", "CG" = "1", "GT" = "2", "CA" = "1", "GA" = "4", "CT" = "3"))
 
 print("plotting")
+df$mean10 =  df$mean10 * 100
 df = df[df$position > xlim1 & df$position < xlim2, ]
 # limits = c(0.0001, 0.01), breaks = seq(0.0001, 0.01, by = 0.0015),
 # how to add breaks AND scales free ?
@@ -95,7 +96,7 @@ plot1 = ggplot(data = df, aes(y = mean10, x = position, color = color)) +
 filepath = list.files(path = args[1], "total.tsv", full.names = TRUE)
 
 total = read_tsv(filepath[1], show_col_types = FALSE)
-
+total$mean10 =  total$mean10 * 100
 total = total[total$position > xlim1 & total$position < xlim2, ]
 
 plot2 = ggplot(data = total, aes(x = position, y = mean10)) + geom_line(linewidth = 1) +

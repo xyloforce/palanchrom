@@ -89,9 +89,9 @@ for(base in unique(muts$ancestral)) {
         currentBDF[,mut] = 0
         currentBDF[match(muts[muts$mutation == mut, "position"], currentBDF$position),mut] = muts[muts$mutation == mut, "comptage"]
         relative = paste("relative_", mut, sep= "")
-        currentBDF[,relative] = currentBDF[,mut] / currentBDF$comptage * 100
+        currentBDF[,relative] = currentBDF[,mut] / currentBDF$comptage
         errorBar = paste("error_", mut, sep= "")
-        currentBDF[,errorBar] = 2 * sqrt(currentBDF[,mut] * currentBDF$comptage * (1 - currentBDF[,mut])) # sqrt(np*(1-p))
+        currentBDF[,errorBar] = 2 * sqrt(currentBDF[, relative] * currentBDF$comptage * (1 - currentBDF[, relative])) # sqrt(np*(1-p))
         mean10m = paste("mean10_", mut, sep = "")
         currentBDF[,mean10m] = mean10pb(currentBDF[,relative])
         error10m = paste("error10_", mut, sep = "")
