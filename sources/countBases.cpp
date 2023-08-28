@@ -1,117 +1,46 @@
+#include "fasta_tools.hpp"
+#include "bed_tools.hpp"
+#include "tools.hpp"
 #include <iostream>
-#include "fasta_tools.h"
-#include "bed_tools.h"
-#include "bio_tools.h"
 
 int main(int argc, char* argv[]) {
-    bool lowMem = false;
-    bool restart = false;
-    bool no_int = false;
-    int block_quantity(50000);
-    bool strand = false;
-
-    std::map <char, std::string> args = getArgs(std::vector<std::string>(argv, argv + argc));
-
-    std::string AOEfilename, bedFilename, fastaFilename, outputFilename;
-
+    std::map <char, std::string> args = getArgs(std::vector <std::string> (argv, argv + argc));
+    std::string fasta_filename, AOE_filename, bed_filename, tsv_filename;
+    std::cout << "Starting" << std::endl;
     try {
-        AOEfilename = args.at('a');
-        fastaFilename = args.at('f');
-        outputFilename = args.at('o');
-    } catch(std::out_of_range) {
-        std::cout << "Missing obligatory parameters. Parameters are : \n";
-        std::cout << "\t-a AOE file \n";
-        std::cout << "\t-b bed file \n";
-        std::cout << "\t-f fasta file \n";
-        std::cout << "\t-o output file \n";
-        std::cout << "Optionnal stuff includes : \n";
-        std::cout << "\t-l low mem mode \n";
-        std::cout << "\t-d restart from dump \n";
-        std::cout << "\t-s use strand information in intervals \n";
-        std::cout << "\t-n ignore bed \n";
-        exit(1);
+        fasta_filename = args.at('f');
+        AOE_filename = args.at('a');
+        bed_filename = args.at('b');
+        tsv_filename = args.at('o');
+    } catch (std::out_of_range) {
+        std::cout << "Missing obligatory parameters. Parameters are :\n";
+        std::cout << "\t+f fasta filename\n";
+        std::cout << "\t+b bed filename\n";
+        std::cout << "\t+o output filename\n";
+        std::cout << "\t+a aoe filename\n";
+        throw std::out_of_range("Missing arguments");
     }
+    fasta_file ancestral(fasta_filename, read, standard);
+    ancestral.readWholeFile();
+    bed_file mask(bed_filename, read);
+    mask.readWholeFile();
+    AOE_file aoe(AOE_filename, read);
+    aoe.readWholeFile();
 
-    bedFilename = "";
-    if(args.find('b') != args.end()) {
-        bedFilename = args.at('b');
-    } else if(args.find('n') != args.end()) {
-        no_int = true;
-    } else {
-        std::cout << "Need to set either bed or n" << std::endl;
-        exit(1);
-    }
-
-    if(args.find('l') != args.end()) {
-        lowMem = true;
-    }
-
-    if(args.find('d') != args.end()) {
-        restart = true;
-    }
-
-    if(args.find('s') != args.end()) {
-        strand = true;
-        std::cout << "Strand set to true" << std::endl;
-    }
-
-    if(!restart) {
-        std::cout << "Loading AOEs..." << std::endl;
-        AOEbed intsOfInterest(AOEfilename);
-
-        if(lowMem) {
-            bed mask(bedFilename, openType::read_line);
-
-            std::cout << "Intersecting... " << std::endl;
-            intsOfInterest.cutToMask(mask, false, false, strand);
-        } else if(no_int) {
-            std::cout << "Skipping intersection as asked by n flag..." << std::endl;
-        } else {
-            std::cout << "Loading bed... " << std::endl;
-            sorted_bed mask(bedFilename);
-
-            std::cout << "Intersecting... " << std::endl;
-            intsOfInterest.cutToMask(mask, false, false, strand);
-        }
-    //     intsOfInterest.writeToFile(".savestate.tmp");
-        intsOfInterest.dumpAOE();
-    }
-
-    std::map <int, std::map<char, std::map <char, int>>> counts; // pos on NIEB : base : type of int : count
-//     std::map <int, std::map<std::string, std::map<char, std::map <char, int>>>> counts;
-    fasta source(fastaFilename, read, standard);
-    AOEbed inputFile("dump.AOE", read_line);
-
-    std::cout << "Loading input block by block" << std::endl;
-
-    while(!inputFile.isEOF()) {
-        inputFile.loadBlock(block_quantity);
-        std::vector <fasta_entry> toCount = source.getSeqFromInts(inputFile);
-        std::vector <AOE_entry> sorted_entries = inputFile.getSortedEntries();
-        for(int i(0); i < toCount.size(); i ++) {
-//             std::cout << toCount[i].getHeader() << std::endl;
-            std::string sequence = toCount[i].getUppercaseSequence();
-//             std::cout << i << " - " << sorted_entries[i].getZero() << std::endl;
-//             std::cout << i << " - " << toCount[i].getPos(0) << std::endl;
-//             std::cout << i << " - " << sorted_entries[i].getRelativePos(toCount[i].getPos(0)) << std::endl;
-//             if(i == 3) {exit(1);}
-            for(int j(0); j < sequence.size(); j++) {
-//                 std::cout << inputFile.getSortedEntries()[i].getStringEntry() << "  " << inputFile.getSortedEntries()[i].getZero() << "  " << j << "  "<< sequence[j] << "  " << inputFile.getSortedEntries()[i].getRelativePos(toCount[i].getPos(j)) << std::endl;
-//                 std::cout << toCount[i].getHeader() << std::endl;
-                counts[sorted_entries[i].getRelativePos(toCount[i].getPos(j, 0))][sequence[j]][sorted_entries[i].getType()] ++;
-            }
-            if(i / toCount.size() % 10 == 0.0) {
-                std::cout << i << "\r";
-            }
+    std::cout << "Intersecting" << std::endl;
+    std::map <std::string, std::map <char, std::map <int, int>>> summed_values;
+    for(const auto& entry: aoe.intersect(mask)) {
+        std::string seq = dynamic_cast <fasta_entry*> (ancestral.getEntriesByChr(entry.result.getChr())[0]) -> subset(entry.result);
+        for(int i(entry.result.getStart()); i < entry.result.getEnd(); i++) {
+            summed_values[entry.result.getChr()][seq[i - entry.result.getStart()]][dynamic_cast <AOE_entry*>(entry.source) -> getRelativePos(i)] ++;
         }
     }
-
-    std::cout << "Writing results ... " << std::endl;
-    std::ofstream resultFile(outputFilename);
-    for(const auto &intToMap: counts) {
-        for(const auto &charToMap: intToMap.second) {
-            for(const auto &charToInt: charToMap.second) {
-                resultFile << intToMap.first << '\t' << charToMap.first << '\t'  << charToInt.first << '\t'  << charToInt.second << '\n';
+    std::cout << "Writing results" << std::endl;
+    std::ofstream output_file(tsv_filename);
+    for(const auto& chrToChar: summed_values) {
+        for(const auto& charToPos: chrToChar.second) {
+            for(const auto& posToCount: charToPos.second) {
+                output_file << chrToChar.first << "\t" << charToPos.first  << "\t" << posToCount.first  << "\t" << posToCount.second << "\n";
             }
         }
     }

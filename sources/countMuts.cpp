@@ -1,120 +1,56 @@
+#include "vcf_tools.hpp"
+#include "bed_tools.hpp"
+#include "tools.hpp"
 #include <iostream>
-#include <map>
-#include "bed_tools.h"
-#include "vcf_tools.h"
-#include "bio_tools.h"
 
 int main(int argc, char* argv[]) {
-    bool lowMem = false;
-    bool restart = false;
-    bool strand = false;
-    const int LIMIT = 1000000;
-
-    std::map <char, std::string> args = getArgs(std::vector<std::string>(argv, argv + argc));
-
-    std::string AOEfilename, bedFilename, vcfFilename, outputFilename;
-
+    std::map <char, std::string> args = getArgs(std::vector <std::string> (argv, argv + argc));
+    std::string vcf_filename, AOE_filename, bed_filename, tsv_filename;
+    std::cout << "Starting" << std::endl;
     try {
-        AOEfilename = args.at('a');
-        bedFilename = args.at('b');
-        vcfFilename = args.at('v');
-        outputFilename = args.at('o');
-    } catch(std::out_of_range) {
-        std::cout << "Missing obligatory parameters. Parameters are : \n";
-        std::cout << "\t-a AOE file \n";
-        std::cout << "\t-b bed file \n";
-        std::cout << "\t-v vcf file \n";
-        std::cout << "\t-o output file \n";
-        std::cout << "Optionnal stuff includes : \n";
-        std::cout << "\t-l low mem mode \n";
-        std::cout << "\t-d restart from dump \n";
-        std::cout << "\t-s use strand information in intervals \n";
-        exit(1);
+        vcf_filename = args.at('v');
+        AOE_filename = args.at('a');
+        bed_filename = args.at('b');
+        tsv_filename = args.at('o');
+    } catch (std::out_of_range) {
+        std::cout << "Missing obligatory parameters. Parameters are :\n";
+        std::cout << "\t+v vcf filename\n";
+        std::cout << "\t+b bed filename\n";
+        std::cout << "\t+o output filename\n";
+        std::cout << "\t+a aoe filename\n";
+        throw std::out_of_range("Missing arguments");
     }
-
-    if(args.find('l') != args.end()) {
-        lowMem = true;
-    }
-
-    if(args.find('d') != args.end()) {
-        restart = true;
-    }
-
-    if(args.find('s') != args.end()) {
-        strand = true;
-    }
-
-    if(!restart) {
-        std::cout << "Loading AOEs..." << std::endl;
-        AOEbed intsOfInterest(AOEfilename);
-        std::cout << "Loading bed..." << std::endl;
-
-        std::vector <AOE_entry> intersects;
-        if(lowMem) {
-            bed mask(bedFilename, openType::read_line);
-            intsOfInterest.cutToMask(mask, false, false, strand);
-        } else {
-            sorted_bed mask(bedFilename);
-            intsOfInterest.cutToMask(mask, false, false, strand);
-        }
-        std::cout << "Intersecting finished, dumping..." << std::endl;
-        intsOfInterest.dumpAOE(intsOfInterest.size());
-    }
-
-    AOEbed inputFile("dump.AOE", read);
-
-    std::cout << "Loading mutations..." << std::endl;
-
-    std::map <int, std::map <std::string, std::map <char, int>>> counts;
-    int count_lines(0);
-
-    if(!lowMem) {
-        vcf muts(vcfFilename, read);
-        std::cout << "overlapping..." << std::endl;
-        for(const auto &pair: inputFile.getOverlap(muts)) {
-            // pair.first is converted vcf & pair.second is a vector of AOE entry
-            if(pair.second.size() > 1) {
-                std::cout << "Warning : more than one overlap" << std::endl;
+    vcf_file mutations(vcf_filename, read);
+    bed_file mask(bed_filename, read);
+    mask.readWholeFile();
+    AOE_file aoe(AOE_filename, read);
+    aoe.readWholeFile();
+    
+    aoe.apply_intersect(mask);
+    std::map <std::string, std::map <std::string, std::map <int, int>>> summed_values;
+    while(mutations.remainToRead()) {
+        mutations.eraseAndLoad(); // load exactly one entry
+        std::vector <intersect_results> results = mutations.intersect(aoe, false);
+        if(results.size() > 1) {
+            std::cout << "error : \n";
+            for(const auto& entry: results) {
+                std::cout << entry.hit -> getString() << '\n';
             }
-            vcf_entry entry(pair.first);
-            for(const auto &a_entry: pair.second) {
-                std::string str_mut {static_cast<char>(toupper(entry.getAlternate()[0][0])), static_cast<char>(toupper(entry.getRef()[0]))};
-                counts[a_entry.getRelativePos(entry.getPos()-1)][str_mut][a_entry.getType()] ++;
-                count_lines ++;
+            throw std::logic_error("more than one overlap");
+        } else if(results.size() == 1) {
+            std::string current_mutation = dynamic_cast<vcf_entry*> (results[0].source) -> getRef() + dynamic_cast<vcf_entry*> (results[0].source) -> getAlt();
+            if(current_mutation[1] != 'N') {
+                summed_values[mutations.getEntry(0) -> getChr()][current_mutation][dynamic_cast <const AOE_entry*>(results[0].hit) -> getRelativePos(results[0].result.getStart())] ++;
             }
         }
-        std::cout << count_lines << "\r";
-    } else {
-        vcf muts(vcfFilename, read_line);
-        std::cout << "overlapping..." << std::endl;
-        for(const std::string &chrom: inputFile.getChroms()) {
-            std::vector <vcf_entry> subset;
-            do {
-                subset = muts.readVCFByChrom(chrom, LIMIT);
-                vcf subset_file(subset);
-                for(const auto &pair: inputFile.getOverlap(subset_file)) {
-                    // pair.first is converted vcf & pair.second is a vector of AOE entry
-                    if(pair.second.size() > 1) {
-                        std::cout << "Warning : more than one overlap" << std::endl;
-                    }
-                    vcf_entry entry(pair.first);
-                    for(const auto &a_entry: pair.second) {
-                        std::string str_mut {static_cast<char>(toupper(entry.getAlternate()[0][0])), static_cast<char>(toupper(entry.getRef()[0]))};
-                        counts[a_entry.getRelativePos(entry.getPos()-1)][str_mut][a_entry.getType()] ++;
-                        count_lines ++;
-                    }
-                }
-            } while(!muts.isEOF()); // ensure that it repeats until the given chrom is totally read
-            std::cout << count_lines << "\r";
-        }
     }
-
-    std::cout << "Writing results ... " << std::endl;
-    std::ofstream outputFile(outputFilename);
-    for(const auto &pair: counts) {
-        for(const auto &pair2: pair.second) {
-            for(const auto &pair3: pair2.second)
-            outputFile << pair.first << '\t' << pair2.first << '\t' << pair3.first << '\t' << pair3.second << '\n';
+    std::cout << "Writing results" << std::endl;
+    std::ofstream output_file(tsv_filename);
+    for(const auto& chrToChar: summed_values) {
+        for(const auto& charToPos: chrToChar.second) {
+            for(const auto& posToCount: charToPos.second) {
+                output_file << chrToChar.first << "\t" << charToPos.first  << "\t" << posToCount.first  << "\t" << posToCount.second << "\n";
+            }
         }
     }
     return 0;

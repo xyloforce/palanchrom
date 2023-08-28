@@ -1,134 +1,45 @@
 #include <iostream>
-#include <fstream>
-#include <regex>
+#include "fasta_tools.hpp"
+#include "bed_tools.hpp"
+#include "tools.hpp"
 
-#include "fasta_tools.h"
-#include "bed_tools.h"
-#include "bio_tools.h"
+int main(int argc, char* argv[]) {
+    std::map <char, std::string> args = getArgs(std::vector <std::string> (argv, argv + argc));
+    std::string fasta_filename, matchs_filename, non_matchs_filename, pattern;
+    std::cout << "Starting" << std::endl;
+    try {
+        fasta_filename = args.at('f');
+        matchs_filename = args.at('1');
+        pattern = args.at('p');
+    } catch (std::out_of_range) {
+        std::cout << "Missing obligatory parameters. Parameters are :\n";
+        std::cout << "\t+f fasta filename\n";
+        std::cout << "\t+1 matchs filename\n";
+        std::cout << "\t+p pattern\n";
+        std::cout << "Optionnal arg :\n";
+        std::cout << "\t+2 non-matchs filename\n";
+        throw std::out_of_range("Missing arguments");
+    }
+    std::cout << "Reading file\n";
+    fasta_file sequences(fasta_filename, read, standard);
+    sequences.readWholeFile();
+    bed_file matchs(matchs_filename, write);
 
-int main(int argc, char *argv[])
-{
-    std::cout << "getPattern v1" << std::endl;
-    // parse pattern
-    // create regex
-    // merge pattern
-    std::string regex, Nregex, Rregex;
-    std::string fasta_file, output_1, output_2;
-    bool noN = false;
-    bool capturingGroups = false;
-    bool needToBeReversed = false; // pattern does not need to be reverse complemented, is the same in the two directions
+    std::cout << "Looking for patterns\n";
+    std::map<int, std::vector<std::shared_ptr <bio_entry>>> results(sequences.matchPatterns(pattern));
 
-    std::map <char, std::string> args = getArgs(std::vector<std::string>(argv, argv + argc));
+    std::cout << "Saving patterns\n";
+    matchs.appendVector(results[0]);
+    matchs.writeToFile();
 
     try {
-        regex = args.at('p');
-        fasta_file = args.at('f');
-        output_1 = args.at('1');
+        non_matchs_filename = args.at('2');
+        bed_file non_matchs(non_matchs_filename, write);
+        non_matchs.appendVector(results[1]);
+        non_matchs.writeToFile();
     } catch(std::out_of_range) {
-        std::cout << "Missing obligatory parameters. Parameters are : \n";
-        std::cout << "\t-p pattern \n";
-        std::cout << "\t-f fasta \n";
-        std::cout << "\t-1 output 1 \n";
-        std::cout << "Optionnal stuff includes : \n";
-        std::cout << "\t-2 output 2 (non matches) \n";
-        std::cout << "\t-n pattern that must NOT be matched (set -2 before) \n";
-        std::cout << "\t-c has capture groups ? (T if true) \n";
-        std::cout << "\t-r count both strands. Can't be used with -2/-n or with regex as a first value" << std::endl;
-        exit(1);
+        std::cout << "Skipping non-matchs" << std::endl;
     }
-
-    // then : either we want both AND we setted the -n or not
-
-    if(args.find('2') != args.end()) {
-        output_2 = args.at('2');
-        if(args.find('n') != args.end()) {
-            Nregex = args.at('n');
-        } else {
-            Nregex = constructRegex(regex, true);
-        }
-    } else { // no output for 2 : no 2
-        noN = true;
-    }
-
-    if(args.find('c') != args.end()) {
-        capturingGroups = true;
-    }
-
-    if(args.find('r') != args.end()) {
-        if(reverseComp(regex) != regex) {
-            needToBeReversed = true;
-            Rregex = reverseComp(regex);
-        } else {
-            std::cout << "Pattern is identical when reversed" << std::endl;
-        }
-    }
-
-    std::cout << "Reading input..." << std::endl;
-    // fasta inputFile(fasta_file, read_line, standard);
-    fasta inputFile(fasta_file, read, standard);
-
-    std::cout << "Creating outputs..." << std::endl;
-    bed outputFile(output_1, openType::write);
-    bed outputConvert;
-    if(!noN) {
-        outputConvert = bed(output_2, openType::write);
-    }
-
-    std::cout << "Starting analysis..." << std::endl;
-
-    for(const auto &entry: inputFile.getEntries()) {
-        std::cout << entry.getHeader() << "\r" << std::flush;
-        std::vector <bed_entry> matchs = entry.matchPatterns(regex, capturingGroups);
-                for(auto bed_line: matchs) {
-            if(needToBeReversed) {
-                bed_line.setStrand('+');
-            }
-            outputFile.writeBedLine(bed_line);
-        }
-        if(needToBeReversed) {
-            std::vector <bed_entry> matchs = entry.matchPatterns(Rregex, capturingGroups);
-            for(auto bed_line: matchs) {
-                if(needToBeReversed) {
-                    bed_line.setStrand('-');
-                }
-                outputFile.writeBedLine(bed_line);
-            }
-        }
-        if(!noN) {
-            std::vector <bed_entry> tmp = entry.matchPatterns(Nregex, capturingGroups);
-            std::vector <bed_entry> convert = entry.reverseInts(tmp);
-            for(const auto &bed_line: convert) {
-                outputConvert.writeBedLine(bed_line);
-            }
-        }
-    }
-
-    // while(!inputFile.isEOF()) {
-    //     fasta_entry entry(inputFile.readFastaLine());
-    //     std::cout << entry.getHeader() << "\r" << std::flush;
-    //     std::vector <bed_entry> matchs = entry.matchPatterns(regex, capturingGroups);
-    //     for(auto bed_line: matchs) {
-    //         if(needToBeReversed) {
-    //             bed_line.setStrand('+');
-    //         }
-    //         outputFile.writeBedLine(bed_line);
-    //     }
-    //     if(needToBeReversed) {
-    //         std::vector <bed_entry> matchs = entry.matchPatterns(Rregex, capturingGroups);
-    //         for(auto bed_line: matchs) {
-    //             if(needToBeReversed) {
-    //                 bed_line.setStrand('-');
-    //             }
-    //             outputFile.writeBedLine(bed_line);
-    //         }
-    //     }
-    //     if(!noN) {
-    //         std::vector <bed_entry> tmp = entry.matchPatterns(Nregex, capturingGroups);
-    //         std::vector <bed_entry> convert = entry.reverseInts(tmp);
-    //         for(const auto &bed_line: convert) {
-    //             outputConvert.writeBedLine(bed_line);
-    //         }
-    //     }
-    // }
+    
     return 0;
 }

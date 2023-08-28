@@ -22,6 +22,13 @@ def getCorrectFasta(wildcards):
     else:
         return config["result_folder"] + "/commonSeqs_" + config["speciesA"] + ".fa"
 
+def formatOutgroups(wildcards):
+    i = 3
+    valid_string = ""
+    for outgroup in config["outgroups"]:
+        valid_string += " +" + str(i) + " " + config["result_folder"] + "/commonSeqs_" + outgroup + ".fa"
+    return valid_string
+
 def correctWildcard(wildcards):
     return wildcards.species[0].upper() + wildcards.species[1:]
 
@@ -131,7 +138,7 @@ rule getAncestralState:
     output:
         config["result_folder"] + "/{species}_ancestralBases.vcf"
     shell:
-        "./bin/getAncestralBase {input.ref} {input.ref2} {input.fasta} {output}"
+        "./bin/getAncestralBase.bin +1 {input.ref} +2 {input.ref2}" + formatOutgroups + " +v {output}"
 
 rule getAncestralGenome:
     input:
@@ -141,7 +148,7 @@ rule getAncestralGenome:
     output:
         config["result_folder"] + "/{ref}_ancestralGenome.fasta"
     shell:
-        "./bin/makeAncestral {input} {output}"
+        "./bin/makeAncestral.bin +v {input.vcf} +b {input.bed} +i {input.fa} +o {output}"
 
 rule getAncestralGenomeRef:
     input:
@@ -151,7 +158,7 @@ rule getAncestralGenomeRef:
     output:
         config["result_folder"] + "/" + config["speciesA"] + "_ancestralGenome.fasta"
     shell:
-        "./bin/makeAncestral {input} {output}"
+        "./bin/makeAncestral.bin +v {input.vcf} +b {input.bed} +i {input.fa} +o {output}"
 
 rule getInt:
     wildcard_constraints:
@@ -164,7 +171,7 @@ rule getInt:
     params:
         pattern = "{type}"
     shell:
-        "./bin/getPattern -p {params} -f {input} -1 {output.bed1} -2 {output.bed2}"
+        "./bin/getPattern.bin -p {params} -f {input} -1 {output.bed1} -2 {output.bed2}"
 
 rule filterBarriers:
     input:
@@ -192,7 +199,7 @@ rule countMuts:
     resources:
         mem_cons = 25
     shell:
-        "./bin/countMuts -a {input.aoe} -b {input.bed} -v {input.vcf} -o {output} -l"
+        "./bin/countMuts.bin -a {input.aoe} -b {input.bed} -v {input.vcf} -o {output}"
 
 rule countBases:
     input:
@@ -204,7 +211,7 @@ rule countBases:
     resources:
         mem_cons = 50
     shell:
-        "./bin/countBases -a {input.aoe} -b {input.bed} -f {input.fa} -o {output} -l"
+        "./bin/countBases.bin -a {input.aoe} -b {input.bed} -f {input.fa} -o {output}"
 
 rule archivate:
     input:
