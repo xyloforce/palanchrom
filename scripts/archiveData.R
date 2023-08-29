@@ -41,10 +41,10 @@ reverse_mutation = function(col_mut) {
     return(result)
 }
 
-if (nrow(muts[muts$type == "R", ]) > 0) {
+if (nrow(muts[muts$type == "-", ]) > 0) {
     print("get all bases on one side")
-    muts[muts$type == "R", "mutation"] = sapply(muts[muts$type == "R", "mutation"], FUN = reverse_mutation)
-    bases[bases$type == "R", "base"] = sapply(bases[bases$type == "R", "base"], FUN = reverse_base)
+    muts[muts$type == "-", "mutation"] = sapply(muts[muts$type == "-", "mutation"], FUN = reverse_mutation)
+    bases[bases$type == "-", "base"] = sapply(bases[bases$type == "-", "base"], FUN = reverse_base)
     bases = aggregate(bases$comptage, by = list(bases$position, bases$base), FUN = sum, na.rm = TRUE)
     colnames(bases) = c("position", "base", "comptage")
 } else {

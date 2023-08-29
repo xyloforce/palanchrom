@@ -26,21 +26,17 @@ int main(int argc, char* argv[]) {
     AOE_file aoe(AOE_filename, read);
     aoe.readWholeFile();
     
+    std::cout << "Intersect with mask..." << std::endl;
     aoe.apply_intersect(mask);
+    std::cout << "Intersect and count mutations..." << std::endl;
     std::map <std::string, std::map <std::string, std::map <int, int>>> summed_values;
     while(mutations.remainToRead()) {
-        mutations.eraseAndLoad(); // load exactly one entry
+        mutations.eraseAndLoadBlock(); // load exactly one entry
         std::vector <intersect_results> results = mutations.intersect(aoe, false);
-        if(results.size() > 1) {
-            std::cout << "error : \n";
-            for(const auto& entry: results) {
-                std::cout << entry.hit -> getString() << '\n';
-            }
-            throw std::logic_error("more than one overlap");
-        } else if(results.size() == 1) {
-            std::string current_mutation = dynamic_cast<vcf_entry*> (results[0].source) -> getRef() + dynamic_cast<vcf_entry*> (results[0].source) -> getAlt();
+        for(int i(0); i < results.size(); i++) {
+            std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getRef() + dynamic_cast<vcf_entry*> (results[i].source) -> getAlt();
             if(current_mutation[1] != 'N') {
-                summed_values[mutations.getEntry(0) -> getChr()][current_mutation][dynamic_cast <const AOE_entry*>(results[0].hit) -> getRelativePos(results[0].result.getStart())] ++;
+                summed_values[results[i].result.getChr()][current_mutation][dynamic_cast <const AOE_entry*>(results[i].hit) -> getRelativePos(results[i].result.getStart())] ++;
             }
         }
     }

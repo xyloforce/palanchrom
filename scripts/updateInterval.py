@@ -1,5 +1,4 @@
 import sys
-import glob
 
 # folder = sys.argv[1]
 originalH = sys.argv[1]
@@ -83,6 +82,6 @@ for key in diffInt:
         end = int(line[2]) - diffInt[key][0]
     lines.append((line[0] + "\t" + str(start) + "\t" + str(end) + "\t" + key + "\t" + "\t".join(line[-2:]) + "\n", diffInt[key][2]))
 
-lines.sort(key = lambda x: x[1]) # sort following line order in commonbed
+lines.sort(key = lambda x: x[1]) # sort following line order in common bed
 lines = [value[0] for value in lines] # delete line index now that the line is sorted
 outputHandler.writelines(lines)
