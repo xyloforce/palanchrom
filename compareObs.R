@@ -111,6 +111,6 @@ plot = ggplot(data = df, aes(x = position, y = mean10, color = type)) +
     theme_poster +
     scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
     scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-    scale_color_manual(values = c("#0c65f5", "#f53da4", "#f5a80c", "#22f518"))
+    scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518"))
 
 ggsave(args[3], width = 20, height = 9)
