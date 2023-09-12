@@ -3,6 +3,29 @@
 #include "tools.hpp"
 #include <iostream>
 
+std::string reverseString(const std::string& sequence) {
+    std::string sequence_final;
+    for(const auto nuc: sequence) {
+        switch(nuc) {
+            case 'A':
+                sequence_final = sequence_final + 'T';
+                break;
+            case 'C':
+                sequence_final = sequence_final + 'G';
+                break;
+            case 'G':
+                sequence_final = sequence_final + 'C';
+                break;
+            case 'T':
+                sequence_final = sequence_final + 'A';
+                break;
+            default:
+                sequence_final = sequence_final + nuc;
+        }
+    }
+    return sequence_final;
+}
+
 int main(int argc, char* argv[]) {
     std::map <char, std::string> args = getArgs(std::vector <std::string> (argv, argv + argc));
     std::string vcf_filename, AOE_filename, bed_filename, tsv_filename;
@@ -18,8 +41,19 @@ int main(int argc, char* argv[]) {
         std::cout << "\t+b bed filename\n";
         std::cout << "\t+o output filename\n";
         std::cout << "\t+a aoe filename\n";
+        std::cout << "Optionnal :" << std::endl;
+        std::cout << "\t+s check strand of ints" << std::endl;
         throw std::out_of_range("Missing arguments");
     }
+
+    bool stranded(false);
+    try {
+        args.at('s');
+        stranded = true;
+    } catch(std::out_of_range) {
+        std::cout << "Ignoring strands" << std::endl;
+    }
+
     vcf_file mutations(vcf_filename, read);
     bed_file mask(bed_filename, read);
     mask.readWholeFile();
@@ -27,16 +61,19 @@ int main(int argc, char* argv[]) {
     aoe.readWholeFile();
     
     std::cout << "Intersect with mask..." << std::endl;
-    aoe.apply_intersect(mask);
+    aoe.apply_intersect(mask, stranded);
     std::cout << "Intersect and count mutations..." << std::endl;
-    std::map <std::string, std::map <std::string, std::map <int, int>>> summed_values;
+    std::map <int, std::map <std::string, std::map <char, int>>> summed_values;
     while(mutations.remainToRead()) {
-        mutations.eraseAndLoadBlock(); // load exactly one entry
+        mutations.eraseAndLoadBlock();
         std::vector <intersect_results> results = mutations.intersect(aoe, false);
         for(int i(0); i < results.size(); i++) {
-            std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getRef() + dynamic_cast<vcf_entry*> (results[i].source) -> getAlt();
+            std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getAlt() + dynamic_cast<vcf_entry*> (results[i].source) -> getRef();
             if(current_mutation[1] != 'N') {
-                summed_values[results[i].result.getChr()][current_mutation][dynamic_cast <const AOE_entry*>(results[i].hit) -> getRelativePos(results[i].result.getStart())] ++;
+                if(stranded && results[i].hit -> getStrand() == '-') {
+                    current_mutation = reverseString(current_mutation);
+                }
+                summed_values[dynamic_cast <const AOE_entry*>(results[i].hit) -> getRelativePos(results[i].result.getStart())][current_mutation][results[i].hit -> getStrand()] ++;
             }
         }
     }
