@@ -106,7 +106,7 @@ plot = ggplot(data = df, aes(x = position, y = mean10, color = type)) +
     facet_wrap(~ source, scales = "free",
                labeller = as_labeller(correct_labels)) +
     geom_line(linewidth = 1.5) +
-    geom_vline(xintercept = , color = "black", linewidth = 1) +
+    geom_vline(xintercept = vline_coords, color = "black", linewidth = 1) +
     geom_errorbar(aes(ymin = mean10 - error10, ymax = mean10 + error10),
                       color = "black") +
     xlab("position") +
