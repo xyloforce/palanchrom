@@ -97,13 +97,16 @@ correct_labels <- c("TG" = "A→C - T→G (transversion)",
                     "Total" = "Global mutation rate"
                     )
 
+vline_coords = c(0, 133)
+vline_coords = vline_coords[vline_coords > min_win & vline_coords < max_win]
+
 df[df$position %% 10 != 0, "error10"] = 0
 df = df[df$position %in% min_win:max_win, ]
 plot = ggplot(data = df, aes(x = position, y = mean10, color = type)) +
     facet_wrap(~ source, scales = "free",
                labeller = as_labeller(correct_labels)) +
     geom_line(linewidth = 1.5) +
-    geom_vline(xintercept = c(0, 133), color = "black", linewidth = 1) +
+    geom_vline(xintercept = , color = "black", linewidth = 1) +
     geom_errorbar(aes(ymin = mean10 - error10, ymax = mean10 + error10),
                       color = "black") +
     xlab("position") +
