@@ -9,9 +9,9 @@ reverseBase = function(x) {
 
 source("~/setThemePoster.R")
 
-data = read.delim(args[1], col.names = c("pos", "base", "type", "comptage"))
+data = read.delim(args[1], header = F, col.names = c("pos", "base", "type", "comptage"))
 data$rbase = data$base
-data[data$type == "R", "rbase"] = unlist(apply(data[data$type == "R",], MARGIN = 1, FUN = reverseBase))
+data[data$type == "-", "rbase"] = unlist(apply(data[data$type == "-",], MARGIN = 1, FUN = reverseBase))
 head(data)
 
 cumulated = aggregate(data$comptage, by = list(pos = data$pos, type = data$type), FUN = sum)

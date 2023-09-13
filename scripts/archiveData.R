@@ -31,34 +31,27 @@ muts = muts[muts$position <= 5005, ]
 
 #### FIRST : REVERSE TO DELETE TYPE INFO ##############################
 
-reverse_base = function(col_base) {
-    result = sapply(col_base, function(x) {
-        switch(x, "A" = "T", "C" = "G", "T" = "A", "G" = "C", "N" = "N")
-    })
-    return(result)
-}
-reverse_mutation = function(col_mut) {
-    .parts = unlist(str_split(col_mut, pattern = "", simplify = TRUE))
-    result = paste(reverse_base(.parts[, 1]),
-                   reverse_base(.parts[, 2]), sep = "")
-    return(result)
-}
+# reverse_base = function(col_base) {
+#     result = sapply(col_base, function(x) {
+#         switch(x, "A" = "T", "C" = "G", "T" = "A", "G" = "C", "N" = "N")
+#     })
+#     return(result)
+# }
+# reverse_mutation = function(col_mut) {
+#     .parts = unlist(str_split(col_mut, pattern = "", simplify = TRUE))
+#     result = paste(reverse_base(.parts[, 1]),
+#                    reverse_base(.parts[, 2]), sep = "")
+#     return(result)
+# }
 
-if (nrow(muts[muts$type == "-", ]) > 0) {
-    print("get all bases on one side")
-    muts[muts$type == "-", "mutation"] =
-                            sapply(muts[muts$type == "-", "mutation"],
-                                   FUN = reverse_mutation)
-    bases[bases$type == "-", "base"] =
-                            sapply(bases[bases$type == "-", "base"],
-                                   FUN = reverse_base)
-    bases = aggregate(bases$comptage,
+if (nrow(muts[muts$type == "-", ]) == 0) {
+    print("only one side provided")
+    q(1)
+}
+bases = aggregate(bases$comptage,
                       by = list(bases$position, bases$base),
                       FUN = sum, na.rm = TRUE)
-    colnames(bases) = c("position", "base", "comptage")
-} else {
-    print("only one side provided")
-}
+colnames(bases) = c("position", "base", "comptage")
 muts = aggregate(muts$comptage,
                  by = list(muts$position, muts$mutation),
                  FUN = sum, na.rm = TRUE)
