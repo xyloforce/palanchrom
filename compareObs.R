@@ -49,7 +49,7 @@ count = 1
 for (filepath in filelist[2:length(filelist)]) {
     tmp = read.delim(filepath)
     filename = tail(strsplit(filepath, split = "/")[[1]], n = 1)
-    tmp$source = strsplit(filename, split = "_|-")[[1]][2]
+    tmp$source = strsplit(filename, split = "-")[[1]][1]
     tmp = tmp[, c("position", "source", "mean10", "error10")]
     df = rbind(df, tmp)
 }
@@ -72,7 +72,7 @@ for (arg in file_paths[2:(length(file_paths))]) {
     for (filepath in filelist[2:length(filelist)]) {
         tmp = read.delim(filepath)
         filename = tail(strsplit(filepath, split = "/")[[1]], n = 1)
-        tmp$source = strsplit(filename, split = "_|-")[[1]][2]
+        tmp$source = strsplit(filename, split = "-")[[1]][1]
         tmp = tmp[, c("position", "source", "mean10", "error10")]
         df2 = rbind(df2, tmp)
     }
@@ -88,12 +88,12 @@ write.table(df, "savestate.tsv", row.names = FALSE, quote = FALSE, sep = "\t")
 
 print("plotting")
 
-correct_labels <- c("TG" = "A→C - T→G (transversion)",
-                    "TC" = "A→G - T→C (transition)",
-                    "TA" = "A→T - T→A (transversion)",
-                    "GT" = "C→A - G→T (transversion)",
-                    "GC" = "C→G - G→C (transversion)",
-                    "GA" = "C→T - G→A (transition)",
+correct_labels <- c("group3" = "A→C - T→G (transversion)",
+                    "group2" = "A→G - T→C (transition)",
+                    "group1" = "A→T - T→A (transversion)",
+                    "group5" = "C→A - G→T (transversion)",
+                    "group4" = "C→G - G→C (transversion)",
+                    "group6" = "C→T - G→A (transition)",
                     "Total" = "Global mutation rate"
                     )
 
@@ -102,7 +102,22 @@ vline_coords = vline_coords[vline_coords > min_win & vline_coords < max_win]
 
 df[df$position %% 10 != 0, "error10"] = 0
 df = df[df$position %in% min_win:max_win, ]
-plot = ggplot(data = df, aes(x = position, y = mean10, color = type)) +
+plot1 = ggplot(data = df[df$source != "Total", ],
+               aes(x = position, y = mean10, color = type)) +
+    facet_wrap(~ source, scales = "free",
+               labeller = as_labeller(correct_labels)) +
+    geom_line(linewidth = 1.5) +
+    geom_vline(xintercept = vline_coords, color = "black", linewidth = 1) +
+    geom_errorbar(aes(ymin = mean10 - error10, ymax = mean10 + error10),
+                      color = "black") +
+    xlab("position") +
+    ylab("mutation rate") +
+    theme_poster +
+    scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
+    scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
+    scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518")) + theme(strip.text = element_text(size = 19))
+plot2 = ggplot(data = df[df$source == "Total", ],
+               aes(x = position, y = mean10, color = type)) +
     facet_wrap(~ source, scales = "free",
                labeller = as_labeller(correct_labels)) +
     geom_line(linewidth = 1.5) +
@@ -116,4 +131,6 @@ plot = ggplot(data = df, aes(x = position, y = mean10, color = type)) +
     scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
     scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518"))
 
-ggsave(args[3], width = 20, height = 9)
+figure = plot_grid(plot1, plot2, labels = c("A", "B"), rel_widths = c(0.6, 0.3))
+
+ggsave(args[3], width = 24, height = 9)

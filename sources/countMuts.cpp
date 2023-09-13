@@ -3,29 +3,6 @@
 #include "tools.hpp"
 #include <iostream>
 
-std::string reverseString(const std::string& sequence) {
-    std::string sequence_final;
-    for(const auto nuc: sequence) {
-        switch(nuc) {
-            case 'A':
-                sequence_final = sequence_final + 'T';
-                break;
-            case 'C':
-                sequence_final = sequence_final + 'G';
-                break;
-            case 'G':
-                sequence_final = sequence_final + 'C';
-                break;
-            case 'T':
-                sequence_final = sequence_final + 'A';
-                break;
-            default:
-                sequence_final = sequence_final + nuc;
-        }
-    }
-    return sequence_final;
-}
-
 int main(int argc, char* argv[]) {
     std::map <char, std::string> args = getArgs(std::vector <std::string> (argv, argv + argc));
     std::string vcf_filename, AOE_filename, bed_filename, tsv_filename;
@@ -70,9 +47,6 @@ int main(int argc, char* argv[]) {
         for(int i(0); i < results.size(); i++) {
             std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getAlt() + dynamic_cast<vcf_entry*> (results[i].source) -> getRef();
             if(current_mutation[1] != 'N') {
-                if(stranded && results[i].hit -> getStrand() == '-') {
-                    current_mutation = reverseString(current_mutation);
-                }
                 summed_values[dynamic_cast <const AOE_entry*>(results[i].hit) -> getRelativePos(results[i].result.getStart())][current_mutation][results[i].hit -> getStrand()] ++;
             }
         }
