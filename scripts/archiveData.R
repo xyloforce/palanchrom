@@ -11,10 +11,14 @@ mean10pb = function(x, n = 10) {
 print("loading files")
 bases = read.delim(args[1], header = FALSE,
                    col.names = c("position", "base", "type", "comptage"),
-                   na.strings = "")
+                   na.strings = "",
+                   colClasses = c("numeric", "character",
+                                  "character", "numeric"))
 muts = read.delim(args[2], header = FALSE,
                   col.names = c("position", "mutation", "type", "comptage"),
-                  na.strings = "")
+                  na.strings = "",
+                   colClasses = c("numeric", "character",
+                                  "character", "numeric"))
 
 folder = args[3]
 if (file.exists(folder)) {
@@ -85,6 +89,7 @@ muts = cbind(muts, str_split_fixed(muts$mutation, "", n = 2))
 colnames(muts) = c("position", "mutation", "comptage", "ancestral", "reference")
 for (base in unique(muts$ancestral)) {
     print(base)
+    print(head(bases))
     current_base_df = data.frame(position = unique(total$position),
                                  comptage = 0)
     current_base_df[match(bases[bases$base == base, "position"],
