@@ -1,5 +1,4 @@
 library(zoo)
-library(readr)
 library(ggplot2)
 library(stringr)
 
@@ -10,12 +9,12 @@ mean10pb = function(x, n = 10) {
 }
 
 print("loading files")
-bases = read_tsv(args[1],
-                 col_names = c("position", "base", "type", "comptage"),
-                 na = c(""), col_types = "icci")
-muts = read_tsv(args[2],
-                col_names = c("position", "mutation", "type", "comptage"),
-                na = c(""), show_col_types = FALSE)
+bases = read.delim(args[1], header = FALSE,
+                   col.names = c("position", "base", "type", "comptage"),
+                   na.strings = "")
+muts = read.delim(args[2], header = FALSE,
+                  col.names = c("position", "mutation", "type", "comptage"),
+                  na.strings = "")
 
 folder = args[3]
 if (file.exists(folder)) {
@@ -28,21 +27,6 @@ setwd(folder)
 
 bases = bases[bases$position <= 5005, ]
 muts = muts[muts$position <= 5005, ]
-
-#### FIRST : REVERSE TO DELETE TYPE INFO ##############################
-
-# reverse_base = function(col_base) {
-#     result = sapply(col_base, function(x) {
-#         switch(x, "A" = "T", "C" = "G", "T" = "A", "G" = "C", "N" = "N")
-#     })
-#     return(result)
-# }
-# reverse_mutation = function(col_mut) {
-#     .parts = unlist(str_split(col_mut, pattern = "", simplify = TRUE))
-#     result = paste(reverse_base(.parts[, 1]),
-#                    reverse_base(.parts[, 2]), sep = "")
-#     return(result)
-# }
 
 if (nrow(muts[muts$type == "-", ]) == 0) {
     print("only one side provided")
@@ -71,7 +55,8 @@ tmp = aggregate(muts$comptage, by = list(muts$position),
                 FUN = sum, na.rm = TRUE)
 colnames(tmp) = c("position", "comptage")
 total$mutations = 0
-total$mutations = tmp[match(total$position, tmp$position), "comptage"]
+total[match(tmp$position, total$position), "mutations"] =
+            tmp$comptage
 head(total)
 
 if (unique(-225:5005 %in% total$position)) {
@@ -89,7 +74,10 @@ total$error_bar = (2 * sqrt(total$relative
                    total$comptage
 total$error10 = mean10pb(total$error_bar)
 total$mean10 = mean10pb(total$relative)
-write_tsv(total[total$position %in% -220:5000, ], paste("total.tsv", sep = ""))
+write.table(total[total$position %in% -220:5000, ],
+            file = "total.tsv",
+            sep = "\t",
+            row.names = FALSE)
 
 #### CREATE ONE DF BY TYPE OF MUT ##############################
 print("create one df by type of mut")
@@ -116,14 +104,16 @@ for (base in unique(muts$ancestral)) {
                         (2 * sqrt(current_base_df[, relative] *
                                   current_base_df$comptage *
                                   (1 - current_base_df[, relative]))) /
-                                  current_base_df$comptage # sqrt(np*(1-p))
+                                  current_base_df$comptage
         mean10m = paste("mean10_", mut, sep = "")
         current_base_df[, mean10m] = mean10pb(current_base_df[, relative])
         error10m = paste("error10_", mut, sep = "")
         current_base_df[, error10m] = mean10pb(current_base_df[, error_bar])
     }
-    write_tsv(current_base_df[current_base_df$position %in% -220:5000, ],
-              paste(base, "_mutations.tsv", sep = ""))
+    write.table(current_base_df[current_base_df$position %in% -220:5000, ],
+            file = paste(base, "_mutations.tsv", sep = ""),
+            sep = "\t",
+            row.names = FALSE)
 }
 
 #### CREATE ONE DF BY TYPE OF COMPL MUTS ##############################
@@ -178,6 +168,9 @@ for (group in unique(muts$group)) {
                                        total_both
     current_base_df$mean10 = mean10pb(current_base_df$relative_both)
     current_base_df$error10 = mean10pb(current_base_df$error_both)
-    write_tsv(current_base_df[current_base_df$position %in% -220:5000, ],
-              paste("group", group, "-", mut, "_and_reverse.tsv", sep = ""))
+    write.table(current_base_df[current_base_df$position %in% -220:5000, ],
+            file = paste("group", group, "-", mut,
+                         "_and_reverse.tsv", sep = ""),
+            sep = "\t",
+            row.names = FALSE)
 }
