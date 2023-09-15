@@ -84,7 +84,9 @@ for (arg in file_paths[2:(length(file_paths))]) {
     }
     count = count + 1
     df2$type = file_contents[count]
-    # df2 = normalise_muts(df2)
+    if (normalize) {
+        df2 = normalise_muts(df2)
+    }
     print("merging")
 
     df = rbind(df, df2)
