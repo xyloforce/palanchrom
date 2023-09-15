@@ -22,6 +22,10 @@ if (length(args) > 3) {
     min_win = as.numeric(args[4])
     max_win = as.numeric(args[5])
 }
+normalize = FALSE
+if(length(args) > 4) {
+    normalize = TRUE
+}
 
 normalise_muts = function(df) {
     for (value in unique(df$source)) {
@@ -56,7 +60,9 @@ for (filepath in filelist[2:length(filelist)]) {
 
 df$type = file_contents[1]
 
-# df = normalise_muts(df)
+if (normalize) {
+    df = normalise_muts(df)
+}
 
 ## now we loop
 
