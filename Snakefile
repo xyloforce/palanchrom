@@ -22,13 +22,6 @@ def getCorrectFasta(wildcards):
     else:
         return config["result_folder"] + "/commonSeqs_" + config["speciesA"] + ".fa"
 
-def formatOutgroups(wildcards):
-    i = 3
-    valid_string = ""
-    for outgroup in config["outgroups"]:
-        valid_string += " +" + str(i) + " " + config["result_folder"] + "/commonSeqs_" + outgroup + ".fa"
-    return valid_string
-
 def correctWildcard(wildcards):
     return wildcards.species[0].upper() + wildcards.species[1:]
 
@@ -41,12 +34,12 @@ rule getNonOverlapInt:
         bedHNO = config["result_folder"] + "/{ref}.lift.{species}.{ref}.nonOverlap.bed",
         bedSO = config["result_folder"] + "/{ref}.lift.{species}.{species}.overlap.bed",
         bedSNO = config["result_folder"] + "/{ref}.lift.{species}.{species}.nonOverlap.bed"
+    shadow: "shallow"
     params:
         speciesA = config["speciesA"],
         currentSp = correctWildcard
-    shell:
+    shell: # wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
         """
-        wget https://hgdownload.soe.ucsc.edu/goldenPath/{params.speciesA}/liftOver/{params.speciesA}To{params.currentSp}.over.chain.gz
         python3 scripts/convertToBed.py {params.speciesA}To{params.currentSp}.over.chain.gz tmp.{params.speciesA}.bed tmp.{params.currentSp}.bed
         
         echo Checking overlaps for ref
@@ -104,7 +97,9 @@ rule getFastas:
     wildcard_constraints:
         species="[A-Za-z\d]+"
     params:
-        output = config["result_folder"]
+        output = protected(config["result_folder"])
+    retries: 5
+    shadow: "shallow"
     shell:
         """
         wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz' -P {params.output}
@@ -137,8 +132,14 @@ rule getAncestralState:
         check = ".checkCompleted"
     output:
         config["result_folder"] + "/{species}_ancestralBases.vcf"
-    shell:
-        "./bin/getAncestralBase.bin +1 {input.ref} +2 {input.ref2}" + formatOutgroups + " +v {output}"
+    run:
+        command_string = "./bin/getAncestralBase.bin +1 {input.ref} +2 {input.ref2}"
+        i = 3
+        for outgroup in config["outgroups"]:
+            command_string += " +" + str(i) + " " + config["result_folder"] + "/commonSeqs_" + outgroup + ".fa"
+            i += 1
+        command_string += " +v {output}"
+        shell(command_string)
 
 rule getAncestralGenome:
     input:
@@ -171,7 +172,7 @@ rule getInt:
     params:
         pattern = "{type}"
     shell:
-        "./bin/getPattern.bin -p {params} -f {input} -1 {output.bed1} -2 {output.bed2}"
+        "./bin/getPattern.bin +p {params} +f {input} +1 {output.bed1} +2 {output.bed2}"
 
 rule filterBarriers:
     input:
@@ -199,7 +200,7 @@ rule countMuts:
     resources:
         mem_cons = 25
     shell:
-        "./bin/countMuts.bin -a {input.aoe} -b {input.bed} -v {input.vcf} -o {output}"
+        "./bin/countMuts.bin +a {input.aoe} +b {input.bed} +v {input.vcf} +o {output}"
 
 rule countBases:
     input:
@@ -211,7 +212,7 @@ rule countBases:
     resources:
         mem_cons = 50
     shell:
-        "./bin/countBases.bin -a {input.aoe} -b {input.bed} -f {input.fa} -o {output}"
+        "./bin/countBases.bin +a {input.aoe} +b {input.bed} +f {input.fa} +o {output}"
 
 rule archivate:
     input:
