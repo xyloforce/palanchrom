@@ -23,7 +23,7 @@ if (length(args) > 3) {
     max_win = as.numeric(args[5])
 }
 normalize = FALSE
-if(length(args) > 4) {
+if (length(args) > 5) {
     normalize = TRUE
 }
 
