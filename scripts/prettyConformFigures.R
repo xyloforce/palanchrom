@@ -1,4 +1,3 @@
-#!/usr/bin/env Rscript
 library(readr)
 library(ggplot2)
 library(stringr)
