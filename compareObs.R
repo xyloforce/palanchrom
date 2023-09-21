@@ -108,7 +108,11 @@ correct_labels <- c("group3" = "A→C - T→G (transversion)",
 vline_coords = c(0, 133)
 vline_coords = vline_coords[vline_coords > min_win & vline_coords < max_win]
 
-df[df$position %% 10 != 0, "error10"] = 0
+for (x in seq_along(unique(data$type))) {
+    type = unique(data$type)[x]
+    df[(df$position + x) %% 10 != 0 && df$type == type, "error10"] = NA
+}
+df[df$position < 10, "error10"] = NA
 df = df[df$position %in% min_win:max_win, ]
 plot1 = ggplot(data = df[df$source != "Total", ],
                aes(x = position, y = mean10, color = type)) +
@@ -123,7 +127,9 @@ plot1 = ggplot(data = df[df$source != "Total", ],
     theme_poster +
     scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
     scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-    scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518")) + theme(strip.text = element_text(size = 19))
+    scale_color_manual(values = c("#f53da4", "#f5a80c",
+                                  "#0c65f5", "#22f518")) +
+    theme(strip.text = element_text(size = 19))
 plot2 = ggplot(data = df[df$source == "Total", ],
                aes(x = position, y = mean10, color = type)) +
     facet_wrap(~ source, scales = "free",
