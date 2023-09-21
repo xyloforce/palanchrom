@@ -108,20 +108,23 @@ correct_labels <- c("group3" = "A→C - T→G (transversion)",
 vline_coords = c(0, 133)
 vline_coords = vline_coords[vline_coords > min_win & vline_coords < max_win]
 
-for (x in seq_along(unique(data$type))) {
-    type = unique(data$type)[x]
-    df[(df$position + x) %% 10 != 0 && df$type == type, "error10"] = NA
+spacing_bars = 30
+for (x in seq_along(unique(df$type))) {
+    type = unique(df$type)[x]
+    df[(df$position + (spacing_bars / length(unique(df$type)) * x)) %% spacing_bars != 0 &
+        df$type == type, "error10"] = NA
 }
-df[df$position < 10, "error10"] = NA
+df[df$position < min_win + 10, "error10"] = NA
 df = df[df$position %in% min_win:max_win, ]
 plot1 = ggplot(data = df[df$source != "Total", ],
                aes(x = position, y = mean10, color = type)) +
     facet_wrap(~ source, scales = "free",
                labeller = as_labeller(correct_labels)) +
     geom_line(linewidth = 1.5) +
-    geom_vline(xintercept = vline_coords, color = "black", linewidth = 1) +
+    geom_vline(xintercept = vline_coords, linewidth = 1,
+               color = "black") +
     geom_errorbar(aes(ymin = mean10 - error10, ymax = mean10 + error10),
-                      color = "black") +
+                  width = .2) +
     xlab("position") +
     ylab("mutation rate") +
     theme_poster +
@@ -137,7 +140,7 @@ plot2 = ggplot(data = df[df$source == "Total", ],
     geom_line(linewidth = 1.5) +
     geom_vline(xintercept = vline_coords, color = "black", linewidth = 1) +
     geom_errorbar(aes(ymin = mean10 - error10, ymax = mean10 + error10),
-                      color = "black") +
+                  width = .2) +
     xlab("position") +
     ylab("mutation rate") +
     theme_poster +
