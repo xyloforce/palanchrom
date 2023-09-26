@@ -114,6 +114,13 @@ for (x in seq_along(unique(df$type))) {
     df[(df$position + (spacing_bars / length(unique(df$type)) * x)) %% spacing_bars != 0 &
         df$type == type, "error10"] = NA
 }
+
+if(normalize) {
+    label_axis = "relative mutation rate"
+} else {
+    label_axis = "mutation rate"
+}
+
 df[df$position < min_win + 10, "error10"] = NA
 df = df[df$position %in% min_win:max_win, ]
 plot1 = ggplot(data = df[df$source != "Total", ],
@@ -126,7 +133,7 @@ plot1 = ggplot(data = df[df$source != "Total", ],
     geom_errorbar(aes(ymin = mean10 - error10, ymax = mean10 + error10),
                   width = .2) +
     xlab("position") +
-    ylab("mutation rate") +
+    ylab(label_axis) +
     theme_poster +
     scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
     scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
@@ -142,7 +149,7 @@ plot2 = ggplot(data = df[df$source == "Total", ],
     geom_errorbar(aes(ymin = mean10 - error10, ymax = mean10 + error10),
                   width = .2) +
     xlab("position") +
-    ylab("mutation rate") +
+    ylab(label_axis) +
     theme_poster +
     scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
     scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
