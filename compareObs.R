@@ -111,17 +111,21 @@ vline_coords = vline_coords[vline_coords > min_win & vline_coords < max_win]
 spacing_bars = 30
 for (x in seq_along(unique(df$type))) {
     type = unique(df$type)[x]
-    df[(df$position + (spacing_bars / length(unique(df$type)) * x)) %% spacing_bars != 0 &
+    df[(df$position +
+        (spacing_bars / length(unique(df$type)) * x)) %%
+        spacing_bars != 0 &
         df$type == type, "error10"] = NA
+        # ensure that bars don't fall at the same place for different types
 }
 
-if(normalize) {
+if (normalize) {
     label_axis = "relative mutation rate"
 } else {
     label_axis = "mutation rate"
 }
 
 df[df$position < min_win + 10, "error10"] = NA
+df[df$position > max_win - 10, "error10"] = NA
 df = df[df$position %in% min_win:max_win, ]
 plot1 = ggplot(data = df[df$source != "Total", ],
                aes(x = position, y = mean10, color = type)) +
