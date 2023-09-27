@@ -32,9 +32,10 @@ setwd(folder)
 bases = bases[bases$position <= 5005, ]
 muts = muts[muts$position <= 5005, ]
 
-if (nrow(muts[muts$type == "-", ]) == 0) {
+if (nrow(muts[muts$type == "-", ]) == 0 &&
+    nrow(muts[muts$type == "R", ]) == 0) {
     print("only one side provided")
-    q(1)
+    q(1, save = "no")
 }
 bases = aggregate(bases$comptage,
                       by = list(bases$position, bases$base),
