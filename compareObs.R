@@ -29,8 +29,10 @@ if (length(args) > 5) {
 
 normalise_muts = function(df) {
     for (value in unique(df$source)) {
+        mean_mut_rate = sum(df[df$source == value, "mutations"]) /
+                        sum(df[df$source == value, "comptage"])
         df[df$source == value, "mean10"] = df[df$source == value, "mean10"] /
-            mean(df[df$source == value, "mean10"], na.rm = TRUE)
+            mean_mut_rate
         df[df$source == value, "error10"] = df[df$source == value, "error10"] /
             mean(df[df$source == value, "error10"], na.rm = TRUE)
     }
@@ -47,14 +49,18 @@ filelist = list.files(path = file_paths[1], "*_and_reverse.tsv",
 filelist = c(paste(file_paths[1], "/total.tsv", sep = ""), filelist)
 df = read.delim(filelist[1])
 df$source = "Total"
-df = df[, c("position", "source", "mean10", "error10")]
+df = df[, c("position", "comptage", "mutations",
+            "source", "mean10", "error10")]
 
 count = 1
 for (filepath in filelist[2:length(filelist)]) {
     tmp = read.delim(filepath)
     filename = tail(strsplit(filepath, split = "/")[[1]], n = 1)
     tmp$source = strsplit(filename, split = "-")[[1]][1]
-    tmp = tmp[, c("position", "source", "mean10", "error10")]
+    tmp$comptage = sum(tmp[, grep("comptage", colnames(tmp))])
+    tmp$mutations = sum(tmp[, grep("[ACGT]{2}", colnames(tmp))])
+    tmp = tmp[, c("position", "comptage", "mutations",
+                  "source", "mean10", "error10")]
     df = rbind(df, tmp)
 }
 
@@ -73,13 +79,17 @@ for (arg in file_paths[2:(length(file_paths))]) {
     filelist = c(paste(arg, "/total.tsv", sep = ""), filelist)
     df2 = read.delim(filelist[1])
     df2$source = "Total"
-    df2 = df2[, c("position", "source", "mean10", "error10")]
+    df2 = df2[, c("position", "comptage", "mutations",
+                  "source", "mean10", "error10")]
 
     for (filepath in filelist[2:length(filelist)]) {
         tmp = read.delim(filepath)
         filename = tail(strsplit(filepath, split = "/")[[1]], n = 1)
         tmp$source = strsplit(filename, split = "-")[[1]][1]
-        tmp = tmp[, c("position", "source", "mean10", "error10")]
+        tmp$comptage = sum(tmp[, grep("comptage", colnames(tmp))])
+        tmp$mutations = sum(tmp[, grep("[ACGT]{2}", colnames(tmp))])
+        tmp = tmp[, c("position", "comptage", "mutations",
+                      "source", "mean10", "error10")]
         df2 = rbind(df2, tmp)
     }
     count = count + 1
