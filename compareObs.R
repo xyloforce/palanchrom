@@ -27,10 +27,15 @@ if (length(args) > 5) {
     normalize = TRUE
 }
 
+delete_additionnal = FALSE
+if (length(args) > 6) {
+    delete_additionnal = TRUE
+}
+
 normalise_muts = function(df) {
     for (value in unique(df$source)) {
-        mean_mut_rate = sum(df[df$source == value, "mutations"]) /
-                        sum(df[df$source == value, "comptage"])
+        mean_mut_rate = sum(df[df$source == value, "mutations"], na.rm = TRUE) /
+                        sum(df[df$source == value, "comptage"], na.rm = TRUE)
         df[df$source == value, "mean10"] = df[df$source == value, "mean10"] /
             mean_mut_rate
         df[df$source == value, "error10"] = df[df$source == value, "error10"] /
@@ -132,6 +137,18 @@ if (normalize) {
     label_axis = "relative mutation rate"
 } else {
     label_axis = "mutation rate"
+}
+
+if (delete_additionnal) {
+    types = unique(df$type)
+    elements = unique(df[df$type == types[1], "source"])
+    print(elements)
+    for (type in types[2:length(types)]) {
+        elements = intersect(elements, unique(df[df$type == type, "source"]))
+    }
+    print(elements)
+    df = df[df$source %in% elements, ]
+    print(head(df))
 }
 
 df[df$position < min_win + 10, "error10"] = NA
