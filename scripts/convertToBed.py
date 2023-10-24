@@ -32,10 +32,11 @@ def load_regions(input_file) :
                 end_2 = int(chain[11])
                 chain_id = int(chain[12])
                 # Check that chrom 1 and 2 are well sequenced autosome (we didnt calculate NIEBs on the others). If so, put the flag to True to keep working with these data. If not, put the flag to False to discard these data.
-                if len(chrom_1) < 6 and len(chrom_2) < 6 and chrom_1 != "chrY" and chrom_2 != "chrY" and chrom_1 != "chrX" and chrom_2 != "chrX" and chrom_1 != "chrM" and chrom_2 != "chrM" :
-                    flag = True
-                else :
-                    flag = False
+                flag = True
+                # if len(chrom_1) < 6 and len(chrom_2) < 6 and chrom_1 != "chrY" and chrom_2 != "chrY" and chrom_1 != "chrX" and chrom_2 != "chrX" and chrom_1 != "chrM" and chrom_2 != "chrM" :
+                #     flag = True
+                # else :
+                #     flag = False
 
                 if flag : 
                     # For now, - strand in specie 1 is not managed. We'll see later if adding it is necessary (hope not)
