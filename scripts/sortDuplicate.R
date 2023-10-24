@@ -1,19 +1,26 @@
 #!/usr/bin/env Rscript
-library("readr")
 
 args = commandArgs(trailingOnly = TRUE)
 
 print("Filtering overlaps...")
-overlaps = read_tsv(args[1], col_names = FALSE)
-source = read_tsv(args[2], col_names = FALSE)
+overlaps = read.delim(args[1], header = FALSE)
+source = read.delim(args[2], header = FALSE)
 
-not_overlaping = overlaps[overlaps$X7 < 2,]
-not_overlaping = not_overlaping$X4
+not_overlaping = overlaps[overlaps$V7 < 2, ]
+not_overlaping = not_overlaping$V4
 
-write_tsv(source[source$X4 %in% not_overlaping, ], file = args[3], col_names = FALSE)
-write_tsv(source[!(source$X4 %in% not_overlaping), ], file = args[4], col_names = FALSE)
+write.delim(source[source$V4 %in% not_overlaping, ],
+            file = args[3], col.names = FALSE,
+            row.names = FALSE,
+            quote = FALSE,
+            sep = "\t")
+write_tsv(source[!(source$V4 %in% not_overlaping), ],
+          file = args[4], col.names = FALSE,
+            row.names = FALSE,
+            quote = FALSE,
+            sep = "\t")
 
-count_overlaps = nrow(source) - nrow(source[source$X4 %in% not_overlaping, ])
+count_overlaps = nrow(source) - nrow(source[source$V4 %in% not_overlaping, ])
 
 print("Finished filtering.")
 print(paste("Filtered", count_overlaps, "rows"))

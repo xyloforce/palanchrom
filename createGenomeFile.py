@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 
 header = ""
@@ -12,3 +13,6 @@ for line in open(sys.argv[1]):
             oH.write("\t".join((header, str(count) + "\n")))
             count = 0
         header = line[1:].strip()
+
+oH.write("\t".join((header, str(count) + "\n")))
+count = 0

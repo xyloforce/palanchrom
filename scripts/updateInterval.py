@@ -56,7 +56,7 @@ for line in commonHandler: # line is chr : start : stop : . : . : strand
                 A = index + 1
         else: # START bigger than current
             B = index - 1
-        if (B-A) < 0:
+        if (B - A) < 0:
             stop = True
 
 originalInt = dict()
