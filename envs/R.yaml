@@ -5,3 +5,4 @@ dependencies:
  - r-readr
  - r-cowplot
  - r-zoo
+ - r-extrafont

@@ -64,7 +64,8 @@ total[match(tmp$position, total$position), "mutations"] =
             tmp$comptage
 head(total)
 
-if (unique(-225:5005 %in% total$position)) {
+if (length(unique(-225:5005 %in% total$position)) == 1 &&
+    unique(-225:5005 %in% total$position)) {
     print("ok")
 } else {
     tmp = data.frame(position = -225:5005, comptage = 0, mutations = 0)
