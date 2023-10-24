@@ -9,13 +9,13 @@ source = read.delim(args[2], header = FALSE)
 not_overlaping = overlaps[overlaps$V7 < 2, ]
 not_overlaping = not_overlaping$V4
 
-write.delim(source[source$V4 %in% not_overlaping, ],
+write.table(source[source$V4 %in% not_overlaping, ],
             file = args[3], col.names = FALSE,
             row.names = FALSE,
             quote = FALSE,
             sep = "\t")
-write_tsv(source[!(source$V4 %in% not_overlaping), ],
-          file = args[4], col.names = FALSE,
+write.table(source[!(source$V4 %in% not_overlaping), ],
+            file = args[4], col.names = FALSE,
             row.names = FALSE,
             quote = FALSE,
             sep = "\t")

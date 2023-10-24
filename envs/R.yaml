@@ -4,3 +4,4 @@ dependencies:
  - r-stringr
  - r-readr
  - r-cowplot
+ - r-zoo
