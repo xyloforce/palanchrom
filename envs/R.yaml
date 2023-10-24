@@ -6,3 +6,4 @@ dependencies:
  - r-cowplot
  - r-zoo
  - r-extrafont
+ - r-svglite
