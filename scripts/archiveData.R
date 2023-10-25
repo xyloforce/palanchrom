@@ -31,11 +31,11 @@ setwd(folder)
 
 bases = bases[bases$position <= 5005, ]
 muts = muts[muts$position <= 5005, ]
+muts = muts[nchar(muts$mutation) == 2, ]
 
 if (nrow(muts[muts$type == "-", ]) == 0 &&
     nrow(muts[muts$type == "R", ]) == 0) {
-    print("only one side provided")
-    q(1, save = "no")
+    warning("only one side provided")
 }
 bases = aggregate(bases$comptage,
                       by = list(bases$position, bases$base),
