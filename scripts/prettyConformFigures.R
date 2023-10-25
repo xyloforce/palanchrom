@@ -1,4 +1,3 @@
-library(readr)
 library(ggplot2)
 library(stringr)
 library(cowplot)
@@ -14,7 +13,7 @@ source("~/setThemePoster.R")
 
 print("loading df muts")
 filelist = list.files(path = args[1], "*_mutations.tsv", full.names = TRUE)
-df_source = read_tsv(filelist[1], show_col_types = FALSE)
+df_source = read.delim(filelist[1])
 
 if (length(args) > 2) {
     xlim1 = as.numeric(args[3])
@@ -26,7 +25,7 @@ if (length(args) > 2) {
 
 if (length(filelist) > 1) {
     for (filepath in filelist[2:length(filelist)]) {
-        tmp = read_tsv(filepath, show_col_types = FALSE)
+        tmp = read.delim(filepath)
         tmp$position = NULL
         df_source = cbind(df_source, tmp)
     }
