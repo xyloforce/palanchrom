@@ -112,7 +112,7 @@ plot1 = ggplot(data = df, aes(y = mean10, x = position, color = color)) +
 
 filepath = list.files(path = args[1], "total.tsv", full.names = TRUE)
 
-total = read_tsv(filepath[1], show_col_types = FALSE)
+total = read.delim(filepath[1])
 total[total$position %% 10 != 0,
       "error10"] = 0 # keep only errors bars each 10 bp
 
