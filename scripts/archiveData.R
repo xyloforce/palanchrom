@@ -87,7 +87,7 @@ write.table(total[total$position %in% -220:5000, ],
 
 #### CREATE ONE DF BY TYPE OF MUT ##############################
 print("create one df by type of mut")
-muts = cbind(muts, str_split_fixed(muts$mutation, "", n = 2))
+muts = cbind(muts, str_split_fixed(muts$mutation, "_", n = 2))
 colnames(muts) = c("position", "mutation", "comptage", "ancestral", "reference")
 for (base in unique(muts$ancestral)) {
     print(base)

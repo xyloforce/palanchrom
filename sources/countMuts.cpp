@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
         mutations.eraseAndLoadBlock();
         std::vector <intersect_results> results = mutations.intersect(aoe, false);
         for(int i(0); i < results.size(); i++) {
-            std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getAlt() + dynamic_cast<vcf_entry*> (results[i].source) -> getRef();
+            std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getAlt() + "_" + dynamic_cast<vcf_entry*> (results[i].source) -> getRef();
             if(current_mutation[1] != 'N') {
                 if(stranded && results[i].hit -> getStrand() == '-') {
                     current_mutation = reverseString(current_mutation);

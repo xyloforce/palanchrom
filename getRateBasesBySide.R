@@ -18,5 +18,5 @@ cumulated = aggregate(data$comptage, by = list(pos = data$pos, type = data$type)
 data = rbind(data, data.frame("pos" = cumulated$pos, "base" = "merged", "type" = cumulated$type, "comptage" = cumulated$x, "rbase" = "merged"))
 # data = cumulated
 
-plot = ggplot(data = data[data$pos %in% -50:200,], aes(x = pos, y = comptage, color = rbase)) + geom_line(linewidth = 1) + facet_wrap( ~ type) + theme_poster
+plot = ggplot(data = data[data$pos %in% -50:200,], aes(x = pos, y = comptage, color = type)) + geom_line(linewidth = 1) + facet_wrap( ~ rbase, scale = "free") + theme_poster
 ggsave("bases_by_side.png", plot, width = 16, height = 9)
