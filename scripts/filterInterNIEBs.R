@@ -33,13 +33,13 @@ right = data.frame("chrom" = data$V1,
                    "end" = floor((data$V4 + data$V5) / 2),
                    "strand" = "R", "zero" = (data$V4))
 
-left = left[(left$zero - left$start) > (min_intra * -1), ]
+left = left[(left$zero - left$start) > min_intra, ]
 left = left[(left$end - left$zero) > min_extra, ]
 left = left[(left$end - left$zero) < max_extra, ]
 
 right = right[(right$zero - right$start) > min_extra, ]
-right = right[(right$end - right$zero) > (min_intra * -1), ]
-right = right[(right$end - right$zero) < (max_extra * -1), ]
+right = right[(right$end - right$zero) > min_intra, ]
+right = right[(right$end - right$zero) < max_extra, ]
 
 output = rbind(left, right)
 output = output[order(output$chrom, output$start), ]
