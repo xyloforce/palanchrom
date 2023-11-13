@@ -27,11 +27,11 @@ if(length(args) > 4) {
 left = data.frame("chrom" = data$V1,
                   "start" = ceiling((data$V2 + data$V3) / 2),
                   "end" = floor((data$V3 + data$V4) / 2),
-                  "strand" = "L", "zero" = (data$V3))
+                  "strand" = "+", "zero" = (data$V3))
 right = data.frame("chrom" = data$V1,
                    "start" = ceiling((data$V3 + data$V4) / 2),
                    "end" = floor((data$V4 + data$V5) / 2),
-                   "strand" = "R", "zero" = (data$V4))
+                   "strand" = "-", "zero" = (data$V4))
 
 left = left[(left$zero - left$start) > min_intra, ]
 left = left[(left$end - left$zero) > min_extra, ]
