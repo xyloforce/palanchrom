@@ -1,5 +1,4 @@
 library(zoo)
-library(ggplot2)
 library(stringr)
 
 args = commandArgs(trailingOnly = TRUE)
@@ -29,9 +28,7 @@ if (file.exists(folder)) {
 
 setwd(folder)
 
-bases = bases[bases$position <= 5005, ]
-muts = muts[muts$position <= 5005, ]
-muts = muts[nchar(muts$mutation) == 2, ]
+muts = paste0(str_split(muts$mutation, "_")[[1]], collapse = "")
 
 if (nrow(muts[muts$type == "-", ]) == 0 &&
     nrow(muts[muts$type == "R", ]) == 0) {
