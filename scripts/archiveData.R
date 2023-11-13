@@ -28,7 +28,7 @@ if (file.exists(folder)) {
 
 setwd(folder)
 
-# muts$mutation = sapply(str_split(muts$mutation, "_"), FUN = paste0, collapse = "")
+muts$mutation = sapply(str_split(muts$mutation, "_"), FUN = paste0, collapse = "")
 
 if (nrow(muts[muts$type == "-", ]) == 0 &&
     nrow(muts[muts$type == "R", ]) == 0) {
@@ -42,11 +42,9 @@ muts = aggregate(muts$comptage,
                  by = list(muts$position, muts$mutation),
                  FUN = sum, na.rm = TRUE)
 colnames(muts) = c("position", "mutation", "comptage")
-muts = muts[muts$position > -225 & muts$position < 5005, ]
 bases = aggregate(bases$comptage, by = list(bases$position, bases$base),
                   FUN = sum, na.rm = TRUE)
 colnames(bases) = c("position", "base", "comptage")
-bases = bases[bases$position > -225 & bases$position < 5005, ]
 #### MERGE TO CREATE TOTAL DF ##############################
 
 print("creating total df")
@@ -77,14 +75,14 @@ total$error_bar = (2 * sqrt(total$relative
                    total$comptage
 total$error10 = mean10pb(total$error_bar)
 total$mean10 = mean10pb(total$relative)
-write.table(total[total$position %in% -220:5000, ],
+write.table(total,
             file = "total.tsv",
             sep = "\t",
             row.names = FALSE)
 
 #### CREATE ONE DF BY TYPE OF MUT ##############################
 print("create one df by type of mut")
-muts = cbind(muts, str_split_fixed(muts$mutation, "_", n = 2))
+muts = cbind(muts, str_split_fixed(muts$mutation, "", n = 2))
 colnames(muts) = c("position", "mutation", "comptage", "ancestral", "reference")
 for (base in unique(muts$ancestral)) {
     print(base)
@@ -114,7 +112,7 @@ for (base in unique(muts$ancestral)) {
         error10m = paste("error10_", mut, sep = "")
         current_base_df[, error10m] = mean10pb(current_base_df[, error_bar])
     }
-    write.table(current_base_df[current_base_df$position %in% -220:5000, ],
+    write.table(current_base_df,
             file = paste(base, "_mutations.tsv", sep = ""),
             sep = "\t",
             row.names = FALSE)
@@ -172,7 +170,7 @@ for (group in unique(muts$group)) {
                                        total_both
     current_base_df$mean10 = mean10pb(current_base_df$relative_both)
     current_base_df$error10 = mean10pb(current_base_df$error_both)
-    write.table(current_base_df[current_base_df$position %in% -220:5000, ],
+    write.table(current_base_df,
             file = paste("group", group, "-", mut,
                          "_and_reverse.tsv", sep = ""),
             sep = "\t",
