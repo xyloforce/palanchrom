@@ -21,6 +21,10 @@ if(length(args) > 4) {
     max_extra = Inf
 }
 
+print(min_extra)
+print(max_extra)
+print(min_intra)
+print(max_intra)
 # data = read_tsv("../Data/20200228_interSmallNFR.dat", col_names = FALSE)
 # data = data[data$X4 - data$X3 > 1000,]
 
@@ -32,14 +36,15 @@ right = data.frame("chrom" = data$V1,
                    "start" = ceiling((data$V3 + data$V4) / 2),
                    "end" = floor((data$V4 + data$V5) / 2),
                    "strand" = "-", "zero" = (data$V4))
+intra_right = right$end - right$zero
+extra_right = right$zero - right$start
+valid_right = intra_right > min_intra & intra_right < max_intra & extra_right > min_extra & extra_right < max_extra
+intra_left = left$zero - left$start
+extra_left = left$end - left$zero
+valid_left = intra_left > min_intra & intra_left < max_intra & extra_left > min_extra & extra_left < max_extra
 
-left = left[(left$zero - left$start) > min_intra, ]
-left = left[(left$end - left$zero) > min_extra, ]
-left = left[(left$end - left$zero) < max_extra, ]
-
-right = right[(right$zero - right$start) > min_extra, ]
-right = right[(right$end - right$zero) > min_intra, ]
-right = right[(right$end - right$zero) < max_extra, ]
+left = left[valid_left,]
+right = right[valid_right,]
 
 output = rbind(left, right)
 output = output[order(output$chrom, output$start), ]
