@@ -28,7 +28,7 @@ if (file.exists(folder)) {
 
 setwd(folder)
 
-muts$mutation = sapply(str_split(muts$mutation, "_"), FUN = paste0, collapse = "")
+# muts$mutation = sapply(str_split(muts$mutation, "_"), FUN = paste0, collapse = "")
 
 if (nrow(muts[muts$type == "-", ]) == 0 &&
     nrow(muts[muts$type == "R", ]) == 0) {
