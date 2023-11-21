@@ -21,10 +21,8 @@ if(length(args) > 4) {
     max_extra = Inf
 }
 
-print(min_extra)
-print(max_extra)
-print(min_intra)
-print(max_intra)
+print(paste("extra: min:", min_extra, "max:", max_extra))
+print(paste("intra: min:", min_intra, "max:", max_intra))
 # data = read_tsv("../Data/20200228_interSmallNFR.dat", col_names = FALSE)
 # data = data[data$X4 - data$X3 > 1000,]
 
