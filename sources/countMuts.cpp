@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
         std::cout << "\t+a aoe filename\n";
         std::cout << "Optionnal :" << std::endl;
         std::cout << "\t+s check strand of ints" << std::endl;
+        std::cout << "\t+i amount of lines to load at a time" << std::endl;
         throw std::out_of_range("Missing arguments");
     }
 
@@ -52,6 +53,13 @@ int main(int argc, char* argv[]) {
         stranded = true;
     } catch(std::out_of_range) {
         std::cout << "Ignoring strands" << std::endl;
+    }
+
+    int nb_blocks(100000);
+    try {
+        stranded = std::stoi(args.at('i'));
+    } catch(std::out_of_range) {
+        std::cout << "Number of blocks not specified, default 100000" << std::endl;
     }
 
     vcf_file mutations(vcf_filename, read);
@@ -65,7 +73,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Intersect and count mutations..." << std::endl;
     std::map <int, std::map <std::string, std::map <char, int>>> summed_values;
     while(mutations.remainToRead()) {
-        mutations.eraseAndLoadBlock();
+        mutations.eraseAndLoadBlock(nb_blocks);
         std::vector <intersect_results> results = mutations.intersect(aoe, false);
         for(int i(0); i < results.size(); i++) {
             std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getAlt() + "_" + dynamic_cast<vcf_entry*> (results[i].source) -> getRef();

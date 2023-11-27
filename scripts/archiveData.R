@@ -59,14 +59,14 @@ total[match(tmp$position, total$position), "mutations"] =
             tmp$comptage
 head(total)
 
-if (length(unique(-225:5005 %in% total$position)) == 1 &&
-    unique(-225:5005 %in% total$position)) {
-    print("ok")
-} else {
-    tmp = data.frame(position = -225:5005, comptage = 0, mutations = 0)
-    tmp[match(total$position, tmp$position), ] = total
-    total = tmp
-} # prepare code for CPGs
+# if (length(unique(-225:5005 %in% total$position)) == 1 &&
+#     unique(-225:5005 %in% total$position)) {
+#     print("ok")
+# } else {
+#     tmp = data.frame(position = -225:5005, comptage = 0, mutations = 0)
+#     tmp[match(total$position, tmp$position, nomatch = 0), ] = total
+#     total = tmp
+# } # prepare code for CPGs
 
 total$relative = total$mutations / total$comptage
 total$error_bar = (2 * sqrt(total$relative

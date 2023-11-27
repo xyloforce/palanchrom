@@ -28,13 +28,15 @@ def correctWildcard(wildcards):
 def getBarrierFile(wildcards):
     return config["barriers"][wildcards.ref]
 
-rule getNonOverlapInt:
+rule getNonOverlapInt:        
     output:
         bedHO = config["result_folder"] + "/{ref}.lift.{species}.{ref}.overlap.bed",
         bedHNO = config["result_folder"] + "/{ref}.lift.{species}.{ref}.nonOverlap.bed",
         bedSO = config["result_folder"] + "/{ref}.lift.{species}.{species}.overlap.bed",
         bedSNO = config["result_folder"] + "/{ref}.lift.{species}.{species}.nonOverlap.bed"
     shadow: "shallow"
+    conda:
+        "envs/R.yaml"
     params:
         speciesA = config["speciesA"],
         currentSp = correctWildcard
@@ -91,20 +93,20 @@ rule updateInterval:
     shell:
         "python3 scripts/updateInterval.py {input.originalH} {input.originalS} {input.bed} {output}"
 
-rule getFastas:
-    output:
-        config["result_folder"] + "/{species}.fa"
-    wildcard_constraints:
-        species="[A-Za-z\d]+"
-    params:
-        output = protected(config["result_folder"])
-    retries: 5
-    shadow: "shallow"
-    shell:
-        """
-        wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz' -P {params.output}
-        gunzip {params.output}/{wildcards.species}.fa.gz
-        """
+# rule getFastas:
+#     output:
+#         config["result_folder"] + "/{species}.fa"
+#     wildcard_constraints:
+#         species="[A-Za-z\d]+"
+#     params:
+#         output = protected(config["result_folder"])
+#     retries: 5
+#     shadow: "shallow"
+#     shell:
+#         """
+#         wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz' -P {params.output}
+#         gunzip {params.output}/{wildcards.species}.fa.gz
+#         """
 
 rule getSeqsFromInt:
     input:
@@ -179,6 +181,8 @@ rule filterBarriers:
         getBarrierFile
     output:
         config["result_folder"] + "/barriersAOE_{ref}.tsv"
+    conda:
+        "envs/R.yaml"
     shell:
         "Rscript scripts/filterInterNIEBs.R {input} {output}"
         
