@@ -1,6 +1,6 @@
-# Project goal
+# Aim of the pipeline
 
-1. intersect liftOver results for different species, two being typically refs and others outgroups, in order to obtain common sections
+1. intersect pairwise genome alignment results in UCSC chain format (obtained for instance using cactus: https://github.com/ComparativeGenomicsToolkit/cactus) for different species, two being typically refs and others outgroups, in order to obtain common sections
 2. get ancestral genome for refs using outgroups
 3. analyse pattern of mutations in regions of interest, here NIEBs.
 
@@ -9,7 +9,9 @@
 - snakemake
 - bedtools
 - R
-- Python
+- Python 3
+- cmake
+- compiler compatible with C++ 17
 
 # Usage
 
@@ -19,7 +21,3 @@ You can get to a particular step of the pipeline by calling its name or its outp
 
 - if you want the bed with all the common regions between outgroups, you need to call `snakemake -n1 data/intersected.bed`
 - for the ancestral genomes just call the full pipeline.
-
-# Planned features
-
-Implement analysis of patterns of mutations listing differentially mutations in CpG and nCpG regions.
