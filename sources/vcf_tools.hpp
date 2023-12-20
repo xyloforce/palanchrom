@@ -1,1 +1,1 @@
-../../bioTools/libs/vcf_tools.hpp
+../biotools/libs/vcf_tools.hpp

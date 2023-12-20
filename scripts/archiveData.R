@@ -129,6 +129,7 @@ muts$group = sapply(muts$mutation, FUN = function(x) {
 for (group in unique(muts$group)) {
     current_base_df = data.frame(position = unique(total$position))
     print(group)
+    head(muts[muts$group == group,])
     for (base in unique(muts[muts$group == group, "ancestral"])) {
         c_base = paste("comptage_", base, sep = "")
         current_base_df[, c_base] = 0

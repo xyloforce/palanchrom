@@ -1,1 +1,1 @@
-../../bioTools/libs/tools.hpp
+../biotools/libs/tools.hpp

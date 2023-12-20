@@ -1,1 +1,1 @@
-../../bioTools/libs/bed_tools.cpp
+../biotools/libs/bed_tools.cpp

@@ -1,1 +1,1 @@
-../../bioTools/libs/fasta_tools.cpp
+../biotools/libs/fasta_tools.cpp
