@@ -1,0 +1,3 @@
+[submodule "biotools"]
+	path = biotools
+	url = https://github.com/xyloforce/biotools/
