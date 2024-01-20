@@ -122,8 +122,10 @@ for (base in unique(muts$ancestral)) {
 #### CREATE ONE DF BY TYPE OF COMPL MUTS ##############################
 print("create one df by type of complementary mut")
 muts$group = sapply(muts$mutation, FUN = function(x) {
-    switch(x, "AT" = 1, "TA" = 1, "AG" = 2, "TC" = 2, "AC" = 3,
-           "TG" = 3, "GC" = 4, "CG" = 4, "GT" = 5, "CA" = 5, "GA" = 6, "CT" = 6)
+    switch(x, "AT" = 3, "TA" = 3, "AG" = 4, "TC" = 4, "AC" = 1,
+           "TG" = 1, "GC" = 6, "CG" = 6, "GT" = 2, "CA" = 2, "GA" = 5, "CT" = 5)
+    # switch(x, "AT" = 1, "TA" = 1, "AG" = 2, "TC" = 2, "AC" = 3,
+    #        "TG" = 3, "GC" = 4, "CG" = 4, "GT" = 5, "CA" = 5, "GA" = 6, "CT" = 6)
 })
 
 for (group in unique(muts$group)) {

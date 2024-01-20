@@ -111,12 +111,12 @@ write.table(df, "savestate.tsv", row.names = FALSE, quote = FALSE, sep = "\t")
 
 print("plotting")
 
-correct_labels <- c("group3" = "A→C - T→G (transversion)",
-                    "group2" = "A→G - T→C (transition)",
-                    "group1" = "A→T - T→A (transversion)",
-                    "group5" = "C→A - G→T (transversion)",
-                    "group4" = "C→G - G→C (transversion)",
-                    "group6" = "C→T - G→A (transition)",
+correct_labels <- c("group1" = "A→C - T→G (transversion)",
+                    "group4" = "A→G - T→C (transition)",
+                    "group2" = "C→A - G→T (transversion)",
+                    "group6" = "C→G - G→C (transversion)",
+                    "group5" = "C→T - G→A (transition)",
+                    "group3" = "A→T - T→A (transversion)",
                     "Total" = "Global mutation rate"
                     )
 
