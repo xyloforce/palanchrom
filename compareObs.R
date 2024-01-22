@@ -27,9 +27,10 @@ if (length(args) > 5) {
     normalize = TRUE
 }
 
-delete_additionnal = FALSE
+# delete_additionnal = FALSE
 if (length(args) > 6) {
-    delete_additionnal = TRUE
+    keep_groups = args[7]
+    keep_groups = str_split(args[1], pattern = ":", simplify = TRUE)[1, ]
 }
 
 normalise_muts = function(df) {
@@ -139,17 +140,21 @@ if (normalize) {
     label_axis = "mutation rate"
 }
 
-if (delete_additionnal) {
-    types = unique(df$type)
-    elements = unique(df[df$type == types[1], "source"])
-    print(elements)
-    for (type in types[2:length(types)]) {
-        elements = intersect(elements, unique(df[df$type == type, "source"]))
-    }
-    print(elements)
-    df = df[df$source %in% elements, ]
-    print(head(df))
+if(length(keep_groups) > 0) {
+    df = df[df$source %in% keep_groups,]
 }
+
+# if (delete_additionnal) {
+#     types = unique(df$type)
+#     elements = unique(df[df$type == types[1], "source"])
+#     print(elements)
+#     for (type in types[2:length(types)]) {
+#         elements = intersect(elements, unique(df[df$type == type, "source"]))
+#     }
+#     print(elements)
+#     df = df[df$source %in% elements, ]
+#     print(head(df))
+# }
 
 df[df$position < min_win + 10, "error10"] = NA
 df[df$position > max_win - 10, "error10"] = NA
