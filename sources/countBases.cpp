@@ -53,13 +53,15 @@ int main(int argc, char* argv[]) {
         std::string id = "none";
         for(int i(entry.result.getStart()); i < entry.result.getEnd(); i++) {
             int pos_seq(i - entry.result.getStart());
+            int rel_pos(dynamic_cast <AOE_entry*>(entry.source) -> getRelativePos(i));
             if(entry.source -> getStrand() == '-') {
                 pos_seq = (seq.size() - 1) - pos_seq; // revert bc negative seq are counted backwards
             }
             if(keep_ids) {
                 id = entry.source -> getID();
+                rel_pos = 0;
             }
-            summed_values[id][dynamic_cast <AOE_entry*>(entry.source) -> getRelativePos(i)][seq.at(pos_seq)][entry.source -> getStrand()] ++;
+            summed_values[id][rel_pos][seq.at(pos_seq)][entry.source -> getStrand()] ++;
         }
     }
     std::cout << "Writing results" << std::endl;
