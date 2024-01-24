@@ -30,7 +30,8 @@ if (length(args) > 5) {
 # delete_additionnal = FALSE
 if (length(args) > 6) {
     keep_groups = args[7]
-    keep_groups = str_split(args[1], pattern = ":", simplify = TRUE)[1, ]
+    keep_groups = str_split(keep_groups, pattern = ":", simplify = TRUE)[1, ]
+    keep_groups = c(keep_groups, "Total")
 }
 
 normalise_muts = function(df) {
@@ -141,7 +142,9 @@ if (normalize) {
 }
 
 if(length(keep_groups) > 0) {
+    head(df)
     df = df[df$source %in% keep_groups,]
+    head(df)
 }
 
 # if (delete_additionnal) {
