@@ -69,9 +69,12 @@ df$ymax = df$mean10 + df$error10
 df$ymin = df$mean10 - df$error10
 
 df$group = sapply(df$mutation, FUN = function(x) {
-    switch(x, "AT" = 2, "TA" = 2, "AG" = 1,
-           "TC" = 1, "AC" = 3, "TG" = 3, "GC" = 6,
-           "CG" = 6, "GT" = 5, "CA" = 5, "GA" = 4, "CT" = 4)
+    # switch(x, "AT" = 2, "TA" = 2, "AG" = 1,
+    #        "TC" = 1, "AC" = 3, "TG" = 3, "GC" = 6,
+    #        "CG" = 6, "GT" = 5, "CA" = 5, "GA" = 4, "CT" = 4)
+    switch(x, "AT" = 3, "TA" = 3, "AG" = 1,
+           "TC" = 1, "AC" = 4, "TG" = 4, "GC" = 6,
+           "CG" = 6, "GT" = 5, "CA" = 5, "GA" = 2, "CT" = 2)
 })
 
 correct_labels <- c("3" = "A→C - T→G (transversion)",

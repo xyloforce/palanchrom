@@ -28,6 +28,7 @@ if (length(args) > 5) {
 }
 
 # delete_additionnal = FALSE
+keep_groups = c()
 if (length(args) > 6) {
     keep_groups = args[7]
     keep_groups = str_split(keep_groups, pattern = ":", simplify = TRUE)[1, ]
@@ -80,15 +81,13 @@ if (normalize) {
 ## now we loop
 
 for (arg in file_paths[2:(length(file_paths))]) {
-    print("loading data")
-
+    print("loading data")   
     filelist = list.files(path = arg, "*_and_reverse.tsv", full.names = TRUE)
     filelist = c(paste(arg, "/total.tsv", sep = ""), filelist)
     df2 = read.delim(filelist[1])
     df2$source = "Total"
     df2 = df2[, c("position", "comptage", "mutations",
-                  "source", "mean10", "error10")]
-
+                  "source", "mean10", "error10")]   
     for (filepath in filelist[2:length(filelist)]) {
         tmp = read.delim(filepath)
         filename = tail(strsplit(filepath, split = "/")[[1]], n = 1)
@@ -105,7 +104,6 @@ for (arg in file_paths[2:(length(file_paths))]) {
         df2 = normalise_muts(df2)
     }
     print("merging")
-
     df = rbind(df, df2)
 }
 

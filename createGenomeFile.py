@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 import sys
-
+import collections
 header = ""
 count = 0
 oH = open(sys.argv[2], "w")
+output_content = dict()
 
 for line in open(sys.argv[1]):
     if not line.startswith(">"):
         count += len(line)
     else:
         if header != "":
-            oH.write("\t".join((header, str(count) + "\n")))
+            output_content[header] = count
             count = 0
         header = line[1:].strip()
 
-oH.write("\t".join((header, str(count) + "\n")))
-count = 0
+output_content[header] = count
+output_content = collections.OrderedDict(sorted(output_content.items()))
+oH.write("\n".join(["\t".join(x) for x in [(key, str(output_content[key])) for key in output_content]]))

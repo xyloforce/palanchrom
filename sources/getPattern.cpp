@@ -33,10 +33,10 @@ int main(int argc, char* argv[]) {
     matchs.writeToFile();
 
     try {
+        non_matchs_filename = args.at('2');
         if(pattern.size() != 2) {
             std::cout << "Non-matchs only implemented for simple patterns of size 2" << std::endl;
         } else {
-            non_matchs_filename = args.at('2');
             bed_file non_matchs(non_matchs_filename, write);
             non_matchs.appendVector(results[1]);
             non_matchs.writeToFile();
