@@ -77,12 +77,12 @@ df$group = sapply(df$mutation, FUN = function(x) {
            "CG" = 6, "GT" = 5, "CA" = 5, "GA" = 2, "CT" = 2)
 })
 
-correct_labels <- c("3" = "A→C - T→G (transversion)",
+correct_labels <- c("4" = "A→C - T→G (transversion)",
                     "1" = "A→G - T→C (transition)",
-                    "2" = "A→T - T→A (transversion)",
+                    "3" = "A→T - T→A (transversion)",
                     "5" = "C→A - G→T (transversion)",
                     "6" = "C→G - G→C (transversion)",
-                    "4" = "C→T - G→A (transition)"
+                    "2" = "C→T - G→A (transition)"
                     )
 
 df$color = sapply(df$mutation, FUN = function(x) {
