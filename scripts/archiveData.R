@@ -26,6 +26,15 @@ if (file.exists(folder)) {
     dir.create(folder)
 }
 
+min = -50
+max = 300
+if (length(args) > 4) {
+    min = as.numeric(args[4])
+    max = as.numeric(args[5])
+    bases = bases[bases$position %in% min:max, ]
+    muts = muts[muts$position %in% min:max, ]
+}
+
 setwd(folder)
 
 muts$mutation = sapply(str_split(muts$mutation, "_"), FUN = paste0, collapse = "")
