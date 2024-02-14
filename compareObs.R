@@ -42,7 +42,7 @@ normalise_muts = function(df) {
         df[df$source == value, "mean10"] = df[df$source == value, "mean10"] /
             mean_mut_rate
         df[df$source == value, "error10"] = df[df$source == value, "error10"] /
-            mean(df[df$source == value, "error10"], na.rm = TRUE)
+            mean_mut_rate
     }
     return(df)
 }
