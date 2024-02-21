@@ -51,9 +51,9 @@ int main(int argc, char* argv[]) {
         std::cout << "Ignoring ids" << std::endl;
     }
 
-    std::cout << "Intersecting" << std::endl;
     std::map <std::string, std::map <int, std::map <char, std::map <char, int>>>> summed_values;
     if(!nomask) {
+        std::cout << "Intersecting" << std::endl;
         bed_file mask(bed_filename, read);
         mask.readWholeFile();
         for(const auto& entry: aoe.intersect(mask, stranded)) {
@@ -73,6 +73,7 @@ int main(int argc, char* argv[]) {
             }
         }
     } else {
+        std::cout << "Counting..." << std::endl;
         for(const auto& entry: aoe.getEntries()) {
             std::string seq = dynamic_cast <fasta_entry*> (ancestral.getEntriesByChr(entry -> getChr())[0]) -> subset(*entry);
             std::string id = "none";
