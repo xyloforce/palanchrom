@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
             if(fasta_converted -> getBase(vcf_converted -> getStart()) == vcf_converted -> getRef()[0]) { // if the fasta entry matching the vcf entry chr has the same base as the vcf entry reference field
                 fasta_converted -> mutate(vcf_converted -> getAlt()[0], vcf_converted -> getStart());
             } else {
-                std::cout << "Ref base is " << fasta_converted -> getBase(vcf_converted -> getStart()) << " in fasta and " << vcf_converted -> getRef()[0] << " in vcf" << std::endl;
+                std::cout << "Ref base is " << fasta_converted -> getBase(vcf_converted -> getStart()) << "at pos " << vcf_converted -> getStart() << " in fasta and " << vcf_converted -> getRef()[0] << " in vcf" << std::endl;
                 std::cout << vcf_converted -> getString() << std::endl;
                 throw std::invalid_argument("Reference base is invalid");
             }
