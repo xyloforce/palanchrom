@@ -20,6 +20,7 @@ int main(int argc, char* argv[]) {
         std::cout << "\t+b bed filename for masking ints\n";
         std::cout << "\t+s check strand of ints" << std::endl;
         std::cout << "\t+i count id by id instead of merging everything" << std::endl;
+        std::cout << "\t+m id : keep both, source or hit" << std::endl;
         throw std::out_of_range("Missing arguments");
     }
     fasta_file ancestral(fasta_filename, read, standard);
@@ -42,11 +43,24 @@ int main(int argc, char* argv[]) {
     } catch(std::out_of_range) {
         std::cout << "Ignoring strands" << std::endl;
     }
-
+    
+    id_status status = both;
     bool keep_ids(false);
     try {
         args.at('i');
         keep_ids = true;
+        try {
+            std::string statusS(args.at('m'));
+            if(statusS == "source") {
+                status = source;
+            } else if(statusS == "hit") {
+                status = hit;
+            } else {
+                status = both;
+            }
+        } catch (std::out_of_range) {
+            status = both;
+        }
     } catch(std::out_of_range) {
         std::cout << "Ignoring ids" << std::endl;
     }
@@ -56,39 +70,23 @@ int main(int argc, char* argv[]) {
         std::cout << "Intersecting" << std::endl;
         bed_file mask(bed_filename, read);
         mask.readWholeFile();
-        for(const auto& entry: aoe.intersect(mask, stranded)) {
-            std::string seq = dynamic_cast <fasta_entry*> (ancestral.getEntriesByChr(entry.result.getChr())[0]) -> subset(entry.result);
-            std::string id = "none";
-            for(int i(entry.result.getStart()); i < entry.result.getEnd(); i++) {
-                int pos_seq(i - entry.result.getStart());
-                int rel_pos(dynamic_cast <AOE_entry*>(entry.source) -> getRelativePos(i));
-                if(entry.source -> getStrand() == '-') {
-                    pos_seq = (seq.size() - 1) - pos_seq; // revert bc negative seq are counted backwards
-                }
-                if(keep_ids) {
-                    id = entry.source -> getID();
-                    rel_pos = 0;
-                }
-                summed_values[id][rel_pos][seq.at(pos_seq)][entry.source -> getStrand()] ++;
+        aoe.apply_intersect(mask, false, status);
+    }
+    std::cout << "Counting..." << std::endl;
+    for(const auto& entry: aoe.getEntries()) {
+        std::string seq = dynamic_cast <fasta_entry*> (ancestral.getEntriesByChr(entry -> getChr())[0]) -> subset(*entry);
+        std::string id = "none";
+        for(int i(entry -> getStart()); i < entry -> getEnd(); i++) {
+            int pos_seq(i - entry -> getStart());
+            int rel_pos(dynamic_cast <AOE_entry*>(entry) -> getRelativePos(i));
+            if(entry -> getStrand() == '-') {
+                pos_seq = (seq.size() - 1) - pos_seq; // revert bc negative seq are counted backwards
             }
-        }
-    } else {
-        std::cout << "Counting..." << std::endl;
-        for(const auto& entry: aoe.getEntries()) {
-            std::string seq = dynamic_cast <fasta_entry*> (ancestral.getEntriesByChr(entry -> getChr())[0]) -> subset(*entry);
-            std::string id = "none";
-            for(int i(entry -> getStart()); i < entry -> getEnd(); i++) {
-                int pos_seq(i - entry -> getStart());
-                int rel_pos(dynamic_cast <AOE_entry*>(entry) -> getRelativePos(i));
-                if(entry -> getStrand() == '-') {
-                    pos_seq = (seq.size() - 1) - pos_seq; // revert bc negative seq are counted backwards
-                }
-                if(keep_ids) {
-                    id = entry -> getID();
-                    rel_pos = 0;
-                }
-                summed_values[id][rel_pos][seq.at(pos_seq)][entry -> getStrand()] ++;
+            if(keep_ids) {
+                id = entry -> getID();
+                rel_pos = 0;
             }
+            summed_values[id][rel_pos][seq.at(pos_seq)][entry -> getStrand()] ++;
         }
     }
     
