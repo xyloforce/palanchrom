@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
                 for(const auto& posToCount: charToPos.second) {
                     std::string tmp = "";
                     if(keep_ids) {
-                        tmp += idToChr.first;
+                        tmp += idToChr.first + "\t";
                     }
                     tmp += std::to_string(chrToChar.first) + "\t" + charToPos.first  + "\t" + posToCount.first  + "\t" + std::to_string(posToCount.second) + "\n";
                     output_file << tmp;
