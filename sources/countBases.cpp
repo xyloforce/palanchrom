@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
         std::cout << "\t+a aoe filename\n";
         std::cout << "Optionnal :" << std::endl;
         std::cout << "\t+b bed filename for masking ints\n";
-        std::cout << "\t+s check strand of ints" << std::endl;
+        // std::cout << "\t+s check strand of ints" << std::endl;
         std::cout << "\t+i count id by id instead of merging everything" << std::endl;
         std::cout << "\t+m id : keep both, source or hit" << std::endl;
         throw std::out_of_range("Missing arguments");
@@ -36,13 +36,13 @@ int main(int argc, char* argv[]) {
     AOE_file aoe(AOE_filename, read);
     aoe.readWholeFile();
 
-    bool stranded(false);
-    try {
-        args.at('s');
-        stranded = true;
-    } catch(std::out_of_range) {
-        std::cout << "Ignoring strands" << std::endl;
-    }
+    // bool stranded(false);
+    // try {
+    //     args.at('s');
+    //     stranded = true;
+    // } catch(std::out_of_range) {
+    //     std::cout << "Ignoring strands" << std::endl;
+    // }
     
     id_status status = both;
     bool keep_ids(false);
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
             }
             if(keep_ids) {
                 id = entry -> getID();
-                rel_pos = 0;
+                // rel_pos = 0;
             }
             summed_values[id][rel_pos][seq.at(pos_seq)][entry -> getStrand()] ++;
         }

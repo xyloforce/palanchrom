@@ -42,24 +42,49 @@ int main(int argc, char* argv[]) {
         std::cout << "\t+o output filename\n";
         std::cout << "\t+a aoe filename\n";
         std::cout << "Optionnal :" << std::endl;
-        std::cout << "\t+s check strand of ints" << std::endl;
+        // std::cout << "\t+s check strand of ints" << std::endl;
         std::cout << "\t+i amount of lines to load at a time" << std::endl;
+        std::cout << "\t+j count by id instead of merging everything" << std::endl;
+        std::cout << "\t+m id : keep both, source or hit" << std::endl;
         throw std::out_of_range("Missing arguments");
     }
 
-    bool stranded(false);
+    // bool stranded(false);
     try {
         args.at('s');
-        stranded = true;
+        std::cout << "!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!" << std::endl;
+        std::cout << "obsolete argument: all intersections are stranded now" << std::endl;
+        std::cout << "!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!" << std::endl;
+        // stranded = true;
     } catch(std::out_of_range) {
-        std::cout << "Ignoring strands" << std::endl;
     }
 
     int nb_blocks(100000);
     try {
-        stranded = std::stoi(args.at('i'));
+        nb_blocks = std::stoi(args.at('i'));
     } catch(std::out_of_range) {
         std::cout << "Number of blocks not specified, default 100000" << std::endl;
+    }
+
+    bool keep_ids(false);
+    id_status status = both;
+    try {
+        args.at('j');
+        keep_ids = true;
+        try {
+            std::string statusS(args.at('m'));
+            if(statusS == "source") {
+                status = source;
+            } else if(statusS == "hit") {
+                status = hit;
+            } else {
+                status = both;
+            }
+        } catch (std::out_of_range) {
+            status = both;
+        }
+    } catch(std::out_of_range) {
+        std::cout << "ignoring ids" << std::endl;
     }
 
     vcf_file mutations(vcf_filename, read);
@@ -67,30 +92,39 @@ int main(int argc, char* argv[]) {
     mask.readWholeFile();
     AOE_file aoe(AOE_filename, read);
     aoe.readWholeFile();
-    
+
     std::cout << "Intersect with mask..." << std::endl;
-    aoe.apply_intersect(mask, stranded);
+    aoe.apply_intersect(mask, false, status);
     std::cout << "Intersect and count mutations..." << std::endl;
-    std::map <int, std::map <std::string, std::map <char, int>>> summed_values;
+    std::map <std::string, std::map <int, std::map <std::string, std::map <char, int>>>> summed_values;
     while(mutations.remainToRead()) {
         mutations.eraseAndLoadBlock(nb_blocks);
-        std::vector <intersect_results> results = mutations.intersect(aoe, false);
-        for(int i(0); i < results.size(); i++) {
+        std::vector <intersect_results> results = mutations.intersect(aoe, false, hit);
+        for(unsigned int i(0); i < results.size(); i++) {
             std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getAlt() + "_" + dynamic_cast<vcf_entry*> (results[i].source) -> getRef();
             if(current_mutation[1] != 'N') {
-                if(stranded && results[i].hit -> getStrand() == '-') {
+                if(results[i].hit -> getStrand() == '-') {
                     current_mutation = reverseString(current_mutation);
                 }
-                summed_values[dynamic_cast <const AOE_entry*>(results[i].hit) -> getRelativePos(results[i].result.getStart())][current_mutation][results[i].hit -> getStrand()] ++;
+                std::string id("none");
+                if(keep_ids) {
+                    id = results[i].result.getID();
+                }
+                summed_values[id][dynamic_cast <const AOE_entry*>(results[i].hit) -> getRelativePos(results[i].result.getStart())][current_mutation][results[i].hit -> getStrand()] ++;
             }
         }
     }
     std::cout << "Writing results" << std::endl;
     std::ofstream output_file(tsv_filename);
-    for(const auto& chrToChar: summed_values) {
-        for(const auto& charToPos: chrToChar.second) {
-            for(const auto& posToCount: charToPos.second) {
-                output_file << chrToChar.first << "\t" << charToPos.first  << "\t" << posToCount.first  << "\t" << posToCount.second << "\n";
+    for(const auto& chrToID: summed_values) {
+        for(const auto& idToChar: chrToID.second) {
+            for(const auto& charToPos: idToChar.second) {
+                for(const auto& posToCount: charToPos.second) {
+                    if(keep_ids) {
+                        output_file << chrToID.first << "\t";
+                    }
+                    output_file << idToChar.first << "\t" << charToPos.first  << "\t" << posToCount.first  << "\t" << posToCount.second << "\n";
+                }
             }
         }
     }
