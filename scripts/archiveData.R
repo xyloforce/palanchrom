@@ -16,8 +16,8 @@ bases = read.delim(args[1], header = FALSE,
 muts = read.delim(args[2], header = FALSE,
                   col.names = c("position", "mutation", "type", "comptage"),
                   na.strings = "",
-                   colClasses = c("numeric", "character",
-                                  "character", "numeric"))
+                  colClasses = c("numeric", "character",
+                                 "character", "numeric"))
 
 folder = args[3]
 if (file.exists(folder)) {
@@ -33,6 +33,11 @@ if (length(args) > 4) {
     max = as.numeric(args[5])
     bases = bases[bases$position %in% min:max, ]
     muts = muts[muts$position %in% min:max, ]
+}
+
+invert = FALSE
+if (length(args) > 5) {
+    invert = TRUE
 }
 
 setwd(folder)
@@ -94,6 +99,13 @@ print("create one df by type of mut")
 muts = muts[!(grepl("N", muts$mutation)), ]
 muts = cbind(muts, str_split_fixed(muts$mutation, "", n = 2))
 colnames(muts) = c("position", "mutation", "comptage", "ancestral", "reference")
+
+if (invert) {
+    tmp = muts$ancestral
+    muts$ancestral = muts$reference
+    muts$reference = tmp
+}
+
 for (base in unique(muts$ancestral)) {
     print(base)
     print(head(bases))

@@ -63,7 +63,7 @@ df = df[, c("position", "comptage", "mutations",
 count = 1
 for (filepath in filelist[2:length(filelist)]) {
     tmp = read.delim(filepath)
-    filename = tail(strsplit(filepath, split = "/")[[1]], n = 1)
+    filename = tail(strsplit(filepath, split = "/|\\\\")[[1]], n = 1)
     tmp$source = strsplit(filename, split = "-")[[1]][1]
     tmp$comptage = sum(tmp[, grep("comptage", colnames(tmp))])
     tmp$mutations = sum(tmp[, grep("[ACGT]{2}", colnames(tmp))])
@@ -81,16 +81,16 @@ if (normalize) {
 ## now we loop
 
 for (arg in file_paths[2:(length(file_paths))]) {
-    print("loading data")   
+    print("loading data")
     filelist = list.files(path = arg, "*_and_reverse.tsv", full.names = TRUE)
-    filelist = c(paste(arg, "/total.tsv", sep = ""), filelist)
+    filelist = c(paste(arg, "total.tsv", sep = ""), filelist)
     df2 = read.delim(filelist[1])
     df2$source = "Total"
     df2 = df2[, c("position", "comptage", "mutations",
-                  "source", "mean10", "error10")]   
+                  "source", "mean10", "error10")]
     for (filepath in filelist[2:length(filelist)]) {
         tmp = read.delim(filepath)
-        filename = tail(strsplit(filepath, split = "/")[[1]], n = 1)
+        filename = tail(strsplit(filepath, split = "/|\\\\")[[1]], n = 1)
         tmp$source = strsplit(filename, split = "-")[[1]][1]
         tmp$comptage = sum(tmp[, grep("comptage", colnames(tmp))])
         tmp$mutations = sum(tmp[, grep("[ACGT]{2}", colnames(tmp))])
@@ -107,7 +107,8 @@ for (arg in file_paths[2:(length(file_paths))]) {
     df = rbind(df, df2)
 }
 
-write.table(df, "savestate.tsv", row.names = FALSE, quote = FALSE, sep = "\t")
+df = df[df$position > min_win & df$position < max_win, ]
+write.csv2(df, "savestate.csv", row.names = FALSE)
 
 print("plotting")
 
@@ -174,8 +175,7 @@ plot1 = ggplot(data = df[df$source != "Total", ],
     theme_poster +
     scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
     scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-    scale_color_manual(values = c("#f53da4", "#f5a80c",
-                                  "#0c65f5", "#22f518")) +
+    # scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518")) +
     theme(strip.text = element_text(size = 19))
 plot2 = ggplot(data = df[df$source == "Total", ],
                aes(x = position, y = mean10, color = type)) +
@@ -189,8 +189,8 @@ plot2 = ggplot(data = df[df$source == "Total", ],
     ylab(label_axis) +
     theme_poster +
     scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-    scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-    scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518"))
+    scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) 
+    # scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518"))
 
 figure = plot_grid(plot1, plot2, labels = c("A", "B"), rel_widths = c(0.6, 0.3))
 

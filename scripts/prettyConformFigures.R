@@ -146,3 +146,4 @@ if (file.exists(folder)) {
 setwd(folder)
 
 ggsave("bases_by_group.svg", figure, width = 24, height = 9)
+ggsave("bases_by_group.png", figure, width = 24, height = 9)
