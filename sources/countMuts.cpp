@@ -33,17 +33,15 @@ int main(int argc, char* argv[]) {
     try {
         vcf_filename = args.at('v');
         AOE_filename = args.at('a');
-        bed_filename = args.at('b');
         tsv_filename = args.at('o');
     } catch (std::out_of_range) {
         std::cout << "Missing obligatory parameters. Parameters are :\n";
         std::cout << "\t+v vcf filename\n";
-        std::cout << "\t+b bed filename\n";
         std::cout << "\t+o output filename\n";
         std::cout << "\t+a aoe filename\n";
         std::cout << "Optionnal :" << std::endl;
         // std::cout << "\t+s check strand of ints" << std::endl;
-        std::cout << "\t+i amount of lines to load at a time" << std::endl;
+        std::cout << "\t+i amount of lines to load at a time" << std::endl;        std::cout << "\t+b bed filename\n";
         std::cout << "\t+j count by id instead of merging everything" << std::endl;
         std::cout << "\t+m id : keep both, source or hit" << std::endl;
         throw std::out_of_range("Missing arguments");
@@ -64,6 +62,13 @@ int main(int argc, char* argv[]) {
         nb_blocks = std::stoi(args.at('i'));
     } catch(std::out_of_range) {
         std::cout << "Number of blocks not specified, default 100000" << std::endl;
+    }
+
+    bool nomask = false;
+    try {
+        bed_filename = args.at('b');
+    } catch(std::out_of_range) {
+        nomask = true;
     }
 
     bool keep_ids(false);
@@ -88,13 +93,20 @@ int main(int argc, char* argv[]) {
     }
 
     vcf_file mutations(vcf_filename, read);
-    bed_file mask(bed_filename, read);
-    mask.readWholeFile();
     AOE_file aoe(AOE_filename, read);
     aoe.readWholeFile();
+    
+    if(!nomask) {
+        std::cout << "Intersecting" << std::endl;
+        bed_file mask(bed_filename, read);
+        mask.readWholeFile();
+        aoe.apply_intersect(mask, false, status);
+    }
+    // bed_file mask(bed_filename, read);
+    // mask.readWholeFile();
 
-    std::cout << "Intersect with mask..." << std::endl;
-    aoe.apply_intersect(mask, false, status);
+    // std::cout << "Intersect with mask..." << std::endl;
+    // aoe.apply_intersect(mask, false, status);
     std::cout << "Intersect and count mutations..." << std::endl;
     std::map <std::string, std::map <int, std::map <std::string, std::map <char, int>>>> summed_values;
     while(mutations.remainToRead()) {
