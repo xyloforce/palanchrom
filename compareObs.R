@@ -187,6 +187,6 @@ plot2 = ggplot(data = df[df$source == "Total", ],
     scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) 
     # scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518"))
 
-figure = plot_grid(plot1, plot2, legend_plot, labels = c("A", "B"), rel_widths = c(0.5, 0.3, 0.2), rows = 1)
+figure = plot_grid(plot1, plot2, legend_plot, labels = c("A", "B"), rel_widths = c(0.6, 0.2, 0.1), rows = 1)
 
 ggsave(args[3], width = 24, height = 9)
