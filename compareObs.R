@@ -140,23 +140,12 @@ if (normalize) {
     label_axis = "mutation rate"
 }
 
-if(length(keep_groups) > 0) {
+if (length(keep_groups) > 0) {
     head(df)
     df = df[df$source %in% keep_groups,]
     head(df)
 }
 
-# if (delete_additionnal) {
-#     types = unique(df$type)
-#     elements = unique(df[df$type == types[1], "source"])
-#     print(elements)
-#     for (type in types[2:length(types)]) {
-#         elements = intersect(elements, unique(df[df$type == type, "source"]))
-#     }
-#     print(elements)
-#     df = df[df$source %in% elements, ]
-#     print(head(df))
-# }
 
 df[df$position < min_win + 10, "error10"] = NA
 df[df$position > max_win - 10, "error10"] = NA
@@ -173,10 +162,15 @@ plot1 = ggplot(data = df[df$source != "Total", ],
     xlab("position") +
     ylab(label_axis) +
     theme_poster +
+    theme(legend.text = element_text(face = "italic")) +
     scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
     scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
     # scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518")) +
     theme(strip.text = element_text(size = 19))
+
+legend_plot = get_legend(plot1)
+plot1 = plot1 + theme(legend.position = "none")
+
 plot2 = ggplot(data = df[df$source == "Total", ],
                aes(x = position, y = mean10, color = type)) +
     facet_wrap(~ source, scales = "free",
@@ -188,10 +182,11 @@ plot2 = ggplot(data = df[df$source == "Total", ],
     xlab("position") +
     ylab(label_axis) +
     theme_poster +
+    theme(legend.position = "none") +
     scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
     scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) 
     # scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518"))
 
-figure = plot_grid(plot1, plot2, labels = c("A", "B"), rel_widths = c(0.6, 0.3))
+figure = plot_grid(plot1, plot2, legend_plot, labels = c("A", "B"), rel_widths = c(0.5, 0.3, 0.2))
 
 ggsave(args[3], width = 24, height = 9)
