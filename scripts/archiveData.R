@@ -104,6 +104,7 @@ if (invert) {
     tmp = muts$ancestral
     muts$ancestral = muts$reference
     muts$reference = tmp
+    muts$mutation = paste(muts$ancestral, muts$reference, sep = "_")
 }
 
 for (base in unique(muts$ancestral)) {

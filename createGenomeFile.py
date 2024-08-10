@@ -8,7 +8,8 @@ output_content = dict()
 
 for line in open(sys.argv[1]):
     if not line.startswith(">"):
-        count += len(line)
+        # count += len(line)
+        count += len(line.strip())
     else:
         if header != "":
             output_content[header] = count
