@@ -3,7 +3,7 @@
 #include "tools.hpp"
 #include <iostream>
 
-std::string reverseString(const std::string& sequence) {
+std::string reverseComplementString(const std::string& sequence) {
     std::string sequence_final;
     for(const auto nuc: sequence) {
         switch(nuc) {
@@ -113,10 +113,10 @@ int main(int argc, char* argv[]) {
         mutations.eraseAndLoadBlock(nb_blocks);
         std::vector <intersect_results> results = mutations.intersect(aoe, false, hit);
         for(unsigned int i(0); i < results.size(); i++) {
-            std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getAlt() + "_" + dynamic_cast<vcf_entry*> (results[i].source) -> getRef();
+            std::string current_mutation = dynamic_cast<vcf_entry*> (results[i].source) -> getRef() + "_" + dynamic_cast<vcf_entry*> (results[i].source) -> getAlt();
             if(current_mutation[1] != 'N') {
                 if(results[i].hit -> getStrand() == '-') {
-                    current_mutation = reverseString(current_mutation);
+                    current_mutation = reverseComplementString(current_mutation);
                 }
                 std::string id("none");
                 if(keep_ids) {

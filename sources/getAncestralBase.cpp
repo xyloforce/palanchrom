@@ -49,9 +49,9 @@ int main(int argc, char* argv[]) {
         outgroups.push_back(fasta_file(filename, read, bedtools_stranded));
         outgroups[outgroups.size() -1].readWholeFile();
     }
-    std::string chr, id("."), ref, filter(".");
+    std::string chr, id("."), ancestral_base, filter(".");
     std::map <std::string, std::string> infos;
-    std::vector <std::string> alt;
+    std::vector <std::string> current_base;
     int qual(0);
     long start, start_entry(0);
     bool write_entry(false);
@@ -64,24 +64,25 @@ int main(int argc, char* argv[]) {
         chr = base_fasta.getEntry(i) -> getChr();
         start_entry = base_fasta.getEntry(i) -> getStart();
         for(int j(0); j < base_fasta.getEntry(i) -> getSize(); j++) {
+            infos.clear();
             start = start_entry + j;
-            ref = base_fasta.getEntry(i) -> getBase(j);
-            if(ref[0] != 'N') { // no need to check for mutations on non-defined reference bases
+            current_base = std::vector<std::string>(1, std::string(1, base_fasta.getEntry(i) -> getBase(j)));
+            if(current_base[0][0] != 'N') { // no need to check for mutations on non-defined reference bases
                 if(!all(outgroups, i, j)) { // difference in outgroups
-                    alt = std::vector<std::string>(1, "N");
+                    ancestral_base = "N";
                     write_entry = true;
                 } else if(pair_fasta.getEntry(i) -> getBase(j) != outgroups[0].getEntry(i) -> getBase(j)) {
-                    alt = std::vector<std::string>(1, "N");
+                    ancestral_base = "N";
                     infos["reason"] = "mismatch";
                     write_entry = true;
-                } else if(pair_fasta.getEntry(i) -> getBase(j) != ref[0]) {
-                    alt = std::vector<std::string>(1, std::string(1, pair_fasta.getEntry(i) -> getBase(j)));
+                } else if(pair_fasta.getEntry(i) -> getBase(j) != current_base[0][0]) {
+                    ancestral_base = std::string(1, pair_fasta.getEntry(i) -> getBase(j));
                     write_entry = true;
                 }
                 if(write_entry) {
                     write_entry = false;
                     infos["source"] = chr + "_" + std::to_string(start_entry) + "_" + std::to_string(base_fasta.getEntry(i) -> getEnd());
-                    output.writeBioLine(vcf_entry(chr, start, start + 1, id, ref, alt, qual, filter, infos));
+                    output.writeBioLine(vcf_entry(chr, start, start + 1, id, ancestral_base, current_base, qual, filter, infos));
                 }
             }
         }
