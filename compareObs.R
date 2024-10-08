@@ -55,6 +55,8 @@ print("loading data from first folder")
 filelist = list.files(path = file_paths[1], "*_and_reverse.tsv",
                       full.names = TRUE)
 filelist = c(paste(file_paths[1], "/total.tsv", sep = ""), filelist)
+print(file_paths[1])
+print(file_contents[1])
 df = read.delim(filelist[1])
 df$source = "Total"
 df = df[, c("position", "comptage", "mutations",
@@ -81,7 +83,6 @@ if (normalize) {
 ## now we loop
 
 for (arg in file_paths[2:(length(file_paths))]) {
-    print("loading data")
     filelist = list.files(path = arg, "*_and_reverse.tsv", full.names = TRUE)
     filelist = c(paste(arg, "total.tsv", sep = ""), filelist)
     df2 = read.delim(filelist[1])
@@ -99,6 +100,8 @@ for (arg in file_paths[2:(length(file_paths))]) {
         df2 = rbind(df2, tmp)
     }
     count = count + 1
+    print(arg)
+    print(file_contents[count])
     df2$type = file_contents[count]
     if (normalize) {
         df2 = normalise_muts(df2)

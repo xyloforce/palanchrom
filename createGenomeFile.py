@@ -14,7 +14,7 @@ for line in open(sys.argv[1]):
         if header != "":
             output_content[header] = count
             count = 0
-        header = line[1:].strip()
+        header = line[1:].strip().split(" ")[0]
 
 output_content[header] = count
 output_content = collections.OrderedDict(sorted(output_content.items()))

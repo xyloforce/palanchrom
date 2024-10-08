@@ -133,7 +133,7 @@ rule getAncestralState:
         ref2 = getCorrectFasta,
         check = ".checkCompleted"
     output:
-        config["result_folder"] + "/{species}_ancestralBases.vcf"
+        temp(config["result_folder"] + "/{species}_ancestralBases.vcf")
     run:
         command_string = "./bin/getAncestralBase.bin +1 {input.ref} +2 {input.ref2}"
         i = 3
