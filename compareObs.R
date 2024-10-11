@@ -24,7 +24,9 @@ if (length(args) > 3) {
 }
 normalize = FALSE
 if (length(args) > 5) {
-    normalize = TRUE
+    if (args[6] == "TRUE") {
+        normalize = TRUE
+    }
 }
 
 # delete_additionnal = FALSE
@@ -171,25 +173,32 @@ plot1 = ggplot(data = df[df$source != "Total", ],
     # scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518")) +
     theme(strip.text = element_text(size = 19))
 
-legend_plot = get_legend(plot1)
-plot1 = plot1 + theme(legend.position = "none")
+if (length(keep_groups) > 0 & "Total" %in% keep_groups) {
+    legend_plot = get_legend(plot1)
+    plot1 = plot1 + theme(legend.position = "none")
 
-plot2 = ggplot(data = df[df$source == "Total", ],
-               aes(x = position, y = mean10, color = type)) +
-    facet_wrap(~ source, scales = "free",
-               labeller = as_labeller(correct_labels)) +
-    geom_line(linewidth = 1.5) +
-    geom_vline(xintercept = vline_coords, color = "black", linewidth = 1) +
-    geom_errorbar(aes(ymin = mean10 - error10, ymax = mean10 + error10),
-                  width = .2) +
-    xlab("position") +
-    ylab(label_axis) +
-    theme_poster +
-    theme(legend.position = "none") +
-    scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
-    scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL))
-    # scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518"))
+    plot2 = ggplot(data = df[df$source == "Total", ],
+                   aes(x = position, y = mean10, color = type)) +
+        facet_wrap(~ source, scales = "free",
+                   labeller = as_labeller(correct_labels)) +
+        geom_line(linewidth = 1.5) +
+        geom_vline(xintercept = vline_coords, color = "black", linewidth = 1) +
+        geom_errorbar(aes(ymin = mean10 - error10, ymax = mean10 + error10),
+                      width = .2) +
+        xlab("position") +
+        ylab(label_axis) +
+        theme_poster +
+        theme(legend.position = "none") +
+        scale_x_continuous(sec.axis = dup_axis(labels = NULL, name = NULL)) +
+        scale_y_continuous(sec.axis = dup_axis(labels = NULL, name = NULL))
+        # scale_color_manual(values = c("#f53da4", "#f5a80c", "#0c65f5", "#22f518"))
 
-figure = plot_grid(plot1, plot2, legend_plot, labels = c("A", "B"), rel_widths = c(0.5, 0.2, 0.1), rows = 1)
+    figure = plot_grid(plot1,
+                       plot2,
+                       legend_plot,
+                       labels = c("A", "B"),
+                       rel_widths = c(0.5, 0.2, 0.1),
+                       rows = 1)
+}
 
 ggsave(args[3], width = 24, height = 9)
