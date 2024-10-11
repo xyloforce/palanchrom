@@ -32,7 +32,7 @@ keep_groups = c()
 if (length(args) > 6) {
     keep_groups = args[7]
     keep_groups = str_split(keep_groups, pattern = ":", simplify = TRUE)[1, ]
-    keep_groups = c(keep_groups, "Total")
+    # keep_groups = c(keep_groups, "Total")
 }
 
 normalise_muts = function(df) {
