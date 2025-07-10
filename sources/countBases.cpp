@@ -16,11 +16,12 @@ int main(int argc, char* argv[]) {
         std::cout << "\t+f fasta filename\n";
         std::cout << "\t+o output filename\n";
         std::cout << "\t+a aoe filename\n";
-        std::cout << "Optionnal :" << std::endl;
+        std::cout << "Optionnal :\n";
         std::cout << "\t+b bed filename for masking ints\n";
-        // std::cout << "\t+s check strand of ints" << std::endl;
+        std::cout << "\t+s check strand of ints" << std::endl;
         std::cout << "\t+i count id by id instead of merging everything" << std::endl;
         std::cout << "\t+m id : keep both, source or hit" << std::endl;
+		std::cout << "\t+g count GC instead of bases" << std::endl;
         throw std::out_of_range("Missing arguments");
     }
     fasta_file ancestral(fasta_filename, read, standard);
@@ -32,6 +33,14 @@ int main(int argc, char* argv[]) {
     } catch(std::out_of_range) {
         nomask = true;
     }
+
+    bool count_gc = false;
+    try  {
+        args.at('g');
+        count_gc = true;
+    } catch(std::out_of_range) {
+        std::cout << "Counting bases" << std::endl;
+	}
     
     AOE_file aoe(AOE_filename, read);
     aoe.readWholeFile();
@@ -86,7 +95,15 @@ int main(int argc, char* argv[]) {
                 id = entry -> getID();
                 // rel_pos = 0;
             }
-            summed_values[id][rel_pos][seq.at(pos_seq)][entry -> getStrand()] ++;
+            if(count_gc) {
+                if(seq.at(pos_seq) == 'G' || seq.at(pos_seq) == 'C') {
+                    summed_values[id][rel_pos]['S'][entry->getStrand()]++;
+                } else {
+                    summed_values[id][rel_pos]['W'][entry -> getStrand()] ++;
+                }
+			} else {
+                summed_values[id][rel_pos][seq.at(pos_seq)][entry->getStrand()]++;
+            }
         }
     }
     

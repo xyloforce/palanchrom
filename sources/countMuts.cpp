@@ -40,8 +40,8 @@ int main(int argc, char* argv[]) {
         std::cout << "\t+o output filename\n";
         std::cout << "\t+a aoe filename\n";
         std::cout << "Optionnal :" << std::endl;
-        // std::cout << "\t+s check strand of ints" << std::endl;
-        std::cout << "\t+i amount of lines to load at a time" << std::endl;        std::cout << "\t+b bed filename\n";
+        std::cout << "\t+i amount of lines to load at a time" << std::endl;
+        std::cout << "\t+b bed filename\n";
         std::cout << "\t+j count by id instead of merging everything" << std::endl;
         std::cout << "\t+m id : keep both, source or hit" << std::endl;
         throw std::out_of_range("Missing arguments");
