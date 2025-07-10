@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
 		std::cout << "\t+g count GC instead of bases" << std::endl;
         throw std::out_of_range("Missing arguments");
     }
-    fasta_file ancestral(fasta_filename, read, standard);
-    ancestral.readWholeFile();
+    fasta_file genome(fasta_filename, read, standard);
+    genome.readWholeFile();
 
     bool nomask = false;
     try {
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     }
     std::cout << "Counting..." << std::endl;
     for(const auto& entry: aoe.getEntries()) {
-        std::string seq = dynamic_cast <fasta_entry*> (ancestral.getEntriesByChr(entry -> getChr())[0]) -> subset(*entry);
+        std::string seq = dynamic_cast <fasta_entry*> (genome.getEntriesByChr(entry -> getChr())[0]) -> subset(*entry);
         std::string id = "none";
         for(int i(entry -> getStart()); i < entry -> getEnd(); i++) {
             int pos_seq(i - entry -> getStart());
