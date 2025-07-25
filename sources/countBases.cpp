@@ -2,6 +2,47 @@
 #include "bed_tools.hpp"
 #include "tools.hpp"
 #include <iostream>
+#include <thread>
+#include <mutex>
+#include <array>
+#include <utility>
+#include <list>
+
+std::mutex mutex_map;
+
+void count_entry(fasta_file const& genome, bio_entry* const& entry, bool keep_ids, bool count_gc, std::map<std::string, std::map<int, std::map<char, std::map<char, int>>>>& summed_values)
+{
+    std::string seq = dynamic_cast <fasta_entry*> (genome.getEntriesByChr(entry->getChr())[0])->subset(*entry);
+    std::string id = "none";
+    for (int i(entry->getStart()); i < entry->getEnd(); i++) {
+        int pos_seq(i - entry->getStart());
+        int rel_pos(dynamic_cast <AOE_entry*>(entry)->getRelativePos(i));
+        if (entry->getStrand() == '-') {
+            pos_seq = (seq.size() - 1) - pos_seq; // revert bc negative seq are counted backwards
+        }
+        if (keep_ids) {
+            id = entry->getID();
+            // rel_pos = 0;
+        }
+        if (count_gc) {
+            if (seq.at(pos_seq) == 'G' || seq.at(pos_seq) == 'C') {
+				mutex_map.lock();
+                summed_values[id][rel_pos]['S'][entry->getStrand()]++;
+				mutex_map.unlock();
+            }
+            else {
+                mutex_map.lock();
+                summed_values[id][rel_pos]['W'][entry->getStrand()]++;
+                mutex_map.unlock();
+            }
+        }
+        else {
+            mutex_map.lock();
+            summed_values[id][rel_pos][seq.at(pos_seq)][entry->getStrand()]++;
+            mutex_map.unlock();
+        }
+    }
+}
 
 int main(int argc, char* argv[]) {
     std::map <char, std::string> args = getArgs(std::vector <std::string> (argv, argv + argc));
@@ -22,6 +63,7 @@ int main(int argc, char* argv[]) {
         std::cout << "\t+i count id by id instead of merging everything" << std::endl;
         std::cout << "\t+m id : keep both, source or hit" << std::endl;
 		std::cout << "\t+g count GC instead of bases" << std::endl;
+        std::cout << "\t+t number of threads" << std::endl;
         throw std::out_of_range("Missing arguments");
     }
     fasta_file genome(fasta_filename, read, standard);
@@ -41,17 +83,16 @@ int main(int argc, char* argv[]) {
     } catch(std::out_of_range) {
         std::cout << "Counting bases" << std::endl;
 	}
+
+    unsigned long long count_threads = 1;
+    try {
+        count_threads = std::stol(args.at('t')) * 2; // you can fit a lot more threads bc they are pretty fast
+    } catch (std::out_of_range) {
+        std::cout << "using one thread" << std::endl;
+    }
     
     AOE_file aoe(AOE_filename, read);
     aoe.readWholeFile();
-
-    // bool stranded(false);
-    // try {
-    //     args.at('s');
-    //     stranded = true;
-    // } catch(std::out_of_range) {
-    //     std::cout << "Ignoring strands" << std::endl;
-    // }
     
     id_status status = both;
     bool keep_ids(false);
@@ -81,36 +122,22 @@ int main(int argc, char* argv[]) {
         mask.readWholeFile();
         aoe.apply_intersect(mask, false, status);
     }
+
     std::cout << "Counting..." << std::endl;
-    for(const auto& entry: aoe.getEntries()) {
-        std::string seq = dynamic_cast <fasta_entry*> (genome.getEntriesByChr(entry -> getChr())[0]) -> subset(*entry);
-        std::string id = "none";
-        for(int i(entry -> getStart()); i < entry -> getEnd(); i++) {
-            int pos_seq(i - entry -> getStart());
-            int rel_pos(dynamic_cast <AOE_entry*>(entry) -> getRelativePos(i));
-            if(entry -> getStrand() == '-') {
-                pos_seq = (seq.size() - 1) - pos_seq; // revert bc negative seq are counted backwards
-            }
-            if(keep_ids) {
-                id = entry -> getID();
-                // rel_pos = 0;
-            }
-            if(count_gc) {
-                if(seq.at(pos_seq) == 'G' || seq.at(pos_seq) == 'C') {
-                    summed_values[id][rel_pos]['S'][entry->getStrand()]++;
-                } else {
-                    summed_values[id][rel_pos]['W'][entry -> getStrand()] ++;
-                }
-			} else {
-                summed_values[id][rel_pos][seq.at(pos_seq)][entry->getStrand()]++;
-            }
-        }
-    }
     
+	std::list <std::thread> all_threads;
+    int running_threads(0);
+	for (const auto& entry : aoe.getEntries()) { // generate threads for each entry
+        if (running_threads > count_threads) {
+            // wait for the thread that you will replace to finish
+            all_threads.front().join();
+			all_threads.pop_front(); // remove the thread that finished
+        }
+		all_threads.emplace_back(std::thread(count_entry, std::ref(genome), entry, keep_ids, count_gc, std::ref(summed_values))); // replace the thread with a new one
+		running_threads ++;
+    }
+
     std::cout << "Writing results" << std::endl;
-    // aoe.apply_intersect(mask);
-    // aoe.typeToWrite("dump2.aoe");
-    // aoe.writeToFile();
     std::ofstream output_file(tsv_filename);
     for(const auto& idToChr: summed_values) {
         for(const auto& chrToChar: idToChr.second) {
