@@ -93,21 +93,6 @@ rule updateInterval:
     shell:
         "python3 scripts/updateInterval.py {input.originalH} {input.originalS} {input.bed} {output}"
 
-# rule getFastas:
-#     output:
-#         config["result_folder"] + "/{species}.fa"
-#     wildcard_constraints:
-#         species="[A-Za-z\d]+"
-#     params:
-#         output = protected(config["result_folder"])
-#     retries: 5
-#     shadow: "shallow"
-#     shell:
-#         """
-#         wget --retry-connrefused --waitretry=5 -t 10 'https://hgdownload.cse.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz' -P {params.output}
-#         gunzip {params.output}/{wildcards.species}.fa.gz
-#         """
-
 rule getSeqsFromInt:
     input:
         fa = config["result_folder"] + "/{species}.fa",
