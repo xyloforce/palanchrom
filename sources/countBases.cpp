@@ -129,6 +129,7 @@ int main(int argc, char* argv[]) {
     int running_threads(0);
 	for (const auto& entry : aoe.getEntries()) { // generate threads for each entry
         if (running_threads > count_threads) {
+			// FIXME last job is trying to remove a non-existing thread
             // wait for the thread that you will replace to finish
             all_threads.front().join();
 			all_threads.pop_front(); // remove the thread that finished
@@ -136,6 +137,12 @@ int main(int argc, char* argv[]) {
 		all_threads.emplace_back(std::thread(count_entry, std::ref(genome), entry, keep_ids, count_gc, std::ref(summed_values))); // replace the thread with a new one
 		running_threads ++;
     }
+
+    for(auto& thread: all_threads) { // wait for the remaining threads to finish
+        if(thread.joinable()) {
+            thread.join();
+        }
+	}
 
     std::cout << "Writing results" << std::endl;
     std::ofstream output_file(tsv_filename);
